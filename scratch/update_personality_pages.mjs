@@ -7,28 +7,24 @@ const personas = [
     slug: 'keep-it-cool',
     name: 'The Keep-It-Cool Investor',
     vibe: 'Keep calm. Keep flexible.',
-    desc: 'You value safety, liquidity, and stress-free financial peace of mind. You want steady returns with the flexibility to withdraw anytime.'
   },
   {
     key: 'B',
     slug: 'smooth-operator',
     name: 'The Smooth Operator',
     vibe: 'Steady moves. Smarter money.',
-    desc: 'You look for balanced growth and smart consistency over short to medium horizons, enjoying predictable performance.'
   },
   {
     key: 'C',
     slug: 'patient-player',
     name: 'The Patient Player',
     vibe: 'Play the long game.',
-    desc: 'You understand that real wealth takes discipline and compounding over time, staying steady through market cycles.'
   },
   {
     key: 'D',
     slug: 'opportunity-hunter',
     name: 'The Opportunity Hunter',
     vibe: 'Spot the opportunity. Think long term.',
-    desc: 'You are proactive, driven by long-term growth and capital appreciation through market opportunities.'
   }
 ];
 
@@ -43,30 +39,27 @@ personas.forEach(p => {
     const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}`;
     const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}`;
     
-    const title = `I'm a ${p.name}! What's Your Investor Type? | First Capital`;
-    const ogTitle = `I'm a ${p.name}! What's Your Investor Type?`;
-    const ogDesc = `I just discovered my investor personality with First Capital: ${p.name} - "${p.vibe}". Take the 1-minute quiz to find yours!`;
+    const pageTitle = `I'm ${p.name}! What's Your Investor Type? | First Capital`;
+    const ogTitle = `I'm ${p.name}! What's Your Investor Type?`;
+    const cleanDesc = `I just discovered my investor personality with First Capital: ${p.name} (${p.vibe}). Take the 1-minute quiz to find yours!`;
 
     const html = `<!DOCTYPE html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${title}</title>
-  <meta name="description" content="${ogDesc}" />
-  <meta name="author" content="First Capital" />
+  <title>${pageTitle}</title>
 
-  <!-- Schema.org markup for Google+ / WhatsApp / Facebook -->
-  <meta itemprop="name" content="${ogTitle}" />
-  <meta itemprop="description" content="${ogDesc}" />
-  <meta itemprop="image" content="${primaryImgUrl}" />
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="${ogTitle}" />
+  <meta name="description" content="${cleanDesc}" />
 
   <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:site_name" content="First Capital" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${pageUrl}" />
+  <meta property="og:site_name" content="First Capital" />
   <meta property="og:title" content="${ogTitle}" />
-  <meta property="og:description" content="${ogDesc}" />
+  <meta property="og:description" content="${cleanDesc}" />
   <meta property="og:image" content="${primaryImgUrl}" />
   <meta property="og:image:secure_url" content="${primaryImgUrl}" />
   <meta property="og:image:type" content="image/jpeg" />
@@ -76,12 +69,10 @@ personas.forEach(p => {
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@firstcapitallk" />
   <meta name="twitter:url" content="${pageUrl}" />
   <meta name="twitter:title" content="${ogTitle}" />
-  <meta name="twitter:description" content="${ogDesc}" />
+  <meta name="twitter:description" content="${cleanDesc}" />
   <meta name="twitter:image" content="${primaryImgUrl}" />
-  <link rel="image_src" href="${primaryImgUrl}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./assets/${shareCardName}" />
@@ -107,19 +98,6 @@ personas.forEach(p => {
       </div>
     </div>
   </div>
-
-  <script>
-    // Seamless human redirect after a short moment if user is clicking through from a social feed
-    (function() {
-      var ua = (navigator.userAgent || '').toLowerCase();
-      var isSocialScraper = /facebookexternalhit|facebot|twitterbot|linkedinbot|whatsapp|telegram|slack|pinterest|bingbot|googlebot/i.test(ua);
-      if (!isSocialScraper) {
-        setTimeout(function() {
-          window.location.replace('./index.html?quiz=open');
-        }, 1500);
-      }
-    })();
-  </script>
 </body>
 </html>
 `;
