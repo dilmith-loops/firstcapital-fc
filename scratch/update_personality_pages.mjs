@@ -36,8 +36,8 @@ personas.forEach(p => {
     const shareCardName = gender === 'female' ? `share-${p.slug}-female.jpg` : `share-${p.slug}-male.jpg`;
     
     // Live subfolder URL on Hostinger
-    const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}`;
-    const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}`;
+    const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}?v=fc3`;
+    const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}?v=fc3`;
     
     const pageTitle = `I'm ${p.name}! What's Your Investor Type? | First Capital`;
     const ogTitle = `I'm ${p.name}! What's Your Investor Type?`;

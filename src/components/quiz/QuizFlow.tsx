@@ -661,8 +661,8 @@ export function QuizFlow({
     : "/fc/firstcapitalpages/";
   const isLocalHost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.includes("192.168."));
   const shareUrl = typeof window !== "undefined" && !isLocalHost
-    ? `${window.location.origin}${basePath}${personalitySlug}-${shareGender}.html?v=fc2`
-    : `https://ai.loopsintegrated.co/fc/firstcapitalpages/${personalitySlug}-${shareGender}.html?v=fc2`;
+    ? `${window.location.origin}${basePath}${personalitySlug}-${shareGender}.html?v=fc3`
+    : `https://ai.loopsintegrated.co/fc/firstcapitalpages/${personalitySlug}-${shareGender}.html?v=fc3`;
   const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor type here:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

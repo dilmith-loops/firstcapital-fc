@@ -55,6 +55,8 @@ PROFILES = [
     },
 ]
 
+NAVY_COLOR = (26, 33, 76)  # #1a214c
+
 def make_card(p, gender="male", is_default=False):
     src_path = p[f"{gender}_src"]
     W, H = 1200, 630
@@ -74,34 +76,26 @@ def make_card(p, gender="male", is_default=False):
     # First Capital logo
     if os.path.exists("src/assets/first-capital-logo.png"):
         logo = Image.open("src/assets/first-capital-logo.png")
-        lw = 240
+        lw = 250
         lh = int(logo.height * (lw / logo.width))
         logo_resized = logo.resize((lw, lh), Image.Resampling.LANCZOS)
-        card.paste(logo_resized, (60, 48), logo_resized if logo_resized.mode == "RGBA" else None)
+        card.paste(logo_resized, (60, 52), logo_resized if logo_resized.mode == "RGBA" else None)
 
     # Fonts
-    f_badge = ImageFont.truetype(font_bold, 14)
-    f_main = ImageFont.truetype(font_bold, 48)
-    f_vibe = ImageFont.truetype(font_bold, 22)
+    f_main = ImageFont.truetype(font_bold, 50)
+    f_vibe = ImageFont.truetype(font_bold, 24)
     f_ask = ImageFont.truetype(font_bold, 34)
 
-    # Personality badge
-    badge_text = f"PERSONALITY {p['num']} • {p['style'].upper()}"
-    badge_w = int(draw.textlength(badge_text, font=f_badge))
-    bx, by = 60, 140
-    draw.rounded_rectangle([(bx, by), (bx + badge_w + 24, by + 30)], radius=15, fill=(236, 253, 245), outline=(167, 243, 208), width=1)
-    draw.text((bx + 12, by + 6), badge_text, fill=(6, 95, 70), font=f_badge)
+    # Main Headline in #1a214c
+    draw.text((60, 165), p["h1"], fill=NAVY_COLOR, font=f_main)
+    draw.text((60, 230), p["h2"], fill=NAVY_COLOR, font=f_main)
 
-    # Main Headline
-    draw.text((60, 190), p["h1"], fill=(20, 45, 39), font=f_main)
-    draw.text((60, 250), p["h2"], fill=(20, 45, 39), font=f_main)
-
-    # Vibe quote
-    draw.text((60, 325), f"“{p['vibe']}”", fill=(4, 120, 87), font=f_vibe)
+    # Vibe quote in #1a214c
+    draw.text((60, 315), f"“{p['vibe']}”", fill=NAVY_COLOR, font=f_vibe)
 
     # Divider & Challenge
     draw.line([(60, 385), (360, 385)], fill=(226, 232, 240), width=2)
-    draw.text((60, 415), "What's your investor type?", fill=(180, 83, 9), font=f_ask)
+    draw.text((60, 420), "What's your investor type?", fill=(180, 83, 9), font=f_ask)
 
     # Avatar on right: Create a clean circular masked portrait with gold ring
     if os.path.exists(src_path):
