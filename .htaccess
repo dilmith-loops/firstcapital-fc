@@ -1,0 +1,6 @@
+DirectoryIndex firstcapitalpages/index.html index.html index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^$ firstcapitalpages/ [L,R=302]
+</IfModule>
