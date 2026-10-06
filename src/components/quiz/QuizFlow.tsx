@@ -663,7 +663,7 @@ export function QuizFlow({
   const shareUrl = typeof window !== "undefined" && !isLocalHost
     ? `${window.location.origin}${basePath}${personalitySlug}-${shareGender}.html?v=fc2`
     : `https://ai.loopsintegrated.co/fc/firstcapitalpages/${personalitySlug}-${shareGender}.html?v=fc2`;
-  const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}". Find your investor type here: ${shareUrl}`;
+  const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor type here:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 

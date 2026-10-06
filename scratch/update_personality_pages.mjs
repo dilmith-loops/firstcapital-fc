@@ -44,7 +44,7 @@ personas.forEach(p => {
     const cleanDesc = `I just discovered my investor personality with First Capital: ${p.name} (${p.vibe}). Take the 1-minute quiz to find yours!`;
 
     const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,6 +53,12 @@ personas.forEach(p => {
   <!-- Primary Meta Tags -->
   <meta name="title" content="${ogTitle}" />
   <meta name="description" content="${cleanDesc}" />
+
+  <!-- Schema.org markup for Google+ / WhatsApp -->
+  <meta itemprop="name" content="${ogTitle}" />
+  <meta itemprop="description" content="${cleanDesc}" />
+  <meta itemprop="image" content="${primaryImgUrl}" />
+  <link rel="image_src" href="${primaryImgUrl}" />
 
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website" />

@@ -1397,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var shareUrl = (!isLocal && window.location.origin)
       ? (window.location.origin + basePath + slug + '-' + gender + '.html?v=fc2')
       : ('https://ai.loopsintegrated.co/fc/firstcapitalpages/' + slug + '-' + gender + '.html?v=fc2');
-    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
+    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor type here:\n" + shareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;
