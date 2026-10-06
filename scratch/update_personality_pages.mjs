@@ -38,12 +38,14 @@ personas.forEach(p => {
   variants.forEach(gender => {
     const filename = gender === 'default' ? `${p.slug}.html` : `${p.slug}-${gender}.html`;
     const shareCardName = gender === 'female' ? `share-${p.slug}-female.jpg` : `share-${p.slug}-male.jpg`;
-    const primaryImgUrl = `https://ai.loopsintegrated.co/firstcapitalpages/assets/${shareCardName}`;
-    const fallbackImgUrl = `https://ai.loopsintegrated.co/firstcapitalpages/${shareCardName}`;
-    const pageUrl = `https://ai.loopsintegrated.co/firstcapitalpages/${filename}`;
+    
+    // Live subfolder URL on Hostinger
+    const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}`;
+    const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}`;
+    
     const title = `I'm a ${p.name}! What's Your Investor Type? | First Capital`;
     const ogTitle = `I'm a ${p.name}! What's Your Investor Type?`;
-    const ogDesc = `I just discovered my investor personality: ${p.name} - "${p.vibe}". Take the 1-minute First Capital quiz to find yours!`;
+    const ogDesc = `I just discovered my investor personality with First Capital: ${p.name} - "${p.vibe}". Take the 1-minute quiz to find yours!`;
 
     const html = `<!DOCTYPE html>
 <html lang="en" prefix="og: https://ogp.me/ns#">
@@ -54,7 +56,7 @@ personas.forEach(p => {
   <meta name="description" content="${ogDesc}" />
   <meta name="author" content="First Capital" />
 
-  <!-- Schema.org markup for Google+ / WhatsApp -->
+  <!-- Schema.org markup for Google+ / WhatsApp / Facebook -->
   <meta itemprop="name" content="${ogTitle}" />
   <meta itemprop="description" content="${ogDesc}" />
   <meta itemprop="image" content="${primaryImgUrl}" />
