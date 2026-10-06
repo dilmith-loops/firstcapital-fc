@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    if (!window.location.pathname.endsWith('/') && !window.location.pathname.endsWith('.html')) {
+      window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Portal | First Capital Investor Week</title>
+  <link rel="icon" href="./assets/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" />
+</head>
+<body class="bg-[#0d1f1b] text-foreground font-sans min-h-screen">
+  <div id="root">
+    <div class="min-h-screen bg-[#0d1f1b] flex items-center justify-center text-[#f1c91e]">
+      <div class="flex flex-col items-center gap-3">
+        <div class="size-8 border-2 border-[#f1c91e] border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-xs font-bold uppercase tracking-widest text-emerald-300">
+          Loading Admin Console...
+        </span>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/admin-entry.tsx"></script>
+</body>
+</html>
