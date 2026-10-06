@@ -35,50 +35,50 @@ personas.forEach(p => {
     const filename = gender === 'default' ? `${p.slug}.html` : `${p.slug}-${gender}.html`;
     const shareCardName = gender === 'female' ? `share-${p.slug}-female.jpg` : `share-${p.slug}-male.jpg`;
     
-    // Live subfolder URL on Hostinger
-    const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}?v=fc3`;
-    const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}?v=fc3`;
+    // Direct clean image URLs without query string for WhatsApp scraper compatibility
+    const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}`;
+    const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}`;
     
     const pageTitle = `I'm ${p.name}! What's Your Investor Type? | First Capital`;
     const ogTitle = `I'm ${p.name}! What's Your Investor Type?`;
     const cleanDesc = `I just discovered my investor personality with First Capital: ${p.name} (${p.vibe}). Take the 1-minute quiz to find yours!`;
 
     const html = `<!DOCTYPE html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${pageTitle}</title>
 
-  <!-- Primary Meta Tags -->
-  <meta name="title" content="${ogTitle}" />
-  <meta name="description" content="${cleanDesc}" />
-
-  <!-- Schema.org markup for Google+ / WhatsApp -->
-  <meta itemprop="name" content="${ogTitle}" />
-  <meta itemprop="description" content="${cleanDesc}" />
-  <meta itemprop="image" content="${primaryImgUrl}" />
-  <link rel="image_src" href="${primaryImgUrl}" />
-
-  <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="${pageUrl}" />
-  <meta property="og:site_name" content="First Capital" />
-  <meta property="og:title" content="${ogTitle}" />
-  <meta property="og:description" content="${cleanDesc}" />
+  <!-- WhatsApp & Facebook Primary Image (must be first in head) -->
   <meta property="og:image" content="${primaryImgUrl}" />
   <meta property="og:image:secure_url" content="${primaryImgUrl}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="First Capital - ${p.name}" />
+  <link rel="image_src" href="${primaryImgUrl}" />
+  <meta itemprop="image" content="${primaryImgUrl}" />
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="${ogTitle}" />
+  <meta property="og:description" content="${cleanDesc}" />
+  <meta property="og:url" content="${pageUrl}" />
+  <meta property="og:site_name" content="First Capital" />
+  <meta property="og:type" content="website" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="${pageUrl}" />
   <meta name="twitter:title" content="${ogTitle}" />
   <meta name="twitter:description" content="${cleanDesc}" />
   <meta name="twitter:image" content="${primaryImgUrl}" />
+  <meta name="twitter:url" content="${pageUrl}" />
+
+  <!-- Standard Meta -->
+  <meta name="title" content="${ogTitle}" />
+  <meta name="description" content="${cleanDesc}" />
+  <meta itemprop="name" content="${ogTitle}" />
+  <meta itemprop="description" content="${cleanDesc}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./assets/${shareCardName}" />
