@@ -3,9 +3,9 @@
 // Update these 4 values with your Hostinger MySQL details from hPanel -> Databases
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'firstcapital');     // e.g. u123456789_firstcapital on Hostinger
-define('DB_USER', 'root');             // e.g. u123456789_admin on Hostinger
-define('DB_PASS', '');                 // your Hostinger database password
+define('DB_NAME', 'u451149423_firstcapital');     // Hostinger DB name
+define('DB_USER', 'u451149423_firstcapital');     // Hostinger DB user
+define('DB_PASS', 'qR!5MoFqCl');                 // Hostinger DB password
 
 function getDbConnection() {
     static $pdo = null;
