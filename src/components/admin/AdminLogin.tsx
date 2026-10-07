@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Lock, Mail, Shield, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, KeyRound, Sparkles } from "lucide-react";
-import logoAsset from "@/assets/first-capital-logo.png.asset.json";
+import logoImg from "@/assets/first-capital-logo.png";
 import { AdminStore } from "@/lib/admin-store";
 
 interface AdminLoginProps {
@@ -37,7 +37,20 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
           <div className="flex items-center gap-3">
             <a href="../" className="block" title="Back to Home">
               <img
-                src={logoAsset.url}
+                src={logoImg}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.dataset.tried1) {
+                    target.dataset.tried1 = "true";
+                    target.src = "./first-capital-logo.png";
+                  } else if (!target.dataset.tried2) {
+                    target.dataset.tried2 = "true";
+                    target.src = "../first-capital-logo.png";
+                  } else if (!target.dataset.tried3) {
+                    target.dataset.tried3 = "true";
+                    target.src = "assets/first-capital-logo.png";
+                  }
+                }}
                 alt="First Capital — A Janashakthi Group Company"
                 className="h-8 sm:h-9 w-auto"
                 width="1698"

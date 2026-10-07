@@ -13,7 +13,7 @@ import {
   AdminUser,
 } from "@/lib/admin-store";
 import { PROFILES, ProfileKey } from "@/components/quiz/QuizFlow";
-import logoAsset from "@/assets/first-capital-logo.png.asset.json";
+import logoImg from "@/assets/first-capital-logo.png";
 import {
   LayoutDashboard,
   Users,
@@ -629,7 +629,20 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div className="flex items-center gap-4">
             <a href="../" target="_blank" rel="noreferrer" className="flex items-center group" title="Open Public Site">
               <img
-                src={logoAsset.url}
+                src={logoImg}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.dataset.tried1) {
+                    target.dataset.tried1 = "true";
+                    target.src = "./first-capital-logo.png";
+                  } else if (!target.dataset.tried2) {
+                    target.dataset.tried2 = "true";
+                    target.src = "../first-capital-logo.png";
+                  } else if (!target.dataset.tried3) {
+                    target.dataset.tried3 = "true";
+                    target.src = "assets/first-capital-logo.png";
+                  }
+                }}
                 alt="First Capital — A Janashakthi Group Company"
                 className="h-8 sm:h-9 w-auto"
                 width="1698"
