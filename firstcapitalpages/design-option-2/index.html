@@ -15,9 +15,10 @@
           img.dataset.fckRetried = '1';
           var s = img.getAttribute('src') || '';
           if (s.indexOf('assets/') !== -1) {
-            img.src = s.replace(/(./|../)?assets//, '../');
+            img.src = '../' + s.split('assets/').pop();
           } else {
-            img.src = '../assets/' + s.replace(/^(./|../)/, '');
+            var filename = s.split('/').pop().split('?')[0];
+            img.src = '../assets/' + filename;
           }
         }
       }

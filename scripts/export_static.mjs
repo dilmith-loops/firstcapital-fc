@@ -1908,9 +1908,10 @@ ${compiledCssContent}
           img.dataset.fckRetried = '1';
           var s = img.getAttribute('src') || '';
           if (s.indexOf('assets/') !== -1) {
-            img.src = s.replace(/(\.\/|\.\.\/)?assets\//, '${prefix}');
+            img.src = '${prefix}' + s.split('assets/').pop();
           } else {
-            img.src = '${prefix}assets/' + s.replace(/^(\.\/|\.\.\/)/, '');
+            var filename = s.split('/').pop().split('?')[0];
+            img.src = '${prefix}assets/' + filename;
           }
         }
       }
