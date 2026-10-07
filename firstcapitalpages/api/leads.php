@@ -34,7 +34,7 @@ function cleanString($str, $maxLen = 255) {
     return mb_substr($clean, 0, $maxLen, 'UTF-8');
 }
 
-// Auto-create tables if needed
+// Auto-create tables and auto-migrate missing columns
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
     try {
@@ -57,6 +57,27 @@ function ensureTablesExist($pdo) {
                 `source` VARCHAR(100) DEFAULT 'Landing Page Quiz'
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
+
+        // Inspect existing columns and automatically add any missing ones to prevent insert failures
+        try {
+            $colStmt = $pdo->query("SHOW COLUMNS FROM quiz_leads");
+            $existingCols = $colStmt ? $colStmt->fetchAll(PDO::FETCH_COLUMN) : [];
+            if (!empty($existingCols)) {
+                if (!in_array('gender', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `gender` VARCHAR(20) DEFAULT 'male' AFTER `phone`");
+                }
+                if (!in_array('investment_amount', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `investment_amount` VARCHAR(100) DEFAULT NULL AFTER `matched_product`");
+                }
+                if (!in_array('preferred_contact', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `preferred_contact` VARCHAR(50) DEFAULT 'phone' AFTER `investment_amount`");
+                }
+                if (!in_array('source', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `source` VARCHAR(100) DEFAULT 'Landing Page Quiz' AFTER `notes`");
+                }
+            }
+        } catch (Throwable $eCols) {}
+
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS `app_settings` (
                 `setting_key` VARCHAR(100) PRIMARY KEY,
@@ -299,7 +320,30 @@ if ($pdo) {
         http_response_code(200);
         echo json_encode(['success' => true, 'leadId' => (int)$id, 'id' => 'FC-' . $id, 'storage' => 'database']);
         exit;
-    } catch (Throwable $e) {}
+    } catch (Throwable $e) {
+        // Multi-tier fallback: Insert only core columns present in original table schema
+        try {
+            $stmtCore = $pdo->prepare("
+                INSERT INTO quiz_leads (name, email, phone, result_code, result_profile, matched_product, answers_json, status, notes, created_at)
+                VALUES (:name, :email, :phone, :code, :resultProfile, :product, :answers, :status, :notes, NOW())
+            ");
+            $stmtCore->execute([
+                ':name' => $name,
+                ':email' => $email,
+                ':phone' => $phone,
+                ':code' => $profileKey,
+                ':resultProfile' => $profileName,
+                ':product' => $matchedProduct,
+                ':answers' => $answers,
+                ':status' => $status,
+                ':notes' => $notes
+            ]);
+            $id = $pdo->lastInsertId();
+            http_response_code(200);
+            echo json_encode(['success' => true, 'leadId' => (int)$id, 'id' => 'FC-' . $id, 'storage' => 'database_core']);
+            exit;
+        } catch (Throwable $eCore) {}
+    }
 }
 
 // Fallback JSON file
