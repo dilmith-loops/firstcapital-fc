@@ -41,14 +41,14 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                 src={logoImg}
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (!target.dataset.tried1) {
-                    target.dataset.tried1 = "true";
+                  if (!target.dataset["tried1"]) {
+                    target.dataset["tried1"] = "true";
                     target.src = "./first-capital-logo.png";
-                  } else if (!target.dataset.tried2) {
-                    target.dataset.tried2 = "true";
+                  } else if (!target.dataset["tried2"]) {
+                    target.dataset["tried2"] = "true";
                     target.src = "../first-capital-logo.png";
-                  } else if (!target.dataset.tried3) {
-                    target.dataset.tried3 = "true";
+                  } else if (!target.dataset["tried3"]) {
+                    target.dataset["tried3"] = "true";
                     target.src = "assets/first-capital-logo.png";
                   }
                 }}

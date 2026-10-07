@@ -12,7 +12,7 @@ const personas = [
     key: 'B',
     slug: 'smooth-operator',
     name: 'The Smooth Operator',
-    vibe: 'Steady moves. Smarter money.',
+    vibe: 'Thoughtful choices. Smarter Investing.',
   },
   {
     key: 'C',
@@ -39,8 +39,8 @@ personas.forEach(p => {
     const primaryImgUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/assets/${shareCardName}`;
     const pageUrl = `https://ai.loopsintegrated.co/fc/firstcapitalpages/${filename}`;
     
-    const pageTitle = `I'm ${p.name}! What's Your Investor Type? | First Capital`;
-    const ogTitle = `I'm ${p.name}! What's Your Investor Type?`;
+    const pageTitle = `I'm ${p.name}! What's Your Investor Personality? | First Capital`;
+    const ogTitle = `I'm ${p.name}! What's Your Investor Personality?`;
     const cleanDesc = `I just discovered my investor personality with First Capital: ${p.name} (${p.vibe}). Take the 1-minute quiz to find yours!`;
 
     const html = `<!DOCTYPE html>
@@ -96,7 +96,7 @@ personas.forEach(p => {
       
       <div style="display: flex; justify-content: center;">
         <a href="./index.html?quiz=open" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); max-width: 380px; padding: 15px 24px; background: #f1c91e; color: #142d27; font-weight: 800; font-size: 15px; border-radius: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(241, 201, 30, 0.35); transition: transform 0.2s;">
-          <span>Find My Investor Type →</span>
+          <span>Find My Investor Personality →</span>
         </a>
       </div>
     </div>

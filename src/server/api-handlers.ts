@@ -129,9 +129,9 @@ export async function handleCreateLead(payload: CreateLeadPayload): Promise<{ su
   const cleanPhone = sanitizePhone(payload.phone);
   const cleanGender = sanitizeString(payload.gender || "male").toLowerCase().slice(0, 10);
   const resultCode = sanitizeResultCode(payload.resultCode || payload.profileKey || "A");
-  const fallbackProfile = DEFAULT_PROFILES[resultCode] || DEFAULT_PROFILES["A"];
-  const resultProfile = sanitizeString(payload.resultProfile || payload.profileName || fallbackProfile.name).slice(0, 100);
-  const matchedProduct = sanitizeString(payload.matchedProduct || fallbackProfile.product).slice(0, 255);
+  const fallbackProfile = DEFAULT_PROFILES[resultCode] || DEFAULT_PROFILES["A"] || { name: "Investor", product: "First Capital Money Market Fund" };
+  const resultProfile = sanitizeString(payload.resultProfile || payload.profileName || fallbackProfile.name || "Investor").slice(0, 100);
+  const matchedProduct = sanitizeString(payload.matchedProduct || fallbackProfile.product || "First Capital Money Market Fund").slice(0, 255);
   const cleanAnswers = sanitizeAnswers(payload.answers);
   const status = sanitizeString(payload.status || "NEW").toUpperCase().slice(0, 20);
   const notes = sanitizeString(payload.notes || "");

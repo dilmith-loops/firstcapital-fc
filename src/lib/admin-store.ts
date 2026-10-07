@@ -5,21 +5,21 @@ export type LeadStatus = "NEW" | "CONTACTED" | "IN_PROGRESS" | "CONVERTED" | "CL
 
 export interface QuizLead {
   id: string;
-  dbId?: number;
+  dbId?: number | undefined;
   createdAt: string;
   name: string;
   email: string;
   phone: string;
-  gender?: "male" | "female" | string;
+  gender?: "male" | "female" | string | undefined;
   profileKey: ProfileKey;
   profileName: string;
   matchedProduct: string;
-  investmentAmount?: string;
-  preferredContact?: "phone" | "email" | "whatsapp";
+  investmentAmount?: string | undefined;
+  preferredContact?: "phone" | "email" | "whatsapp" | undefined;
   status: LeadStatus;
-  notes?: string;
-  answers?: Record<number, ProfileKey | string>;
-  source?: string;
+  notes?: string | undefined;
+  answers?: Record<number, ProfileKey | string> | undefined;
+  source?: string | undefined;
 }
 
 export interface InvestmentProduct {
@@ -224,7 +224,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     options: [
       { key: "A", label: "A", text: "“I like knowing my money is there when I need it.”" },
       { key: "B", label: "B", text: "“I want my money working, without taking on too much risk.”" },
-      { key: "C", label: "C", text: "“I’m happy to wait if it means building my money steadily.”" },
+      { key: "C", label: "C", text: "“I’m happy to wait if it means building my money for the potential of long-term growth.”" },
       { key: "D", label: "D", text: "“I’m playing the long game when it comes to my wealth.”" },
     ],
   },
@@ -252,7 +252,7 @@ const DEFAULT_PRODUCTS: InvestmentProduct[] = [
     riskLevel: "Moderate",
     minInvestment: "LKR 1,000",
     expectedReturn: "Steady Income Yield",
-    description: "For investors looking for relatively stable returns while keeping access to their money through diversified fixed-income assets.",
+    description: "For investors looking for investment return while keeping access to their money.",
     disclaimer: "Current yield is variable and subject to change. SEC Approved. Terms & conditions apply.",
     status: "Active",
   },
@@ -549,7 +549,7 @@ export const AdminStore = {
     return this.getLeads();
   },
 
-  async saveLead(lead: Omit<QuizLead, "id" | "createdAt" | "status"> & { id?: string; status?: LeadStatus; dbId?: number }): Promise<QuizLead> {
+  async saveLead(lead: Omit<QuizLead, "id" | "createdAt" | "status"> & { id?: string | undefined; status?: LeadStatus | undefined; dbId?: number | undefined }): Promise<QuizLead> {
     const leads = this.getLeads();
     const tempId = lead.id || `FC-${Math.floor(1000 + Math.random() * 9000)}`;
     const newLead: QuizLead = {

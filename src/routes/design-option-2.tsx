@@ -99,25 +99,25 @@ const investmentOptions: InvestmentOptionItem[] = [
     products: [
       {
         icon: CircleDollarSign,
-        title: "Money Market Fund",
+        title: "First Capital Money Market Fund",
         tags: ["Short-term", "Relatively lower risk", "Withdraw anytime", "Start with LKR 1,000"],
         copy: "For investors who want to keep their money accessible while putting it to work.",
       },
       {
         icon: ShieldCheck,
-        title: "Fixed Income Fund",
-        tags: ["Medium to long term", "Relatively stable returns", "Access anytime", "Start with LKR 1,000"],
-        copy: "For investors looking for relatively stable returns while keeping access to their money.",
+        title: "First Capital Fixed Income Fund",
+        tags: ["Medium to long term", "Access anytime", "Start with LKR 1,000"],
+        copy: "For investors looking for investment return while keeping access to their money.",
       },
       {
         icon: LineChart,
-        title: "Equity Fund",
+        title: "First Capital Equity Fund",
         tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000"],
-        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.",
+        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).",
       },
     ],
     video: {
-      title: "What are Unit Trust Funds?",
+      title: "Learn more about Unit Trust Funds",
       url: "https://www.tiktok.com/@first.capital/video/7593165117668265223",
       platform: "TikTok",
     },
@@ -131,7 +131,7 @@ const investmentOptions: InvestmentOptionItem[] = [
     title: "Government Securities",
     icon: Landmark,
     shortCopy: "Government securities are instrument issued by the Government of Sri Lanka to raise money. When you invest, you lend your money to the government for a defined period. In return, you receive interest periodically, with the original investment paid back at maturity.",
-    simplyPut: "You invest → the government uses your money → you receive interest → your investment is repaid at maturity.",
+    simplyPut: "You invest money → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
     keyBenefits: ["Government-issued", "Regular interest", "Defined maturity", "Risk-free instrument"],
     video: {
       title: "Government Securities explained",
@@ -149,7 +149,7 @@ const investmentOptions: InvestmentOptionItem[] = [
     icon: TrendingUp,
     shortCopy: "It simply means investing in shares of listed companies. When you buy shares, you own a % of the company. The value of your investment can rise or fall based on the company’s performance and market conditions.",
     keyBenefits: ["Long-term growth potential", "Own listed shares", "Market participation"],
-    simplyPut: "You buy shares → you own a small part of a company → the share value can rise or fall → you can benefit if the value increases.",
+    simplyPut: "You buy shares → You own a part of a company → The share value can rise or fall → You can benefit if the value increases.",
     video: {
       title: "How do equities work?",
       url: "https://www.youtube.com/shorts/HGL82Tv1wJE",
@@ -189,54 +189,50 @@ function DesignOptionTwo() {
   return (
     <div className="comic-page min-h-screen overflow-hidden bg-background text-foreground">
       <header className="comic-header border-b border-border bg-background">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-12">
+        <div className="mx-auto flex max-w-7xl w-full items-center justify-between gap-5 px-5 py-2 sm:py-2.5 sm:px-8 lg:px-12">
           <a href="#top" aria-label="First Capital home" className="block min-w-0">
-            <img src={logoAsset.url} alt="First Capital — A Janashakthi Group Company" className="h-auto w-44 sm:w-56" width="1698" height="432" />
+            <img src={logoAsset.url} alt="First Capital — A Janashakthi Group Company" className="h-auto w-36 sm:w-44" width="1698" height="432" />
           </a>
-          <div className="comic-badge flex shrink-0 items-center border-l-2 border-primary pl-4">
-            <span className="text-right text-xs font-extrabold uppercase leading-tight text-foreground sm:text-sm">Investor<br />Week</span>
+          <div className="comic-badge flex shrink-0 items-center border-l-2 border-primary pl-3.5">
+            <span className="text-right text-[11px] font-extrabold uppercase leading-tight text-foreground sm:text-xs">Investor<br />Week</span>
           </div>
         </div>
       </header>
 
       <main id="top">
-        <section className="relative">
-          <div className="comic-hero mx-auto grid min-h-[720px] max-w-7xl items-center gap-8 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-16">
-            <div className="relative z-10 max-w-xl">
-              <h1 className="text-5xl font-extrabold leading-[1.02] sm:text-6xl lg:text-7xl">
-                You Already Know<br />
-                <span className="comic-title-highlight relative inline-block">
-                  How to Start.
-                  <span className="absolute -bottom-1 left-0 h-2 w-full bg-primary/75" />
+        <section className="relative py-6 sm:py-10 lg:py-14">
+          <div className="comic-hero mx-auto grid max-w-7xl w-full items-center gap-8 px-5 sm:px-8 lg:grid-cols-[1fr_1.18fr] lg:gap-10 lg:px-12">
+            <div className="relative z-10 max-w-xl xl:max-w-2xl flex flex-col justify-center">
+              <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                You Already Save, Plan and Prepare for the Future.<br />
+                <span className="comic-title-highlight relative inline-block mt-2 border-b-[6px] sm:border-b-[8px] border-primary pb-2 sm:pb-3 text-[#1a214c]">
+                  It’s the same with investing.
                 </span>
               </h1>
-              <p className="mt-7 max-w-lg text-lg leading-8 text-muted-foreground">
-                You start small. You stay consistent. You plan for the future. You do it in so many areas of your life.{" "}
-                <strong className="whitespace-nowrap font-bold text-foreground">Why not do the same with investing?</strong>
+              <p className="mt-4 sm:mt-5 text-sm sm:text-base italic font-medium text-slate-600">
+                Answer 7 simple questions and discover your investor personality.
               </p>
-              <p className="mt-6 text-sm sm:text-base font-bold text-[#1a214c]">
-                Fill the quiz and find your investor personality.
-              </p>
-              <div className="mt-4">
+              <div className="mt-5 sm:mt-6">
                 <Button
                   id="btn-find-investor-type"
                   onClick={() => setIsQuizOpen(true)}
-                  className="comic-btn min-h-16 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-black tracking-wide gap-4 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all"
+                  className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all"
                 >
-                  <span>Find My Investor Type</span>
-                  <ArrowRight className="size-7 stroke-[2.5]" />
+                  <span>Find my investor personality</span>
+                  <ArrowRight className="size-5 stroke-[2.5]" />
                 </Button>
               </div>
-              <p className="mt-6 text-xs font-bold text-foreground">*Disclaimer</p>
-              <p className="mt-1.5 max-w-xl text-[11px] leading-5 text-muted-foreground">{disclaimer}</p>
+              <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
+                <span className="font-bold text-foreground">Disclaimer: </span>{disclaimer}
+              </p>
             </div>
 
-            <div className="relative flex items-center justify-center w-full mx-auto">
-              <div className="comic-shadow absolute bottom-12 left-1/2 -translate-x-1/2 h-[68%] w-[92%] border-b-[18px] border-primary" />
+            <div className="relative flex items-center justify-center w-full">
+              <div className="comic-shadow absolute bottom-4 left-1/2 -translate-x-1/2 h-[68%] w-[94%] border-b-[18px] border-primary" />
               <img
                 src={FCmainImage}
                 alt="First Capital Investor Personas"
-                className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-105 xl:scale-110 origin-center object-contain mx-auto transition-transform"
+                className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-105 object-contain mx-auto transition-transform"
                 width={1408}
                 height={1056}
               />
@@ -271,7 +267,7 @@ function DesignOptionTwo() {
           </div>
         </section>
 
-        <section id="options" className="comic-options px-5 py-20 sm:px-8 lg:px-12">
+        <section id="options" className="comic-options px-5 py-14 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-6 lg:grid-cols-[0.65fr_1fr] lg:items-end">
               <div>
@@ -357,8 +353,10 @@ function DesignOptionTwo() {
                         return (
                           <div key={p.title} className="border border-border bg-card p-4 flex flex-col justify-between">
                             <div>
-                              <PIcon className="size-6 text-primary" />
-                              <h5 className="mt-3 text-base font-extrabold">{p.title}</h5>
+                              <div className="flex items-center gap-2.5">
+                                <PIcon className="size-5 text-primary shrink-0" />
+                                <h5 className="text-sm sm:text-base font-extrabold leading-snug">{p.title}</h5>
+                              </div>
                               <p className="mt-2 text-xs leading-5 text-muted-foreground">{p.copy}</p>
                             </div>
                             <div className="mt-4 flex flex-wrap gap-1">
@@ -440,14 +438,14 @@ function DesignOptionTwo() {
 
                 {/* CTAs inside dialog */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button asChild size="default" className="comic-btn flex-1">
-                    <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer">
-                      I would like to create my account <ArrowRight className="size-4 ml-1" />
+                  <Button asChild size="default" className="comic-btn flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold">
+                    <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+                      <span>I would like to create my account</span> <ArrowRight className="size-4 shrink-0" />
                     </a>
                   </Button>
-                  <Button asChild variant="outline" size="default" className="comic-btn flex-1">
-                    <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer">
-                      I would like to speak to someone first
+                  <Button asChild size="default" className="comic-btn flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border-2 border-foreground font-bold">
+                    <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+                      <span>I would like to speak to someone first</span>
                     </a>
                   </Button>
                 </div>
@@ -472,17 +470,17 @@ function DesignOptionTwo() {
           </DialogContent>
         </Dialog>
 
-        <section className="comic-reasons bg-secondary px-5 py-20 sm:px-8 lg:px-12">
+        <section className="comic-reasons bg-secondary px-5 py-14 sm:py-20 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <h2 className="text-4xl font-extrabold leading-tight sm:text-5xl">Why First Capital?</h2>
-            <div className="mt-8 sm:mt-12 grid grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">
+            <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">
               {reasons.map((reason) => {
                 const Icon = reason.icon;
                 return (
-                  <article key={reason.title} className="bg-background p-3.5 sm:p-6 sm:min-h-64 flex flex-col justify-start">
+                  <article key={reason.title} className="bg-background p-4 sm:p-6 min-h-[140px] sm:min-h-64 flex flex-col justify-start">
                     <Icon className="size-6 sm:size-7 text-accent" />
-                    <h3 className="mt-3 sm:mt-8 text-xs sm:text-lg font-extrabold leading-snug">{reason.title}</h3>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed sm:leading-6 text-muted-foreground hidden sm:block">{reason.copy}</p>
+                    <h3 className="mt-3 sm:mt-8 text-sm sm:text-lg font-extrabold leading-snug">{reason.title}</h3>
+                    <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed sm:leading-6 text-muted-foreground">{reason.copy}</p>
                   </article>
                 );
               })}
@@ -501,18 +499,17 @@ function DesignOptionTwo() {
                 Ready to take the next step and become an investor?
               </h2>
             </div>
-            <div className="flex flex-col items-center gap-2.5 w-full sm:w-auto">
-              <Button asChild size="lg" className="comic-btn w-full sm:w-[340px]">
-                <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer">
-                  I would like to speak to someone first <ArrowRight className="size-5 shrink-0" />
+            <div className="flex flex-col items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <Button asChild size="lg" className="comic-btn w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold">
+                <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                  <span>I would like to create my account</span>
+                  <ArrowRight className="size-4.5 shrink-0" />
                 </a>
               </Button>
-              <span className="text-xs font-bold uppercase tracking-widest text-background/60">
-                or
-              </span>
-              <Button asChild size="lg" className="comic-btn w-full sm:w-[340px]">
-                <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer">
-                  I would like to create my account <ArrowRight className="size-5 shrink-0" />
+              <Button asChild size="lg" className="comic-btn w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border-2 border-white/40 font-bold">
+                <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                  <span>I would like to speak to someone first</span>
+                  <ArrowRight className="size-4.5 shrink-0" />
                 </a>
               </Button>
             </div>

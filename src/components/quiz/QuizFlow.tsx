@@ -97,13 +97,13 @@ export const PROFILES: Record<ProfileKey, ProfileInfo> = {
     key: "B",
     number: "02",
     name: "The Smooth Operator",
-    style: "Steady & Flexible",
+    style: "Income-Focused & Flexible",
     product: "First Capital Fixed Income Fund (FCFIF)*",
     productShort: "First Capital Fixed Income Fund (FCFIF)*",
     productOptionId: "unit-trust",
     description:
       "You’re looking for the sweet spot between earning a return and keeping your money accessible. You’re not chasing every opportunity - you prefer a more measured approach.",
-    vibe: "Steady moves. Smarter money.",
+    vibe: "Thoughtful choices. Smarter Investing.",
     productDisclaimer:
       "* Disclaimers: Past performance is not an indicator of future performance | Investors are advised to read and understand the contents of Key Investor Information Document (KIID) | The fund is approved by the Securities and Exchange Commission of Sri Lanka (SEC) | Please refer to the Procedure Guide related to Unit Trust to understand our internal procedures related to products and transactions: ",
     procedureGuide: {
@@ -181,25 +181,25 @@ const OPTION_DETAILS: Record<string, {
     products: [
       {
         icon: CircleDollarSign,
-        title: "Money Market Fund",
+        title: "First Capital Money Market Fund",
         tags: ["Short-term", "Relatively lower risk", "Withdraw anytime", "Start with LKR 1,000"],
         copy: "For investors who want to keep their money accessible while putting it to work.",
       },
       {
         icon: ShieldCheck,
-        title: "Fixed Income Fund",
-        tags: ["Medium to long term", "Relatively stable returns", "Access anytime", "Start with LKR 1,000"],
-        copy: "For investors looking for relatively stable returns while keeping access to their money.",
+        title: "First Capital Fixed Income Fund",
+        tags: ["Medium to long term", "Access anytime", "Start with LKR 1,000"],
+        copy: "For investors looking for investment return while keeping access to their money.",
       },
       {
         icon: LineChart,
-        title: "Equity Fund",
+        title: "First Capital Equity Fund",
         tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000"],
-        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.",
+        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).",
       },
     ],
     video: {
-      title: "What are Unit Trust Funds?",
+      title: "Learn more about Unit Trust Funds",
       url: "https://www.tiktok.com/@first.capital/video/7593165117668265223",
       platform: "TikTok",
     },
@@ -210,7 +210,7 @@ const OPTION_DETAILS: Record<string, {
   "gov-securities": {
     number: "02",
     title: "Government Securities",
-    simplyPut: "You invest → the government uses your money → you receive interest → your investment is repaid at maturity.",
+    simplyPut: "You invest money → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
     keyBenefits: ["Government-issued", "Regular interest", "Defined maturity", "Risk-free instrument"],
     video: {
       title: "Government Securities explained",
@@ -224,7 +224,7 @@ const OPTION_DETAILS: Record<string, {
   "equities": {
     number: "03",
     title: "Equities",
-    simplyPut: "You buy shares → you own a small part of a company → the share value can rise or fall → you can benefit if the value increases.",
+    simplyPut: "You buy shares → You own a part of a company → The share value can rise or fall → You can benefit if the value increases.",
     keyBenefits: ["Long-term growth potential", "Own listed shares", "Market participation"],
     video: {
       title: "How do equities work?",
@@ -376,7 +376,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: [
       { key: "A", label: "A", text: "“I like knowing my money is there when I need it.”" },
       { key: "B", label: "B", text: "“I want my money to grow, without taking on too much risk.”" },
-      { key: "C", label: "C", text: "“I’m happy to wait if it means building my money steadily.”" },
+      { key: "C", label: "C", text: "“I’m happy to wait if it means building my money for the potential of long-term growth.”" },
       { key: "D", label: "D", text: "“I’m playing the long game when it comes to my wealth.”" },
     ],
   },
@@ -993,7 +993,7 @@ export function QuizFlow({
                     </>
                   ) : (
                     <>
-                      <span>Reveal My Investor Type</span>
+                      <span>Reveal My Investor Personality</span>
                       <ArrowRight className="size-4 stroke-[2.5]" />
                     </>
                   )}

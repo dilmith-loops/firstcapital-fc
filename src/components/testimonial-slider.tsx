@@ -51,18 +51,24 @@ export function TestimonialSlider() {
   const currentTestimonials = items.length > 0 ? items : DEFAULT_TESTIMONIALS;
 
   return (
-    <section aria-label="What our investors say" className="testimonial-slider px-5 py-20 sm:px-8 lg:px-12">
+    <section aria-label="What our customers say" className="testimonial-slider px-5 py-16 sm:px-8 lg:px-12 bg-white">
       <div className="mx-auto max-w-7xl">
-        <p className="mb-4 text-xs font-extrabold uppercase text-muted-foreground">What our investors say</p>
-        <div className="grid gap-6 lg:grid-cols-[0.65fr_1fr] lg:items-end">
-          <h2 className="text-4xl font-extrabold leading-tight sm:text-5xl">Real People.<br />Real Starting Points.</h2>
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <span className="inline-block px-3 py-1 rounded-full bg-[#f1ca1f]/20 text-[#1a214c] text-xs font-extrabold uppercase tracking-wider mb-2.5">
+              Testimonials
+            </span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#1a214c] sm:text-4xl lg:text-5xl">
+              What our customers say
+            </h2>
+          </div>
           {currentTestimonials.length > 1 && (
-            <div className="flex items-center gap-3 lg:justify-self-end">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 aria-label="Previous testimonial"
                 onClick={() => go(-1)}
-                className="slider-nav inline-flex size-11 items-center justify-center border border-border bg-background hover:bg-muted transition-colors cursor-pointer"
+                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c]/20 bg-white text-[#1a214c] hover:bg-[#1a214c] hover:text-[#f1ca1f] transition-all cursor-pointer shadow-xs"
               >
                 <ChevronLeft className="size-5" />
               </button>
@@ -70,7 +76,7 @@ export function TestimonialSlider() {
                 type="button"
                 aria-label="Next testimonial"
                 onClick={() => go(1)}
-                className="slider-nav inline-flex size-11 items-center justify-center border border-border bg-background hover:bg-muted transition-colors cursor-pointer"
+                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c]/20 bg-white text-[#1a214c] hover:bg-[#1a214c] hover:text-[#f1ca1f] transition-all cursor-pointer shadow-xs"
               >
                 <ChevronRight className="size-5" />
               </button>
@@ -78,7 +84,7 @@ export function TestimonialSlider() {
           )}
         </div>
 
-        <div className="slider-frame mt-10 overflow-hidden border border-border bg-card">
+        <div className="slider-frame mt-8 overflow-hidden rounded-2xl border border-[#1a214c] bg-[#1a214c] text-[#f1ca1f] shadow-lg">
           <div
             className="flex transition-transform duration-500 ease-out"
             style={{ transform: `translateX(-${active * 100}%)` }}
@@ -86,25 +92,27 @@ export function TestimonialSlider() {
             {currentTestimonials.map((t, idx) => (
               <figure
                 key={t.id || idx}
-                className="w-full shrink-0 p-8 sm:p-12"
+                className="w-full shrink-0 p-6 sm:p-10"
                 aria-hidden={idx !== active}
               >
                 <div className="flex items-center justify-between gap-4">
-                  <Quote className="size-8 text-primary" />
+                  <div className="size-10 rounded-xl bg-[#f1ca1f] flex items-center justify-center shadow-xs">
+                    <Quote className="size-5 text-[#1a214c] fill-[#1a214c]" />
+                  </div>
                   {t.rating && t.rating > 0 && (
-                    <div className="flex items-center gap-1 text-amber-500">
+                    <div className="flex items-center gap-1 text-[#f1ca1f]">
                       {Array.from({ length: t.rating }).map((_, i) => (
-                        <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
+                        <Star key={i} className="size-4 fill-[#f1ca1f] text-[#f1ca1f]" />
                       ))}
                     </div>
                   )}
                 </div>
-                <blockquote className="mt-6 max-w-3xl text-xl font-bold leading-8 sm:text-2xl sm:leading-9">
+                <blockquote className="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-[#f1ca1f] sm:text-xl sm:leading-8">
                   “{t.quote}”
                 </blockquote>
-                <figcaption className="mt-6 text-sm">
-                  <span className="font-extrabold">{t.name}</span>
-                  <span className="text-muted-foreground"> — {t.role}</span>
+                <figcaption className="mt-5 text-sm border-t border-[#f1ca1f]/30 pt-4 flex items-center gap-2">
+                  <span className="font-extrabold text-[#f1ca1f]">{t.name}</span>
+                  <span className="text-[#f1ca1f]/80 font-medium">— {t.role}</span>
                 </figcaption>
               </figure>
             ))}
@@ -112,7 +120,7 @@ export function TestimonialSlider() {
         </div>
 
         {currentTestimonials.length > 1 && (
-          <div className="mt-5 flex gap-2">
+          <div className="mt-4 flex gap-2">
             {currentTestimonials.map((t, i) => (
               <button
                 key={t.id || i}
@@ -120,8 +128,8 @@ export function TestimonialSlider() {
                 aria-label={`Show testimonial ${i + 1}`}
                 aria-current={i === active}
                 onClick={() => setActive(i)}
-                className={`slider-dot h-2.5 w-8 border border-border cursor-pointer transition-colors ${
-                  i === active ? "bg-primary" : "bg-transparent"
+                className={`slider-dot h-2 w-7 rounded-full cursor-pointer transition-all ${
+                  i === active ? "bg-[#1a214c] w-10" : "bg-slate-300 hover:bg-slate-400"
                 }`}
               />
             ))}

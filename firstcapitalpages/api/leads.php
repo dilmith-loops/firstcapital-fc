@@ -34,7 +34,7 @@ function cleanString($str, $maxLen = 255) {
     return mb_substr($clean, 0, $maxLen, 'UTF-8');
 }
 
-// Auto-create tables and auto-migrate missing columns
+// Auto-create tables and clean up unused columns
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
     try {
@@ -49,8 +49,6 @@ function ensureTablesExist($pdo) {
                 `result_code` CHAR(2) DEFAULT 'A',
                 `result_profile` VARCHAR(100) DEFAULT NULL,
                 `matched_product` VARCHAR(255) DEFAULT NULL,
-                `investment_amount` VARCHAR(100) DEFAULT NULL,
-                `preferred_contact` VARCHAR(50) DEFAULT 'phone',
                 `answers_json` LONGTEXT DEFAULT NULL,
                 `status` VARCHAR(20) DEFAULT 'NEW',
                 `notes` TEXT DEFAULT NULL,
@@ -58,7 +56,7 @@ function ensureTablesExist($pdo) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
 
-        // Inspect existing columns and automatically add any missing ones to prevent insert failures
+        // Inspect existing columns: add required ones and drop unwanted columns
         try {
             $colStmt = $pdo->query("SHOW COLUMNS FROM quiz_leads");
             $existingCols = $colStmt ? $colStmt->fetchAll(PDO::FETCH_COLUMN) : [];
@@ -66,14 +64,15 @@ function ensureTablesExist($pdo) {
                 if (!in_array('gender', $existingCols)) {
                     @$pdo->exec("ALTER TABLE `quiz_leads` ADD `gender` VARCHAR(20) DEFAULT 'male' AFTER `phone`");
                 }
-                if (!in_array('investment_amount', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `investment_amount` VARCHAR(100) DEFAULT NULL AFTER `matched_product`");
-                }
-                if (!in_array('preferred_contact', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `preferred_contact` VARCHAR(50) DEFAULT 'phone' AFTER `investment_amount`");
-                }
                 if (!in_array('source', $existingCols)) {
                     @$pdo->exec("ALTER TABLE `quiz_leads` ADD `source` VARCHAR(100) DEFAULT 'Landing Page Quiz' AFTER `notes`");
+                }
+                // Drop unused legacy columns if present
+                if (in_array('investment_amount', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` DROP COLUMN `investment_amount`");
+                }
+                if (in_array('preferred_contact', $existingCols)) {
+                    @$pdo->exec("ALTER TABLE `quiz_leads` DROP COLUMN `preferred_contact`");
                 }
             }
         } catch (Throwable $eCols) {}
@@ -287,9 +286,19 @@ $phone = cleanString($data['phone'] ?? 'N/A', 50);
 $gender = strtolower(cleanString($data['gender'] ?? 'male', 20));
 $profileKey = strtoupper(cleanString($data['profileKey'] ?? $data['resultCode'] ?? $data['profile'] ?? 'A', 2));
 $profileName = cleanString($data['profileName'] ?? $data['resultProfile'] ?? '', 100);
+
+// Auto-populate profile name from profile key if not passed directly
+$profileMap = [
+    'A' => 'The Keep-It-Cool Investor',
+    'B' => 'The Smooth Operator',
+    'C' => 'The Patient Player',
+    'D' => 'The Opportunity Hunter'
+];
+if (empty($profileName) && isset($profileMap[$profileKey])) {
+    $profileName = $profileMap[$profileKey];
+}
+
 $matchedProduct = cleanString($data['matchedProduct'] ?? $data['product'] ?? '', 255);
-$investmentAmount = cleanString($data['investmentAmount'] ?? '', 100);
-$preferredContact = cleanString($data['preferredContact'] ?? 'phone', 50);
 $answers = isset($data['answers']) ? json_encode($data['answers'], JSON_UNESCAPED_UNICODE) : null;
 $status = strtoupper(cleanString($data['status'] ?? 'NEW', 20));
 $notes = cleanString($data['notes'] ?? '', 1000);
@@ -298,8 +307,8 @@ $source = cleanString($data['source'] ?? 'Landing Page Quiz', 100);
 if ($pdo) {
     try {
         $stmt = $pdo->prepare("
-            INSERT INTO quiz_leads (name, email, phone, gender, result_code, result_profile, matched_product, investment_amount, preferred_contact, answers_json, status, notes, source, created_at)
-            VALUES (:name, :email, :phone, :gender, :code, :resultProfile, :product, :amount, :contact, :answers, :status, :notes, :source, NOW())
+            INSERT INTO quiz_leads (name, email, phone, gender, result_code, result_profile, matched_product, answers_json, status, notes, source, created_at)
+            VALUES (:name, :email, :phone, :gender, :code, :resultProfile, :product, :answers, :status, :notes, :source, NOW())
         ");
         $stmt->execute([
             ':name' => $name,
@@ -309,8 +318,6 @@ if ($pdo) {
             ':code' => $profileKey,
             ':resultProfile' => $profileName,
             ':product' => $matchedProduct,
-            ':amount' => $investmentAmount,
-            ':contact' => $preferredContact,
             ':answers' => $answers,
             ':status' => $status,
             ':notes' => $notes,
@@ -361,8 +368,6 @@ $newLead = [
     'profileKey' => $profileKey,
     'profileName' => $profileName,
     'matchedProduct' => $matchedProduct,
-    'investmentAmount' => $investmentAmount,
-    'preferredContact' => $preferredContact,
     'answers' => $data['answers'] ?? [],
     'status' => $status,
     'notes' => $notes,
