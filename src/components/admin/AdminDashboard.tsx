@@ -10,6 +10,7 @@ import {
   QuestionOption,
   DbStatusInfo,
   TestimonialItem,
+  AdminUser,
 } from "@/lib/admin-store";
 import { PROFILES, ProfileKey } from "@/components/quiz/QuizFlow";
 import logoAsset from "@/assets/first-capital-logo.png.asset.json";
@@ -52,6 +53,9 @@ import {
   Activity,
   Quote,
   Star,
+  UserPlus,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -132,6 +136,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [settingsSuccess, setSettingsSuccess] = useState(false);
 
+  // Admin users management states
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(AdminStore.getAdminUsers());
+  const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
+  const [newAdminName, setNewAdminName] = useState("");
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [newAdminRole, setNewAdminRole] = useState<AdminUser["role"]>("Manager");
+  const [newAdminStatus, setNewAdminStatus] = useState<"Active" | "Inactive">("Active");
+  const [editAdminPassword, setEditAdminPassword] = useState("");
+
   // Notification toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -152,6 +167,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setSettings(AdminStore.getSettings());
     setQuestions(AdminStore.getQuestions());
     setTestimonials(AdminStore.getTestimonials());
+    setAdminUsers(AdminStore.getAdminUsers());
   };
 
   const syncDatabase = async (manual = false) => {
@@ -164,6 +180,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         await AdminStore.fetchQuestionsFromDb();
         await AdminStore.fetchProductsFromDb();
         await AdminStore.fetchTestimonialsFromDb();
+        await AdminStore.fetchAdminUsersFromDb();
         if (manual) {
           showToast(`MySQL DB Connected: ${status.database} @ ${status.host} (${status.totalLeads} leads loaded)`);
         }
@@ -502,6 +519,65 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setPasswordSuccess(true);
     setTimeout(() => setPasswordSuccess(false), 3000);
     showToast("Admin password changed!");
+  };
+
+  const handleCreateAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminName.trim() || !newAdminEmail.trim() || !newAdminPassword.trim()) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    const cleanEmail = newAdminEmail.trim().toLowerCase();
+    const existing = AdminStore.getAdminUsers().find(
+      (u) => u.email.toLowerCase() === cleanEmail
+    );
+    if (existing) {
+      alert("An administrator account with this email already exists.");
+      return;
+    }
+    AdminStore.addAdminUser({
+      name: newAdminName.trim(),
+      email: cleanEmail,
+      password: newAdminPassword.trim(),
+      role: newAdminRole,
+      status: newAdminStatus,
+    });
+    setIsAddAdminOpen(false);
+    setNewAdminName("");
+    setNewAdminEmail("");
+    setNewAdminPassword("");
+    setNewAdminRole("Manager");
+    setNewAdminStatus("Active");
+    showToast(`Administrator account for ${newAdminName} created successfully!`);
+  };
+
+  const handleUpdateAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+    const updates: Partial<AdminUser> = {
+      name: editingAdmin.name,
+      role: editingAdmin.role,
+      status: editingAdmin.status,
+    };
+    if (editAdminPassword && editAdminPassword.trim().length >= 4) {
+      updates.password = editAdminPassword.trim();
+    }
+    AdminStore.updateAdminUser(editingAdmin.id, updates);
+    setEditingAdmin(null);
+    setEditAdminPassword("");
+    showToast(`Administrator ${editingAdmin.name} updated successfully!`);
+  };
+
+  const handleDeleteAdmin = (id: string) => {
+    const target = adminUsers.find((u) => u.id === id);
+    if (!target) return;
+    if (window.confirm(`Are you sure you want to remove administrator ${target.name} (${target.email})?`)) {
+      const ok = AdminStore.deleteAdminUser(id);
+      if (ok) {
+        showToast(`Administrator ${target.name} removed.`);
+        if (editingAdmin?.id === id) setEditingAdmin(null);
+      }
+    }
   };
 
   const handleResetDemoData = () => {
@@ -1568,67 +1644,111 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* General Settings */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-                  <h2 className="text-base font-extrabold text-[#142d27] mb-4">Notification Preferences</h2>
-
-                  {settingsSuccess && (
-                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
-                      <CheckCircle2 className="size-4 text-emerald-600" />
-                      <span>Settings updated successfully!</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleSaveSettings} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Admin Email</label>
-                      <input
-                        type="email"
-                        value={settings.adminEmail}
-                        onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Lead Alert Routing Email</label>
-                      <input
-                        type="email"
-                        value={settings.notificationEmail}
-                        onChange={(e) => setSettings({ ...settings, notificationEmail: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
-                      />
+                {/* Administrator Accounts Management */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h2 className="text-base font-extrabold text-[#142d27] flex items-center gap-2">
+                          <ShieldCheck className="size-4 text-emerald-700" />
+                          <span>Administrator Accounts</span>
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Manage login credentials, roles, and administrative team access
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddAdminOpen(true)}
+                        className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                      >
+                        <UserPlus className="size-3.5" />
+                        <span>Add New Admin</span>
+                      </button>
                     </div>
 
-                    <div className="space-y-2 pt-2">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.emailAlerts}
-                          onChange={(e) => setSettings({ ...settings, emailAlerts: e.target.checked })}
-                          className="rounded text-[#142d27] focus:ring-[#f1c91e]"
-                        />
-                        <span>Send email notifications for new quiz leads</span>
-                      </label>
+                    {/* List of Admin Accounts */}
+                    <div className="space-y-2.5 mt-4">
+                      {adminUsers.map((admin) => (
+                        <div
+                          key={admin.id}
+                          className="p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="size-9 rounded-xl bg-[#142d27] text-[#f1c91e] font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                              {admin.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-bold text-slate-900 truncate">
+                                  {admin.name}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                    admin.role === "Super Admin"
+                                      ? "bg-amber-100 text-amber-900 border-amber-300"
+                                      : admin.role === "Manager"
+                                        ? "bg-blue-100 text-blue-900 border-blue-300"
+                                        : admin.role === "Wealth Advisor"
+                                          ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                          : "bg-slate-100 text-slate-800 border-slate-300"
+                                  }`}
+                                >
+                                  {admin.role}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                                    admin.status === "Active"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-slate-200 text-slate-600"
+                                  }`}
+                                >
+                                  {admin.status}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 font-mono truncate mt-0.5">
+                                {admin.email}
+                              </div>
+                            </div>
+                          </div>
 
-                      <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.dailyDigest}
-                          onChange={(e) => setSettings({ ...settings, dailyDigest: e.target.checked })}
-                          className="rounded text-[#142d27] focus:ring-[#f1c91e]"
-                        />
-                        <span>Daily summary performance report</span>
-                      </label>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingAdmin({ ...admin });
+                                setEditAdminPassword("");
+                              }}
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 cursor-pointer"
+                              title="Edit Administrator"
+                            >
+                              <Edit className="size-3.5" />
+                            </button>
+                            {adminUsers.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAdmin(admin.id)}
+                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                                title="Delete Administrator"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <button
-                      type="submit"
-                      className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all cursor-pointer"
-                    >
-                      Save Preferences
-                    </button>
-                  </form>
+                  <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+                    <span>Total Active Admins: <strong className="text-slate-800">{adminUsers.filter(a => a.status === "Active").length}</strong></span>
+                    <span className="text-slate-400">Credentials synchronized with MySQL</span>
+                  </div>
                 </div>
 
                 {/* Password / Security */}
@@ -2709,6 +2829,227 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <button
                     type="submit"
                     className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2 px-5 rounded-xl cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD ADMIN MODAL */}
+      {isAddAdminOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative my-8">
+            <button
+              type="button"
+              onClick={() => setIsAddAdminOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="size-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="size-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                <UserPlus className="size-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-[#142d27]">Add New Administrator</h3>
+                <p className="text-xs text-slate-500">Create login credentials for a staff member</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateAdmin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newAdminName}
+                  onChange={(e) => setNewAdminName(e.target.value)}
+                  placeholder="e.g. Kasun Wickremasinghe"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Work Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  placeholder="e.g. kasun@firstcapital.lk"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Initial Password *</label>
+                <input
+                  type="password"
+                  required
+                  minLength={4}
+                  value={newAdminPassword}
+                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                  placeholder="Minimum 4 characters"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Role</label>
+                  <select
+                    value={newAdminRole}
+                    onChange={(e) => setNewAdminRole(e.target.value as AdminUser["role"])}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Super Admin">Super Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Wealth Advisor">Wealth Advisor</option>
+                    <option value="Viewer">Viewer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Account Status</label>
+                  <select
+                    value={newAdminStatus}
+                    onChange={(e) => setNewAdminStatus(e.target.value as "Active" | "Inactive")}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddAdminOpen(false)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer"
+                >
+                  Create Admin Account
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT ADMIN MODAL */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative my-8">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingAdmin(null);
+                setEditAdminPassword("");
+              }}
+              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="size-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="size-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center">
+                <Edit className="size-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-[#142d27]">Edit Administrator</h3>
+                <p className="text-xs text-slate-500 font-mono">{editingAdmin.email}</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateAdmin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingAdmin.name}
+                  onChange={(e) => setEditingAdmin({ ...editingAdmin, name: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Role</label>
+                  <select
+                    value={editingAdmin.role}
+                    onChange={(e) => setEditingAdmin({ ...editingAdmin, role: e.target.value as AdminUser["role"] })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Super Admin">Super Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Wealth Advisor">Wealth Advisor</option>
+                    <option value="Viewer">Viewer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Account Status</label>
+                  <select
+                    value={editingAdmin.status}
+                    onChange={(e) => setEditingAdmin({ ...editingAdmin, status: e.target.value as "Active" | "Inactive" })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Reset Password <span className="text-slate-400 font-normal">(Leave blank to keep existing)</span>
+                </label>
+                <input
+                  type="password"
+                  value={editAdminPassword}
+                  onChange={(e) => setEditAdminPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                {adminUsers.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAdmin(editingAdmin.id)}
+                    className="text-red-600 hover:text-red-800 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Trash2 className="size-3.5" /> Remove Admin
+                  </button>
+                ) : <div />}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingAdmin(null);
+                      setEditAdminPassword("");
+                    }}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer"
                   >
                     Save Changes
                   </button>

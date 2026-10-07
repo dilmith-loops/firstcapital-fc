@@ -84,13 +84,38 @@ export interface TestimonialItem {
   createdAt?: string;
 }
 
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: "Super Admin" | "Manager" | "Wealth Advisor" | "Viewer";
+  status: "Active" | "Inactive";
+  createdAt: string;
+  lastLogin?: string;
+}
+
 const STORAGE_KEY_AUTH = "fc_admin_auth";
+const STORAGE_KEY_CURRENT_ADMIN = "fc_admin_current_user";
+const STORAGE_KEY_ADMIN_USERS = "fc_admin_users";
 const STORAGE_KEY_LEADS = "fc_admin_leads";
 const STORAGE_KEY_PRODUCTS = "fc_admin_products";
 const STORAGE_KEY_SETTINGS = "fc_admin_settings";
 const STORAGE_KEY_LOGS = "fc_admin_logs";
 const STORAGE_KEY_QUESTIONS = "fc_admin_questions";
 const STORAGE_KEY_TESTIMONIALS = "fc_admin_testimonials";
+
+export const DEFAULT_ADMIN_USERS: AdminUser[] = [
+  {
+    id: "admin-1",
+    name: "Executive Administrator",
+    email: "admin@firstcapital.lk",
+    password: "admin123",
+    role: "Super Admin",
+    status: "Active",
+    createdAt: "2026-01-15T09:00:00.000Z",
+  },
+];
 
 export const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
   {
@@ -296,18 +321,43 @@ export const AdminStore = {
     return localStorage.getItem(STORAGE_KEY_AUTH) === "true";
   },
 
+  getCurrentAdmin(): AdminUser | null {
+    if (typeof window === "undefined") return null;
+    const email = localStorage.getItem(STORAGE_KEY_CURRENT_ADMIN);
+    const users = this.getAdminUsers();
+    if (email) {
+      const match = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+      if (match) return match;
+    }
+    return users[0] || null;
+  },
+
   login(email: string, pass: string): boolean {
     if (typeof window === "undefined") return false;
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = pass.trim();
     const settings = this.getSettings();
-    const storedPass = localStorage.getItem("fc_admin_pwd") || "admin123";
+    const storedMasterPass = localStorage.getItem("fc_admin_pwd") || "admin123";
 
-    const isValid =
-      (email.trim().toLowerCase() === settings.adminEmail.toLowerCase() || email.trim().toLowerCase() === "admin@firstcapital.lk" || email.trim().toLowerCase() === "admin") &&
-      (pass === storedPass || pass === "admin123" || pass === "admin");
+    const users = this.getAdminUsers();
+    const matchedUser = users.find(
+      (u) => u.status === "Active" && u.email.toLowerCase() === cleanEmail && (u.password === cleanPass || (!u.password && cleanPass === storedMasterPass))
+    );
 
-    if (isValid) {
+    const isMasterFallback =
+      (cleanEmail === settings.adminEmail.toLowerCase() || cleanEmail === "admin@firstcapital.lk" || cleanEmail === "admin") &&
+      (cleanPass === storedMasterPass || cleanPass === "admin123" || cleanPass === "admin");
+
+    if (matchedUser || isMasterFallback) {
       localStorage.setItem(STORAGE_KEY_AUTH, "true");
-      this.addLog("ADMIN_LOGIN", `Admin user ${email} logged in successfully.`);
+      const loggedEmail = matchedUser ? matchedUser.email : cleanEmail;
+      localStorage.setItem(STORAGE_KEY_CURRENT_ADMIN, loggedEmail);
+
+      if (matchedUser) {
+        this.updateAdminUser(matchedUser.id, { lastLogin: new Date().toISOString() });
+      }
+
+      this.addLog("ADMIN_LOGIN", `Admin user ${loggedEmail} logged in successfully.`);
       notify();
       return true;
     }
@@ -317,15 +367,122 @@ export const AdminStore = {
   logout() {
     if (typeof window === "undefined") return;
     localStorage.removeItem(STORAGE_KEY_AUTH);
+    localStorage.removeItem(STORAGE_KEY_CURRENT_ADMIN);
     this.addLog("ADMIN_LOGOUT", "Admin session ended.");
     notify();
   },
 
-  updatePassword(newPass: string) {
+  updatePassword(newPass: string, adminId?: string) {
     if (typeof window === "undefined") return;
     localStorage.setItem("fc_admin_pwd", newPass);
-    this.addLog("SECURITY_UPDATE", "Admin password changed successfully.");
+    if (adminId) {
+      this.updateAdminUser(adminId, { password: newPass });
+    }
+    this.addLog("SECURITY_UPDATE", "Admin password updated successfully.");
     notify();
+  },
+
+  // Admin Users Management (Live DB sync + Local Storage)
+  getAdminUsers(): AdminUser[] {
+    if (typeof window === "undefined") return DEFAULT_ADMIN_USERS;
+    const data = localStorage.getItem(STORAGE_KEY_ADMIN_USERS);
+    if (!data) {
+      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(DEFAULT_ADMIN_USERS));
+      return DEFAULT_ADMIN_USERS;
+    }
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ADMIN_USERS;
+    } catch {
+      return DEFAULT_ADMIN_USERS;
+    }
+  },
+
+  async fetchAdminUsersFromDb(): Promise<AdminUser[]> {
+    try {
+      const res = await fetch("/api/admin/settings?key=admin_users", { method: "GET" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(json.data));
+          }
+          notify();
+          return json.data;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch admin users from DB:", err);
+    }
+    return this.getAdminUsers();
+  },
+
+  async persistAdminUsersToDb(users: AdminUser[]) {
+    try {
+      await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "admin_users", value: users }),
+      });
+    } catch (err) {
+      console.warn("Could not persist admin users to DB:", err);
+    }
+  },
+
+  addAdminUser(data: { name: string; email: string; password?: string; role: AdminUser["role"]; status?: "Active" | "Inactive" }): AdminUser {
+    const list = this.getAdminUsers();
+    const newId = `admin-${Date.now()}`;
+    const newAdmin: AdminUser = {
+      id: newId,
+      name: data.name.trim(),
+      email: data.email.trim().toLowerCase(),
+      password: data.password || "admin123",
+      role: data.role || "Manager",
+      status: data.status || "Active",
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [...list, newAdmin];
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
+    }
+    this.persistAdminUsersToDb(updated);
+    this.addLog("ADMIN_CREATED", `Added administrator ${newAdmin.name} (${newAdmin.email}) with role ${newAdmin.role}`);
+    notify();
+    return newAdmin;
+  },
+
+  updateAdminUser(id: string, updates: Partial<AdminUser>) {
+    const list = this.getAdminUsers();
+    const updated = list.map((u) => (u.id === id ? { ...u, ...updates } : u));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
+    }
+    this.persistAdminUsersToDb(updated);
+    const target = updated.find((u) => u.id === id);
+    this.addLog("ADMIN_UPDATED", `Updated administrator ${target ? target.name : id}`);
+    notify();
+  },
+
+  deleteAdminUser(id: string): boolean {
+    const list = this.getAdminUsers();
+    const target = list.find((u) => u.id === id);
+    if (!target) return false;
+
+    // Check if this is the only active super admin
+    const activeSuperAdmins = list.filter((u) => u.role === "Super Admin" && u.status === "Active" && u.id !== id);
+    if (target.role === "Super Admin" && activeSuperAdmins.length === 0) {
+      alert("Cannot delete the only active Super Admin account.");
+      return false;
+    }
+
+    const updated = list.filter((u) => u.id !== id);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
+    }
+    this.persistAdminUsersToDb(updated);
+    this.addLog("ADMIN_DELETED", `Removed administrator ${target.name} (${target.email})`);
+    notify();
+    return true;
   },
 
   // Database Status Check

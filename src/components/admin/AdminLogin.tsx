@@ -23,16 +23,10 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
       if (ok) {
         onSuccess();
       } else {
-        setError("Invalid email or password. Please use the demo credentials below.");
+        setError("Invalid email or password. Please verify your credentials or contact an administrator.");
         setLoading(false);
       }
     }, 400);
-  };
-
-  const handleFillDemo = () => {
-    setEmail("admin@firstcapital.lk");
-    setPassword("admin123");
-    setError(null);
   };
 
   return (
@@ -151,31 +145,6 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                 </button>
               </div>
             </form>
-
-            {/* Quick Demo Fill Helper */}
-            <div className="mt-6 pt-6 border-t border-emerald-800/60">
-              <div className="bg-[#0b1a17]/90 rounded-2xl p-4 border border-emerald-800/80 text-center">
-                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#f1c91e] mb-1.5">
-                  <KeyRound className="size-3.5" />
-                  <span>Demo Admin Access</span>
-                </div>
-                <p className="text-[11px] text-emerald-300/80 mb-3">
-                  Click to pre-fill test administrator credentials:
-                </p>
-                <div className="text-[11px] font-mono text-emerald-200 mb-3 bg-emerald-950/60 py-1.5 px-3 rounded-lg border border-emerald-900 flex justify-center gap-3">
-                  <span>admin@firstcapital.lk</span>
-                  <span>/</span>
-                  <span className="text-[#f1c91e]">admin123</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="w-full bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 text-xs font-bold py-2 px-3 rounded-xl border border-emerald-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Sparkles className="size-3 text-[#f1c91e]" /> Auto-Fill Credentials
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </main>
