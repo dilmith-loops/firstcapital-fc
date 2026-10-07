@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lock, Mail, Shield, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, KeyRound, Sparkles } from "lucide-react";
+import { Lock, Mail, Shield, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, KeyRound, Sparkles, Eye, EyeOff } from "lucide-react";
 import logoImg from "@/assets/first-capital-logo.png";
 import { AdminStore } from "@/lib/admin-store";
 
@@ -10,6 +10,7 @@ interface AdminLoginProps {
 export function AdminLogin({ onSuccess }: AdminLoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -132,13 +133,22 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                     <Lock className="size-4" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
+                    className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl pl-10 pr-11 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-emerald-400/80 hover:text-[#f1c91e] transition-colors cursor-pointer"
+                    title={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
                 </div>
               </div>
 

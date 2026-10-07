@@ -26,6 +26,7 @@ import {
   Search,
   Filter,
   Eye,
+  EyeOff,
   Trash2,
   Edit,
   CheckCircle2,
@@ -133,6 +134,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Settings form states
   const [newPassword, setNewPassword] = useState("");
+  const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [settingsSuccess, setSettingsSuccess] = useState(false);
 
@@ -143,9 +145,11 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [showNewAdminPassword, setShowNewAdminPassword] = useState(false);
   const [newAdminRole, setNewAdminRole] = useState<AdminUser["role"]>("Manager");
   const [newAdminStatus, setNewAdminStatus] = useState<"Active" | "Inactive">("Active");
   const [editAdminPassword, setEditAdminPassword] = useState("");
+  const [showEditAdminPassword, setShowEditAdminPassword] = useState(false);
 
   // Notification toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -1778,14 +1782,25 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">New Password</label>
-                      <input
-                        type="password"
-                        required
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new admin password"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showSettingsPassword ? "text" : "password"}
+                          required
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new admin password"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSettingsPassword(!showSettingsPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+                          title={showSettingsPassword ? "Hide password" : "Show password"}
+                          aria-label={showSettingsPassword ? "Hide password" : "Show password"}
+                        >
+                          {showSettingsPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                        </button>
+                      </div>
                     </div>
 
                     <button
@@ -2901,15 +2916,26 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Initial Password *</label>
-                <input
-                  type="password"
-                  required
-                  minLength={4}
-                  value={newAdminPassword}
-                  onChange={(e) => setNewAdminPassword(e.target.value)}
-                  placeholder="Minimum 4 characters"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewAdminPassword ? "text" : "password"}
+                    required
+                    minLength={4}
+                    value={newAdminPassword}
+                    onChange={(e) => setNewAdminPassword(e.target.value)}
+                    placeholder="Minimum 4 characters"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+                    title={showNewAdminPassword ? "Hide password" : "Show password"}
+                    aria-label={showNewAdminPassword ? "Hide password" : "Show password"}
+                  >
+                    {showNewAdminPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -3029,13 +3055,24 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Reset Password <span className="text-slate-400 font-normal">(Leave blank to keep existing)</span>
                 </label>
-                <input
-                  type="password"
-                  value={editAdminPassword}
-                  onChange={(e) => setEditAdminPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
-                />
+                <div className="relative">
+                  <input
+                    type={showEditAdminPassword ? "text" : "password"}
+                    value={editAdminPassword}
+                    onChange={(e) => setEditAdminPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEditAdminPassword(!showEditAdminPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+                    title={showEditAdminPassword ? "Hide password" : "Show password"}
+                    aria-label={showEditAdminPassword ? "Hide password" : "Show password"}
+                  >
+                    {showEditAdminPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
