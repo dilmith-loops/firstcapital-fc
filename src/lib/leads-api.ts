@@ -1,3 +1,5 @@
+import { getApiUrl } from "./api-url";
+
 export interface CreateLeadData {
   name: string;
   email: string;
@@ -24,7 +26,7 @@ export interface UpdateLeadResultData {
 
 export async function submitLeadDetails(data: CreateLeadData): Promise<number | null> {
   try {
-    const res = await fetch("/api/leads", {
+    const res = await fetch(getApiUrl("api/leads"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -45,7 +47,7 @@ export async function submitLeadDetails(data: CreateLeadData): Promise<number | 
 
 export async function submitQuizResult(data: UpdateLeadResultData): Promise<boolean> {
   try {
-    const res = await fetch("/api/leads/result", {
+    const res = await fetch(getApiUrl("api/leads/result"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

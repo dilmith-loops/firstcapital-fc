@@ -1547,6 +1547,7 @@ async function exportStatic() {
 
     // Generate individual share pages for social media cards (default, male, female)
     ['', '-male', '-female'].forEach(variant => {
+      const pageFile = `${p.slug}${variant}.html`;
       const cardFile = variant ? `share-${p.slug}${variant}.jpg` : `share-${p.slug}.jpg`;
       const cleanName = p.name.replace(/^The\s+/, '');
       const sharePageHtml = `<!DOCTYPE html>
@@ -2107,10 +2108,24 @@ ${compiledCssContent}
   }
   console.log('Admin Portal successfully built into firstcapitalpages/admin/index.html');
 
+  // Copy logo and favicon to admin directory directly
+  if (fs.existsSync('public/first-capital-logo.png')) {
+    fs.copyFileSync('public/first-capital-logo.png', path.join(adminOutDir, 'first-capital-logo.png'));
+  }
+  if (fs.existsSync('public/favicon.png')) {
+    fs.copyFileSync('public/favicon.png', path.join(adminOutDir, 'favicon.png'));
+  }
+
   // Copy all assets from admin/assets into main assets/ so ANY relative or root request resolves
   const adminAssetsDir = path.join(adminOutDir, 'assets');
   const mainAssetsDir = path.join(outDir, 'assets');
   if (fs.existsSync(adminAssetsDir)) {
+    if (fs.existsSync('public/first-capital-logo.png')) {
+      fs.copyFileSync('public/first-capital-logo.png', path.join(adminAssetsDir, 'first-capital-logo.png'));
+    }
+    if (fs.existsSync('public/favicon.png')) {
+      fs.copyFileSync('public/favicon.png', path.join(adminAssetsDir, 'favicon.png'));
+    }
     const adminAssets = fs.readdirSync(adminAssetsDir);
     for (const f of adminAssets) {
       fs.copyFileSync(path.join(adminAssetsDir, f), path.join(mainAssetsDir, f));

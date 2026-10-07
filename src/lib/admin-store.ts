@@ -1,4 +1,5 @@
 import { ProfileKey, PROFILES } from "@/components/quiz/QuizFlow";
+import { getApiUrl } from "./api-url";
 
 export type LeadStatus = "NEW" | "CONTACTED" | "IN_PROGRESS" | "CONVERTED" | "CLOSED";
 
@@ -400,7 +401,7 @@ export const AdminStore = {
 
   async fetchAdminUsersFromDb(): Promise<AdminUser[]> {
     try {
-      const res = await fetch("/api/admin/settings?key=admin_users", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/settings?key=admin_users"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -419,7 +420,7 @@ export const AdminStore = {
 
   async persistAdminUsersToDb(users: AdminUser[]) {
     try {
-      await fetch("/api/admin/settings", {
+      await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "admin_users", value: users }),
@@ -488,7 +489,7 @@ export const AdminStore = {
   // Database Status Check
   async checkDbStatus(): Promise<DbStatusInfo> {
     try {
-      const res = await fetch("/api/admin/status", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/status"), { method: "GET" });
       if (res.ok) {
         const data = await res.json();
         return data;
@@ -531,7 +532,7 @@ export const AdminStore = {
 
   async fetchLeadsFromDb(): Promise<QuizLead[]> {
     try {
-      const res = await fetch("/api/admin/leads", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/leads"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.leads)) {
@@ -580,7 +581,7 @@ export const AdminStore = {
     // Persist to MySQL Backend API if not already persisted with dbId
     if (!lead.dbId) {
       try {
-        const res = await fetch("/api/admin/leads/create", {
+        const res = await fetch(getApiUrl("api/admin/leads/create"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -641,7 +642,7 @@ export const AdminStore = {
 
     // Persist to MySQL Backend API
     try {
-      await fetch("/api/admin/leads/update", {
+      await fetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status, notes }),
@@ -662,7 +663,7 @@ export const AdminStore = {
 
     // Persist to MySQL Backend API
     try {
-      await fetch("/api/admin/leads/update", {
+      await fetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: updates.status, notes: updates.notes }),
@@ -683,7 +684,7 @@ export const AdminStore = {
 
     // Delete in MySQL Backend API
     try {
-      await fetch("/api/admin/leads/delete", {
+      await fetch(getApiUrl("api/admin/leads/delete"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -716,7 +717,7 @@ export const AdminStore = {
 
   async fetchProductsFromDb(): Promise<InvestmentProduct[]> {
     try {
-      const res = await fetch("/api/admin/settings?key=investment_products", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/settings?key=investment_products"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -735,7 +736,7 @@ export const AdminStore = {
 
   async persistProductsToDb(products: InvestmentProduct[]) {
     try {
-      await fetch("/api/admin/settings", {
+      await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "investment_products", value: products }),
@@ -931,7 +932,7 @@ export const AdminStore = {
 
   async fetchQuestionsFromDb(): Promise<QuestionItem[]> {
     try {
-      const res = await fetch("/api/admin/settings?key=quiz_questions", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/settings?key=quiz_questions"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -950,7 +951,7 @@ export const AdminStore = {
 
   async persistQuestionsToDb(questions: QuestionItem[]) {
     try {
-      await fetch("/api/admin/settings", {
+      await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "quiz_questions", value: questions }),
@@ -1028,7 +1029,7 @@ export const AdminStore = {
 
   async fetchTestimonialsFromDb(): Promise<TestimonialItem[]> {
     try {
-      const res = await fetch("/api/admin/settings?key=testimonials", { method: "GET" });
+      const res = await fetch(getApiUrl("api/admin/settings?key=testimonials"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -1047,7 +1048,7 @@ export const AdminStore = {
 
   async persistTestimonialsToDb(testimonials: TestimonialItem[]) {
     try {
-      await fetch("/api/admin/settings", {
+      await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "testimonials", value: testimonials }),

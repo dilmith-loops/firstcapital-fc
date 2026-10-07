@@ -1392,12 +1392,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = './share-' + slug + '-' + gender + '.jpg';
     var pathname = window.location.pathname;
-    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/firstcapitalpages/';
+    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/firstcapitalpages/';
     var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
     var shareUrl = (!isLocal && window.location.origin)
-      ? (window.location.origin + basePath + slug + '-' + gender + '.html?v=fc3')
-      : ('https://ai.loopsintegrated.co/fc/firstcapitalpages/' + slug + '-' + gender + '.html?v=fc3');
-    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor type here:\n" + shareUrl;
+      ? (window.location.origin + basePath + slug + '-' + gender + '.html')
+      : ('https://ai.loopsintegrated.co/firstcapitalpages/' + slug + '-' + gender + '.html');
+    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;

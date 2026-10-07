@@ -5,7 +5,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'u451149423_firstcapital');     // Hostinger DB name
 define('DB_USER', 'u451149423_firstcapital');     // Hostinger DB user
-define('DB_PASS', 'qR!5MoFqCl');                 // Hostinger DB password
+define('DB_PASS', '3Sr>26Wr');                 // Hostinger DB password
 
 function getDbConnection() {
     static $pdo = null;
