@@ -2142,7 +2142,7 @@ ${compiledCssContent}
     ],
     build: {
       outDir: adminOutDir,
-      emptyOutDir: false,
+      emptyOutDir: true,
       rollupOptions: {
         input: {
           index: path.resolve('admin.html')
@@ -2175,6 +2175,14 @@ ${compiledCssContent}
     }
     if (fs.existsSync('public/favicon.png')) {
       fs.copyFileSync('public/favicon.png', path.join(adminAssetsDir, 'favicon.png'));
+    }
+    // Clean old index-*.js and index-*.css from main assets directory
+    if (fs.existsSync(mainAssetsDir)) {
+      for (const f of fs.readdirSync(mainAssetsDir)) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css'))) {
+          fs.unlinkSync(path.join(mainAssetsDir, f));
+        }
+      }
     }
     const adminAssets = fs.readdirSync(adminAssetsDir);
     for (const f of adminAssets) {
