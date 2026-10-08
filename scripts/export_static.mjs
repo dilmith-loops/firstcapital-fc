@@ -247,7 +247,7 @@ const quizModalHtmlAndScript = `
           <div class="flex flex-col space-y-2.5 w-full max-w-[225px] lg:max-w-[245px] mx-auto md:mx-0">
             <!-- Character Image Card (Border snugly fits the image) -->
             <div class="w-full rounded-2xl sm:rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm bg-white">
-              <img id="fck-res-avatar" src="" alt="Investor Personality" class="w-full h-auto block object-cover transition-transform duration-300 hover:scale-[1.02]" />
+              <img id="fck-res-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="Investor Personality" class="w-full h-auto block object-cover transition-transform duration-300 hover:scale-[1.02]" />
             </div>
 
             <!-- Disclaimer Section - Under the image on desktop -->
@@ -546,7 +546,7 @@ const quizModalHtmlAndScript = `
             <div class="rounded-xl overflow-hidden shadow-xs bg-white">
               <img
                 id="fck-share-card-img"
-                src=""
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"
                 alt="Investor Type Share Card"
                 class="w-full h-auto object-cover block"
               />
@@ -1907,11 +1907,14 @@ ${compiledCssContent}
         var img = e.target;
         if (!img.dataset.fckRetried) {
           img.dataset.fckRetried = '1';
-          var s = img.getAttribute('src') || '';
+          var s = (img.getAttribute('src') || '').trim();
+          if (!s || s === '#' || s === './' || s === '/' || s.indexOf('data:') === 0) return;
+          var cleanPath = s.split('?')[0];
+          var filename = cleanPath.split('/').pop();
+          if (!filename) return;
           if (s.indexOf('assets/') !== -1) {
-            img.src = '${prefix}' + s.split('assets/').pop();
+            img.src = '${prefix}' + filename;
           } else {
-            var filename = s.split('/').pop().split('?')[0];
             img.src = '${prefix}assets/' + filename;
           }
         }
