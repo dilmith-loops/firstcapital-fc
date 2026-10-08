@@ -68,17 +68,19 @@ export function TestimonialSlider() {
                 type="button"
                 aria-label="Previous testimonial"
                 onClick={() => go(-1)}
-                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c]/20 bg-white text-[#1a214c] hover:bg-[#1a214c] hover:text-[#f1ca1f] transition-all cursor-pointer shadow-xs"
+                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c] bg-[#1a214c] text-white hover:bg-[#252f6b] transition-all cursor-pointer shadow-xs active:scale-95"
+                style={{ backgroundColor: "#1a214c", color: "#ffffff", borderColor: "#1a214c" }}
               >
-                <ChevronLeft className="size-5" />
+                <ChevronLeft className="size-5 text-white" strokeWidth={2.5} style={{ color: "#ffffff", stroke: "#ffffff" }} />
               </button>
               <button
                 type="button"
                 aria-label="Next testimonial"
                 onClick={() => go(1)}
-                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c]/20 bg-white text-[#1a214c] hover:bg-[#1a214c] hover:text-[#f1ca1f] transition-all cursor-pointer shadow-xs"
+                className="slider-nav inline-flex size-10 items-center justify-center rounded-lg border border-[#1a214c] bg-[#1a214c] text-white hover:bg-[#252f6b] transition-all cursor-pointer shadow-xs active:scale-95"
+                style={{ backgroundColor: "#1a214c", color: "#ffffff", borderColor: "#1a214c" }}
               >
-                <ChevronRight className="size-5" />
+                <ChevronRight className="size-5 text-white" strokeWidth={2.5} style={{ color: "#ffffff", stroke: "#ffffff" }} />
               </button>
             </div>
           )}

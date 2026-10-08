@@ -1534,6 +1534,9 @@ async function exportStatic() {
 .border-fck-navy, [class*="border-[#1a214c]"] { border-color: #1a214c !important; }
 .text-fck-forest, [class*="text-[#142d27]"] { color: #142d27 !important; }
 .bg-fck-forest, [class*="bg-[#142d27]"] { background-color: #142d27 !important; }
+.slider-nav { background-color: #1a214c !important; color: #ffffff !important; border-color: #1a214c !important; }
+.slider-nav svg { color: #ffffff !important; stroke: #ffffff !important; }
+.slider-nav:hover { background-color: #252f6b !important; color: #ffffff !important; }
 `;
   compiledCssContent += '\n' + brandUtilities;
 
