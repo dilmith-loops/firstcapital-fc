@@ -1,6 +1,53 @@
-DirectoryIndex firstcapitalpages/index.html index.html index.php
-
+# Apache / LiteSpeed configuration for Hostinger /fc/
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteRule ^$ firstcapitalpages/ [L,R=302]
+  RewriteBase /fc/
+  DirectoryIndex index.html index.php
+
+  # 1. Enforce trailing slash for subdirectories
+  RewriteRule ^admin$ admin/ [R=301,L]
+  RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
+  RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
+
+  # 2. Serve existing files and directories directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^assets/(.+)$ $1 [L]
+
+  # 3b. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^([^/]+\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
+
+  # 4. Do NOT rewrite backend scripts
+  RewriteRule \.(php|json)$ - [L]
+
+  # 5. Clean routing for subpages
+  RewriteRule ^admin/?$ admin/index.html [L]
+  RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
+
+  # 6. Route personality share links cleanly
+  RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
+
+  # 7. Fallback if index.html is in firstcapitalpages/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^$ firstcapitalpages/index.html [L]
+</IfModule>
+
+# Enable Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# Cache headers for static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
 </IfModule>

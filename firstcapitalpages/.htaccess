@@ -1,7 +1,6 @@
 # Apache / LiteSpeed configuration for Hostinger subfolder
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /firstcapitalpages/
   DirectoryIndex index.html
 
   # 1. Serve existing files and directories directly

@@ -1346,11 +1346,11 @@ const quizModalHtmlAndScript = `
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
     var pathname = window.location.pathname;
-    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/firstcapitalpages/';
+    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
     var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
     var shareUrl = (!isLocal && window.location.origin)
       ? (window.location.origin + basePath + slug + '-' + gender + '.html')
-      : ('https://ai.loopsintegrated.co/firstcapitalpages/' + slug + '-' + gender + '.html');
+      : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
 
     if (shareCardImg) {
@@ -1391,11 +1391,11 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var pathname = window.location.pathname;
-      var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/firstcapitalpages/';
+      var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
       var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
       var shareUrl = (!isLocal && window.location.origin)
         ? (window.location.origin + basePath + slug + '-' + gender + '.html')
-        : ('https://ai.loopsintegrated.co/firstcapitalpages/' + slug + '-' + gender + '.html');
+        : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).then(function() {
@@ -1562,11 +1562,11 @@ async function exportStatic() {
   <!-- Open Graph / WhatsApp / Facebook -->
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/firstcapitalpages/${pageFile}" />
+  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${pageFile}" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality with First Capital: ${p.name} - &quot;${p.vibe}&quot;. Find your investor type here!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/firstcapitalpages/assets/${cardFile}" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/firstcapitalpages/assets/${cardFile}" />
+  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
+  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -1575,15 +1575,15 @@ async function exportStatic() {
   <!-- Schema.org / WhatsApp fallback -->
   <meta itemprop="name" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta itemprop="description" content="I just discovered my investor personality with First Capital: ${p.name}. Find your investor type here!" />
-  <meta itemprop="image" content="https://ai.loopsintegrated.co/firstcapitalpages/assets/${cardFile}" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/firstcapitalpages/assets/${cardFile}" />
+  <meta itemprop="image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/firstcapitalpages/${pageFile}" />
+  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${pageFile}" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${p.name}. What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/firstcapitalpages/assets/${cardFile}" />
+  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./assets/${cardFile}" />
@@ -1899,7 +1899,7 @@ ${compiledCssContent}
   </style>
   <link rel="stylesheet" href="${prefix}assets/styles.css" />
   <link rel="stylesheet" href="${prefix}styles.css" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/firstcapitalpages/assets/og-image.jpg" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/assets/og-image.jpg" />
   <script>
     // Universal image recovery: seamlessly switches between ./assets/ and ./ if hosting folder is flattened
     document.addEventListener('error', function(e) {
@@ -1919,7 +1919,8 @@ ${compiledCssContent}
     }, true);
   </script>`;
     html = html.replace('</head>', `${cssTag}\n</head>`);
-    html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/firstcapitalpages/assets/og-image.jpg');
+    html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
+    html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/firstcapitalpages\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
 
     // Fix image paths robustly (use direct prefix paths matching uploaded files with cache busting)
     html = html.replace(/src="[^"]*first-capital-logo\.png[^"]*"/gi, `src="${prefix}first-capital-logo.png?v=1"`);
@@ -2019,11 +2020,11 @@ ${compiledCssContent}
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/firstcapitalpages/${v.urlSlug}.html" />
+  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/firstcapitalpages/${v.card}" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/firstcapitalpages/${v.card}" />
+  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}" />
+  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2031,11 +2032,11 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/firstcapitalpages/${v.urlSlug}.html" />
+  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/firstcapitalpages/${v.card}" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/firstcapitalpages/${v.card}" />
+  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./${v.card}" />
@@ -2139,7 +2140,6 @@ ${compiledCssContent}
   const htaccess = `# Apache / LiteSpeed configuration for Hostinger subfolder
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /firstcapitalpages/
   DirectoryIndex index.html
 
   # 1. Serve existing files and directories directly
@@ -2188,6 +2188,33 @@ ${compiledCssContent}
 `;
   fs.writeFileSync(path.join(outDir, '.htaccess'), htaccess, 'utf-8');
   console.log('Generated firstcapitalpages/.htaccess');
+
+  // Also sync key static pages and folders to root so hosting in /fc/ serves directly from root
+  try {
+    fs.copyFileSync(path.join(outDir, 'index.html'), path.resolve('index.html'));
+    if (fs.existsSync(path.join(outDir, 'styles.css'))) {
+      fs.copyFileSync(path.join(outDir, 'styles.css'), path.resolve('styles.css'));
+    }
+    const copyRecursive = (src, dest) => {
+      if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+      for (const item of fs.readdirSync(src)) {
+        const s = path.join(src, item);
+        const d = path.join(dest, item);
+        if (fs.statSync(s).isDirectory()) {
+          copyRecursive(s, d);
+        } else {
+          fs.copyFileSync(s, d);
+        }
+      }
+    };
+    copyRecursive(path.join(outDir, 'design-option-2'), path.resolve('design-option-2'));
+    copyRecursive(path.join(outDir, 'admin'), path.resolve('admin'));
+    copyRecursive(path.join(outDir, 'assets'), path.resolve('assets'));
+    copyRecursive(path.join(outDir, 'api'), path.resolve('api'));
+    console.log('Synchronized static bundles to root for instant /fc/ hosting.');
+  } catch (syncErr) {
+    console.log('Note on root sync:', syncErr.message);
+  }
 
   try {
     const { execSync } = await import('node:child_process');

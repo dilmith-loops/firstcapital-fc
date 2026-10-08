@@ -46,8 +46,8 @@ export const Route = createFileRoute("/design-option-2")({
       { property: "og:title", content: "Investor Week: Comic Design | First Capital" },
       { property: "og:description", content: "A bold second design option for discovering your investor personality and investment match." },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://ai.loopsintegrated.co/firstcapitalpages/assets/og-image.jpg" },
-      { property: "og:image:secure_url", content: "https://ai.loopsintegrated.co/firstcapitalpages/assets/og-image.jpg" },
+      { property: "og:image", content: "https://ai.loopsintegrated.co/fc/assets/og-image.jpg" },
+      { property: "og:image:secure_url", content: "https://ai.loopsintegrated.co/fc/assets/og-image.jpg" },
       { property: "og:image:type", content: "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/design-option-2")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Investor Week: Comic Design | First Capital" },
       { name: "twitter:description", content: "Explore First Capital Investor Week through a bold, comic-inspired second design direction." },
-      { name: "twitter:image", content: "https://ai.loopsintegrated.co/firstcapitalpages/assets/og-image.jpg" },
+      { name: "twitter:image", content: "https://ai.loopsintegrated.co/fc/assets/og-image.jpg" },
     ],
   }),
   component: DesignOptionTwo,
@@ -172,8 +172,8 @@ const reasons = [
   { icon: BookOpen, title: "Gain Research Insights and Education", copy: "Access market insights, research and educational content to invest with confidence." },
 ];
 
-function SectionLabel({ children }: { children: string }) {
-  return <p className="mb-4 text-xs font-extrabold uppercase text-muted-foreground">{children}</p>;
+function SectionLabel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <p className={`mb-4 text-xs font-extrabold uppercase ${className || "text-muted-foreground"}`}>{children}</p>;
 }
 
 function DesignOptionTwo() {
@@ -422,7 +422,6 @@ function DesignOptionTwo() {
                       </div>
                       <div>
                         <p className="text-xs font-bold text-foreground">{activeOption.video.title}</p>
-                        <p className="text-[10px] text-muted-foreground">Quick video explanation ({activeOption.video.platform})</p>
                       </div>
                     </div>
                     <a
@@ -494,7 +493,7 @@ function DesignOptionTwo() {
           <div className="absolute -right-20 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full border-[48px] border-primary/20" />
           <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <SectionLabel>Become an investor today!</SectionLabel>
+              <SectionLabel className="text-slate-300">Become an investor today!</SectionLabel>
               <h2 className="max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl">
                 Ready to take the next step and become an investor?
               </h2>

@@ -16,7 +16,7 @@ export function getApiUrl(endpoint: string): string {
     } else {
       const parts = pathname.split("/").filter(Boolean);
       if (parts.length > 0 && parts[0] === "fc") {
-        base = "/fc/firstcapitalpages/";
+        base = "/fc/";
       }
     }
   }

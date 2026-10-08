@@ -16,6 +16,11 @@ dist-ssr
 .nitro
 *.local
 
+# Environment & Secrets (Keep .env ignored for public repository security)
+.env
+.env.*
+!.env.example
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
@@ -31,3 +36,4 @@ dist-ssr
 *.sln
 *.sw?
 *.zip
+firstcapitalpages.zip
