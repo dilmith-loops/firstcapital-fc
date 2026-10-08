@@ -215,9 +215,9 @@ function Index() {
                 <Button
                   id="btn-find-investor-type"
                   onClick={() => setIsQuizOpen(true)}
-                  className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm"
+                  className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
                 >
-                  <span>Find my investor personality</span>
+                  <span>FIND MY INVESTOR PERSONALITY</span>
                   <ArrowRight className="size-5 stroke-[2.5]" />
                 </Button>
               </div>

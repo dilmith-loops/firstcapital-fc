@@ -216,9 +216,9 @@ function DesignOptionTwo() {
                 <Button
                   id="btn-find-investor-type"
                   onClick={() => setIsQuizOpen(true)}
-                  className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all"
+                  className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all uppercase"
                 >
-                  <span>Find my investor personality</span>
+                  <span>FIND MY INVESTOR PERSONALITY</span>
                   <ArrowRight className="size-5 stroke-[2.5]" />
                 </Button>
               </div>
