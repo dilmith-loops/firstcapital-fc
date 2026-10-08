@@ -2242,6 +2242,15 @@ ${compiledCssContent}
   fs.writeFileSync(path.join(outDir, '.htaccess'), htaccess, 'utf-8');
   console.log('Generated firstcapitalpages/.htaccess');
 
+  // Copy .env and .env.example with sample values to production outDir
+  if (fs.existsSync('.env.example')) {
+    fs.copyFileSync('.env.example', path.join(outDir, '.env.example'));
+  }
+  if (fs.existsSync('.env')) {
+    fs.copyFileSync('.env', path.join(outDir, '.env'));
+  }
+
+
   // Also sync key static pages and folders to root so hosting in /fc/ serves directly from root
   try {
     fs.copyFileSync(path.join(outDir, 'index.html'), path.resolve('index.html'));
