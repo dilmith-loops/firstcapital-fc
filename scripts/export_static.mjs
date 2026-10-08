@@ -1554,8 +1554,6 @@ async function exportStatic() {
   };
 
   copyDual('public/__l5e/assets-v1/4127bce6-999f-469c-8a68-01a4dc912fc9/first-capital-logo.png', 'first-capital-logo.png');
-  copyDual('public/male.png', 'male.png');
-  copyDual('public/female.png', 'female.png');
   copyDual('src/assets/investors.png', 'investors.png');
   copyDual('src/assets/investors.png', 'FCmain.png');
   copyDual('src/assets/investor-personalities.jpg', 'investor-personalities.jpg');
