@@ -1073,23 +1073,33 @@ export function QuizFlow({
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
                   Available Fund Types:
                 </h4>
-                <div className="grid gap-2.5 sm:grid-cols-3">
+                <div className="grid gap-3.5 sm:grid-cols-3">
                   {OPTION_DETAILS[selectedProductModal].products.map((p) => {
                     const PIcon = p.icon;
                     const isMatch = resultProfile.product.toLowerCase().includes(p.title.toLowerCase().replace(" fund", ""));
                     return (
                       <div
                         key={p.title}
-                        className={`border rounded-xl p-3 flex items-center gap-2.5 transition-all ${
+                        className={`border rounded-2xl p-4 flex flex-col justify-between transition-all ${
                           isMatch
-                            ? "border-amber-400 bg-amber-50/70 ring-2 ring-amber-300/40 shadow-xs"
-                            : "border-slate-200 bg-slate-50/50 hover:bg-white"
+                            ? "border-amber-400 bg-amber-50/50 ring-2 ring-amber-300/40 shadow-xs"
+                            : "border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-xs"
                         }`}
                       >
-                        <div className="size-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shrink-0">
-                          <PIcon className="size-4 text-[#1a214c]" />
+                        <div>
+                          <div className="size-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs">
+                            <PIcon className="size-5 text-[#1a214c]" />
+                          </div>
+                          <h5 className="mt-3 text-base font-extrabold text-[#1a214c]">{p.title}</h5>
+                          <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{p.copy}</p>
                         </div>
-                        <h5 className="text-xs sm:text-sm font-bold text-[#1a214c] leading-snug">{p.title}</h5>
+                        <div className="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-slate-200/60">
+                          {p.tags.map((t) => (
+                            <span key={t} className="border border-slate-200 bg-white rounded-md px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     );
                   })}

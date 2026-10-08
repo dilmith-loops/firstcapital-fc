@@ -401,7 +401,7 @@ const quizModalHtmlAndScript = `
           <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500">
             Available Fund Types:
           </h4>
-          <div id="fck-prod-funds-grid" class="grid gap-2.5 sm:grid-cols-3">
+          <div id="fck-prod-funds-grid" class="grid gap-3.5 sm:grid-cols-3">
             <!-- Populated via JS -->
           </div>
         </div>
@@ -1033,12 +1033,21 @@ const quizModalHtmlAndScript = `
       data.products.forEach(function(p) {
         var isMatch = prof && prof.product && prof.product.toLowerCase().includes(p.title.toLowerCase().replace(' fund', ''));
         var card = document.createElement('div');
-        card.className = 'border rounded-xl p-3 flex items-center gap-2.5 transition-all ' +
+        card.className = 'border rounded-2xl p-4 flex flex-col justify-between transition-all ' +
           (isMatch
-            ? 'border-amber-400 bg-amber-50/70 ring-2 ring-amber-300/40 shadow-xs'
-            : 'border-slate-200 bg-slate-50/50 hover:bg-white');
-        card.innerHTML = '<div class="size-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shrink-0">' + p.icon + '</div>' +
-          '<h5 class="text-xs sm:text-sm font-bold text-[#1a214c] leading-snug">' + p.title + '</h5>';
+            ? 'border-amber-400 bg-amber-50/50 ring-2 ring-amber-300/40 shadow-xs'
+            : 'border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-xs');
+        
+        var tagsHtml = p.tags.map(function(t) {
+          return '<span class="border border-slate-200 bg-white rounded-md px-2 py-0.5 text-[10px] font-bold text-slate-600">' + t + '</span>';
+        }).join('');
+
+        card.innerHTML = '<div>' +
+          '<div class="size-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs">' + p.icon + '</div>' +
+          '<h5 class="mt-3 text-base font-extrabold text-[#1a214c]">' + p.title + '</h5>' +
+          '<p class="mt-1.5 text-xs leading-relaxed text-slate-600">' + p.copy + '</p>' +
+          '</div>' +
+          '<div class="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-slate-200/60">' + tagsHtml + '</div>';
         fundsGrid.appendChild(card);
       });
     } else if (fundsSec) {
@@ -1712,9 +1721,9 @@ const optionModalHtmlAndScript = `
 
 <script>
 (function() {
-  var iconDollar = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
-  var iconShield = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
-  var iconChart = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>';
+  var iconDollar = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
+  var iconShield = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
+  var iconChart = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>';
 
   var optionsData = {
     'unit-trust': {
@@ -1724,15 +1733,21 @@ const optionModalHtmlAndScript = `
       products: [
         {
           icon: iconDollar,
-          title: 'First Capital Money Market Fund'
+          title: 'Money Market Fund',
+          copy: 'For investors who want to keep their money accessible while putting it to work.',
+          tags: ['Short-term', 'Relatively lower risk', 'Withdraw anytime', 'Start with LKR 1,000']
         },
         {
           icon: iconShield,
-          title: 'First Capital Fixed Income Fund'
+          title: 'Fixed Income Fund',
+          copy: 'For investors looking for relatively stable returns while keeping access to their money.',
+          tags: ['Medium to long term', 'Relatively stable returns', 'Access anytime', 'Start with LKR 1,000']
         },
         {
           icon: iconChart,
-          title: 'First Capital Equity Fund'
+          title: 'Equity Fund',
+          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.',
+          tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000']
         }
       ],
       video: {
@@ -1797,12 +1812,19 @@ const optionModalHtmlAndScript = `
     if (data.products) {
       html += '<div class="space-y-3">' +
         '<h4 class="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">Available Fund Types:</h4>' +
-        '<div class="grid gap-2.5 sm:grid-cols-3">';
+        '<div class="grid gap-3 sm:grid-cols-3">';
       data.products.forEach(function(p) {
-        html += '<div class="border border-border bg-card p-3 sm:p-3.5 flex items-center gap-2.5 sm:gap-3">' +
-          p.icon +
-          '<h5 class="text-xs sm:text-sm font-extrabold leading-snug text-[#1a214c]">' + p.title + '</h5>' +
-        '</div>';
+        html += '<div class="border border-border bg-card p-4 flex flex-col justify-between">' +
+          '<div>' +
+            p.icon +
+            '<h5 class="mt-3 text-base font-extrabold">' + p.title + '</h5>' +
+            '<p class="mt-2 text-xs leading-5 text-muted-foreground">' + p.copy + '</p>' +
+          '</div>' +
+          '<div class="mt-4 flex flex-wrap gap-1">';
+        p.tags.forEach(function(t) {
+          html += '<span class="border border-border bg-secondary px-1.5 py-0.5 text-[9px] font-bold">' + t + '</span>';
+        });
+        html += '</div></div>';
       });
       html += '</div></div>';
     }

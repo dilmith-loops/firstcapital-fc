@@ -346,13 +346,25 @@ function Index() {
                 {activeOption.products && (
                   <div className="space-y-3">
                     <h4 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">Available Fund Types:</h4>
-                    <div className="grid gap-2.5 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-3">
                       {activeOption.products.map((p) => {
                         const PIcon = p.icon;
                         return (
-                          <div key={p.title} className="border border-border bg-card p-3 sm:p-3.5 flex items-center gap-2.5 sm:gap-3">
-                            <PIcon className="size-5 text-primary shrink-0" />
-                            <h5 className="text-xs sm:text-sm font-extrabold leading-snug text-[#1a214c]">{p.title}</h5>
+                          <div key={p.title} className="border border-border bg-card p-4 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center gap-2.5">
+                                <PIcon className="size-5 text-primary shrink-0" />
+                                <h5 className="text-sm sm:text-base font-extrabold leading-snug">{p.title}</h5>
+                              </div>
+                              <p className="mt-2 text-xs leading-5 text-muted-foreground">{p.copy}</p>
+                            </div>
+                            <div className="mt-4 flex flex-wrap gap-1">
+                              {p.tags.map((t) => (
+                                <span key={t} className="border border-border bg-secondary px-1.5 py-0.5 text-[9px] font-bold">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         );
                       })}
