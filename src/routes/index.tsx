@@ -436,14 +436,14 @@ function Index() {
 
                 {/* CTAs inside dialog */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button asChild size="default" className="flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold">
-                    <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
-                      <span>I would like to create my account</span> <ArrowRight className="size-4 shrink-0" />
+                  <Button asChild size="default" className="flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                    <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                      <span style={{ color: "#142d27" }}>I would like to create my account</span> <ArrowRight className="size-4 shrink-0" style={{ color: "#142d27" }} />
                     </a>
                   </Button>
-                  <Button asChild size="default" className="flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border border-[#1a214c] font-bold">
-                    <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
-                      <span>I would like to speak to someone first</span>
+                  <Button asChild size="default" className="flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border border-[#1a214c] font-bold" style={{ backgroundColor: "#1a214c", color: "#ffffff", borderColor: "#1a214c" }}>
+                    <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap" style={{ backgroundColor: "#1a214c", color: "#ffffff" }}>
+                      <span style={{ color: "#ffffff" }}>I would like to speak to someone first</span>
                     </a>
                   </Button>
                 </div>
@@ -498,16 +498,16 @@ function Index() {
               </h2>
             </div>
             <div className="flex flex-col items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              <Button asChild size="lg" className="w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold">
-                <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
-                  <span>I would like to create my account</span>
-                  <ArrowRight className="size-4.5 shrink-0" />
+              <Button asChild size="lg" className="w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold shadow-md" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                  <span style={{ color: "#142d27" }}>I would like to create my account</span>
+                  <ArrowRight className="size-4.5 shrink-0" style={{ color: "#142d27" }} />
                 </a>
               </Button>
-              <Button asChild size="lg" className="w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border border-white/20 font-bold">
-                <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
-                  <span>I would like to speak to someone first</span>
-                  <ArrowRight className="size-4.5 shrink-0" />
+              <Button asChild size="lg" className="w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#1a214c] text-white hover:bg-[#252f6b] border border-white/20 font-bold" style={{ backgroundColor: "#1a214c", color: "#ffffff", borderColor: "rgba(255, 255, 255, 0.25)" }}>
+                <a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap" style={{ backgroundColor: "#1a214c", color: "#ffffff" }}>
+                  <span style={{ color: "#ffffff" }}>I would like to speak to someone first</span>
+                  <ArrowRight className="size-4.5 shrink-0" style={{ color: "#ffffff" }} />
                 </a>
               </Button>
             </div>

@@ -84,7 +84,10 @@ export function TestimonialSlider() {
           )}
         </div>
 
-        <div className="slider-frame mt-8 overflow-hidden rounded-2xl border border-[#1a214c] bg-[#1a214c] text-[#f1ca1f] shadow-lg">
+        <div
+          className="slider-frame mt-8 overflow-hidden rounded-2xl border border-[#1a214c] bg-[#1a214c] text-[#f1ca1f] shadow-lg"
+          style={{ backgroundColor: "#1a214c", color: "#f1ca1f", borderColor: "#1a214c" }}
+        >
           <div
             className="flex transition-transform duration-500 ease-out"
             style={{ transform: `translateX(-${active * 100}%)` }}
@@ -94,25 +97,35 @@ export function TestimonialSlider() {
                 key={t.id || idx}
                 className="w-full shrink-0 p-6 sm:p-10"
                 aria-hidden={idx !== active}
+                style={{ backgroundColor: "#1a214c", color: "#f1ca1f" }}
               >
                 <div className="flex items-center justify-between gap-4">
-                  <div className="size-10 rounded-xl bg-[#f1ca1f] flex items-center justify-center shadow-xs">
-                    <Quote className="size-5 text-[#1a214c] fill-[#1a214c]" />
+                  <div
+                    className="size-10 rounded-xl bg-[#f1ca1f] flex items-center justify-center shadow-xs"
+                    style={{ backgroundColor: "#f1ca1f" }}
+                  >
+                    <Quote className="size-5 text-[#1a214c] fill-[#1a214c]" style={{ color: "#1a214c", fill: "#1a214c" }} />
                   </div>
                   {t.rating && t.rating > 0 && (
-                    <div className="flex items-center gap-1 text-[#f1ca1f]">
+                    <div className="flex items-center gap-1 text-[#f1ca1f]" style={{ color: "#f1ca1f" }}>
                       {Array.from({ length: t.rating }).map((_, i) => (
-                        <Star key={i} className="size-4 fill-[#f1ca1f] text-[#f1ca1f]" />
+                        <Star key={i} className="size-4 fill-[#f1ca1f] text-[#f1ca1f]" style={{ color: "#f1ca1f", fill: "#f1ca1f" }} />
                       ))}
                     </div>
                   )}
                 </div>
-                <blockquote className="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-[#f1ca1f] sm:text-xl sm:leading-8">
+                <blockquote
+                  className="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-[#f1ca1f] sm:text-xl sm:leading-8"
+                  style={{ color: "#f1ca1f" }}
+                >
                   “{t.quote}”
                 </blockquote>
-                <figcaption className="mt-5 text-sm border-t border-[#f1ca1f]/30 pt-4 flex items-center gap-2">
-                  <span className="font-extrabold text-[#f1ca1f]">{t.name}</span>
-                  <span className="text-[#f1ca1f]/80 font-medium">— {t.role}</span>
+                <figcaption
+                  className="mt-5 text-sm border-t border-[#f1ca1f]/30 pt-4 flex items-center gap-2"
+                  style={{ borderColor: "rgba(241, 202, 31, 0.3)" }}
+                >
+                  <span className="font-extrabold text-[#f1ca1f]" style={{ color: "#f1ca1f" }}>{t.name}</span>
+                  <span className="text-[#f1ca1f]/80 font-medium" style={{ color: "rgba(241, 202, 31, 0.85)" }}>— {t.role}</span>
                 </figcaption>
               </figure>
             ))}
@@ -128,8 +141,9 @@ export function TestimonialSlider() {
                 aria-label={`Show testimonial ${i + 1}`}
                 aria-current={i === active}
                 onClick={() => setActive(i)}
-                className={`slider-dot h-2 w-7 rounded-full cursor-pointer transition-all ${
-                  i === active ? "bg-[#1a214c] w-10" : "bg-slate-300 hover:bg-slate-400"
+                style={{ backgroundColor: i === active ? "#1a214c" : "#cbd5e1" }}
+                className={`slider-dot h-2 rounded-full cursor-pointer transition-all ${
+                  i === active ? "bg-[#1a214c] w-10" : "bg-slate-300 hover:bg-slate-400 w-7"
                 }`}
               />
             ))}

@@ -1489,17 +1489,58 @@ async function exportStatic() {
     fetchHtml('http://localhost:8080/design-option-2')
   ]);
 
-  // Copy CSS from .output/public/assets or fallback
+  // Compile fresh production CSS directly from src/styles.css using Tailwind v4
+  console.log('Compiling fresh Tailwind CSS from src/styles.css...');
   let compiledCssContent = '';
-  const compiledCssFiles = fs.readdirSync('.output/public/assets').filter(f => f.endsWith('.css'));
-  if (compiledCssFiles.length > 0) {
-    const cssSource = path.join('.output/public/assets', compiledCssFiles[0]);
-    compiledCssContent = fs.readFileSync(cssSource, 'utf-8');
-    fs.writeFileSync(path.join(assetsDir, 'styles.css'), compiledCssContent, 'utf-8');
-    fs.writeFileSync(path.join(outDir, 'styles.css'), compiledCssContent, 'utf-8');
-    fs.writeFileSync(path.join(option2Dir, 'styles.css'), compiledCssContent, 'utf-8');
-    console.log('Copied and inlined compiled CSS to assets/styles.css, styles.css, and design-option-2/styles.css');
+  try {
+    const cssBuildRes = await viteBuild({
+      configFile: false,
+      plugins: [tailwindcssPlugin()],
+      build: {
+        write: false,
+        rollupOptions: {
+          input: './src/styles.css'
+        }
+      }
+    });
+    const cssAsset = cssBuildRes.output?.find(o => o.fileName && o.fileName.endsWith('.css'));
+    if (cssAsset && cssAsset.source) {
+      compiledCssContent = cssAsset.source;
+      console.log('Compiled fresh Tailwind CSS (size: ' + compiledCssContent.length + ' bytes)');
+    }
+  } catch (err) {
+    console.warn('Direct Tailwind compilation fallback notice:', err.message);
   }
+
+  // Fallback to existing bundle if direct compilation encountered issues
+  if (!compiledCssContent && fs.existsSync('.output/public/assets')) {
+    const compiledCssFiles = fs.readdirSync('.output/public/assets').filter(f => f.endsWith('.css'));
+    if (compiledCssFiles.length > 0) {
+      const cssSource = path.join('.output/public/assets', compiledCssFiles[0]);
+      compiledCssContent = fs.readFileSync(cssSource, 'utf-8');
+    }
+  }
+
+  // Ensure crucial First Capital brand utility overrides are permanently embedded
+  const brandUtilities = `
+/* Brand Specific Color Rules & Utility Overrides */
+.bg-fck-gold, [class*="bg-[#f1ca1f]"] { background-color: #f1ca1f !important; }
+.text-fck-gold, [class*="text-[#f1ca1f]"] { color: #f1ca1f !important; }
+.fill-fck-gold, [class*="fill-[#f1ca1f]"] { fill: #f1ca1f !important; }
+.border-fck-gold, [class*="border-[#f1ca1f]"] { border-color: #f1ca1f !important; }
+.bg-fck-navy, [class*="bg-[#1a214c]"] { background-color: #1a214c !important; }
+.text-fck-navy, [class*="text-[#1a214c]"] { color: #1a214c !important; }
+.fill-fck-navy, [class*="fill-[#1a214c]"] { fill: #1a214c !important; }
+.border-fck-navy, [class*="border-[#1a214c]"] { border-color: #1a214c !important; }
+.text-fck-forest, [class*="text-[#142d27]"] { color: #142d27 !important; }
+.bg-fck-forest, [class*="bg-[#142d27]"] { background-color: #142d27 !important; }
+`;
+  compiledCssContent += '\n' + brandUtilities;
+
+  fs.writeFileSync(path.join(assetsDir, 'styles.css'), compiledCssContent, 'utf-8');
+  fs.writeFileSync(path.join(outDir, 'styles.css'), compiledCssContent, 'utf-8');
+  fs.writeFileSync(path.join(option2Dir, 'styles.css'), compiledCssContent, 'utf-8');
+  console.log('Saved compiled styles to assets/styles.css, styles.css, and design-option-2/styles.css');
 
   // Copy Images to both assets/ and root outDir for 100% resilient path resolution
   const copyDual = (src, destFilename) => {
@@ -1636,12 +1677,12 @@ document.addEventListener('DOMContentLoaded', function() {
       frame.style.transform = 'translateX(-' + (active * 100) + '%)';
       dots.forEach(function(dot, i) {
         if (i === active) {
-          dot.classList.remove('bg-transparent');
-          dot.classList.add('bg-primary');
+          dot.style.backgroundColor = '#1a214c';
+          dot.style.width = '2.5rem';
           dot.setAttribute('aria-current', 'true');
         } else {
-          dot.classList.remove('bg-primary');
-          dot.classList.add('bg-transparent');
+          dot.style.backgroundColor = '#cbd5e1';
+          dot.style.width = '1.75rem';
           dot.removeAttribute('aria-current');
         }
       });
@@ -2221,7 +2262,11 @@ ${compiledCssContent}
 
   try {
     const { execSync } = await import('node:child_process');
-    execSync('python scripts/zip.py', { stdio: 'inherit' });
+    try {
+      execSync('python3 scripts/zip.py', { stdio: 'inherit' });
+    } catch {
+      execSync('python scripts/zip.py', { stdio: 'inherit' });
+    }
   } catch (e) {
     console.log('Note: could not auto-zip, folder firstcapitalpages is ready.');
   }
