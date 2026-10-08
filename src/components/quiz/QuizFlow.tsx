@@ -1087,11 +1087,13 @@ export function QuizFlow({
                         }`}
                       >
                         <div>
-                          <div className="size-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs">
-                            <PIcon className="size-5 text-[#1a214c]" />
+                          <div className="flex items-center gap-2.5 mb-2">
+                            <div className="size-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs shrink-0">
+                              <PIcon className="size-4 text-[#1a214c]" />
+                            </div>
+                            <h5 className="text-sm sm:text-base font-extrabold text-[#1a214c] leading-snug">{p.title}</h5>
                           </div>
-                          <h5 className="mt-3 text-base font-extrabold text-[#1a214c]">{p.title}</h5>
-                          <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{p.copy}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600">{p.copy}</p>
                         </div>
                         <div className="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-slate-200/60">
                           {p.tags.map((t) => (

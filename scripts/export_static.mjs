@@ -687,22 +687,22 @@ const quizModalHtmlAndScript = `
       title: 'Unit Trust Funds',
       products: [
         {
-          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
           title: 'First Capital Money Market Fund',
           tags: ['Short-term', 'Relatively lower risk', 'Withdraw anytime', 'Start with LKR 1,000'],
           copy: 'For investors who want to keep their money accessible while putting it to work.'
         },
         {
-          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
           title: 'First Capital Fixed Income Fund',
-          tags: ['Medium to long term', 'Access anytime', 'Start with LKR 1,000'],
-          copy: 'For investors looking for investment return while keeping access to their money.'
+          tags: ['Medium to long term', 'Relatively stable returns', 'Access anytime', 'Start with LKR 1,000'],
+          copy: 'For investors looking for relatively stable returns while keeping access to their money.'
         },
         {
-          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"/><path d="m19 9 3 3-3 3"/><path d="m5 15-3-3 3-3"/></svg>',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
           title: 'First Capital Equity Fund',
           tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000'],
-          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).'
+          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.'
         }
       ],
       video: {
@@ -1043,9 +1043,11 @@ const quizModalHtmlAndScript = `
         }).join('');
 
         card.innerHTML = '<div>' +
-          '<div class="size-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs">' + p.icon + '</div>' +
-          '<h5 class="mt-3 text-base font-extrabold text-[#1a214c]">' + p.title + '</h5>' +
-          '<p class="mt-1.5 text-xs leading-relaxed text-slate-600">' + p.copy + '</p>' +
+          '<div class="flex items-center gap-2.5 mb-2">' +
+            '<div class="size-8 shrink-0 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1a214c] shadow-2xs">' + p.icon + '</div>' +
+            '<h5 class="text-sm sm:text-base font-extrabold text-[#1a214c] leading-snug">' + p.title + '</h5>' +
+          '</div>' +
+          '<p class="mt-1 text-xs leading-relaxed text-slate-600">' + p.copy + '</p>' +
           '</div>' +
           '<div class="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-slate-200/60">' + tagsHtml + '</div>';
         fundsGrid.appendChild(card);
@@ -1719,9 +1721,9 @@ const optionModalHtmlAndScript = `
 
 <script>
 (function() {
-  var iconDollar = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
-  var iconShield = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
-  var iconChart = '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>';
+  var iconDollar = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>';
+  var iconShield = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
+  var iconChart = '<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>';
 
   var optionsData = {
     'unit-trust': {
@@ -1814,9 +1816,11 @@ const optionModalHtmlAndScript = `
       data.products.forEach(function(p) {
         html += '<div class="border border-border bg-card p-4 flex flex-col justify-between">' +
           '<div>' +
-            p.icon +
-            '<h5 class="mt-3 text-base font-extrabold">' + p.title + '</h5>' +
-            '<p class="mt-2 text-xs leading-5 text-muted-foreground">' + p.copy + '</p>' +
+            '<div class="flex items-center gap-2.5 mb-2">' +
+              '<div class="shrink-0 flex items-center justify-center">' + p.icon + '</div>' +
+              '<h5 class="text-sm sm:text-base font-extrabold leading-snug text-foreground">' + p.title + '</h5>' +
+            '</div>' +
+            '<p class="text-xs leading-5 text-muted-foreground">' + p.copy + '</p>' +
           '</div>' +
           '<div class="mt-4 flex flex-wrap gap-1">';
         p.tags.forEach(function(t) {

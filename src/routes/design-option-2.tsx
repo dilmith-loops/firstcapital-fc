@@ -353,11 +353,11 @@ function DesignOptionTwo() {
                         return (
                           <div key={p.title} className="border border-border bg-card p-4 flex flex-col justify-between">
                             <div>
-                              <div className="flex items-center gap-2.5">
+                              <div className="flex items-center gap-2.5 mb-2">
                                 <PIcon className="size-5 text-primary shrink-0" />
                                 <h5 className="text-sm sm:text-base font-extrabold leading-snug">{p.title}</h5>
                               </div>
-                              <p className="mt-2 text-xs leading-5 text-muted-foreground">{p.copy}</p>
+                              <p className="text-xs leading-5 text-muted-foreground">{p.copy}</p>
                             </div>
                             <div className="mt-4 flex flex-wrap gap-1">
                               {p.tags.map((t) => (
