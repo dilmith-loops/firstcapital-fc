@@ -1733,19 +1733,19 @@ const optionModalHtmlAndScript = `
       products: [
         {
           icon: iconDollar,
-          title: 'Money Market Fund',
+          title: 'First Capital Money Market Fund',
           copy: 'For investors who want to keep their money accessible while putting it to work.',
           tags: ['Short-term', 'Relatively lower risk', 'Withdraw anytime', 'Start with LKR 1,000']
         },
         {
           icon: iconShield,
-          title: 'Fixed Income Fund',
+          title: 'First Capital Fixed Income Fund',
           copy: 'For investors looking for relatively stable returns while keeping access to their money.',
           tags: ['Medium to long term', 'Relatively stable returns', 'Access anytime', 'Start with LKR 1,000']
         },
         {
           icon: iconChart,
-          title: 'Equity Fund',
+          title: 'First Capital Equity Fund',
           copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.',
           tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000']
         }

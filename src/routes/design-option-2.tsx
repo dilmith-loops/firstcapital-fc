@@ -106,14 +106,14 @@ const investmentOptions: InvestmentOptionItem[] = [
       {
         icon: ShieldCheck,
         title: "First Capital Fixed Income Fund",
-        tags: ["Medium to long term", "Access anytime", "Start with LKR 1,000"],
-        copy: "For investors looking for investment return while keeping access to their money.",
+        tags: ["Medium to long term", "Relatively stable returns", "Access anytime", "Start with LKR 1,000"],
+        copy: "For investors looking for relatively stable returns while keeping access to their money.",
       },
       {
         icon: LineChart,
         title: "First Capital Equity Fund",
         tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000"],
-        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).",
+        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.",
       },
     ],
     video: {
