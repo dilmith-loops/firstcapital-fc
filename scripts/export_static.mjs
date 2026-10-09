@@ -1411,6 +1411,14 @@ const quizModalHtmlAndScript = `
       });
   }
 
+  function getShareUrl(slug, gender) {
+    var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
+    var origin = (!isLocal && window.location.origin) ? window.location.origin : 'https://investor.firstcapital.lk';
+    var pathname = window.location.pathname || '/';
+    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/';
+    return origin + (basePath === '/' ? '/' : basePath) + slug + '-' + gender + '.html';
+  }
+
   function showShareScreen() {
     if (!stepShare || !currentResultKey) return;
     preloadShareCardFile();
@@ -1418,7 +1426,7 @@ const quizModalHtmlAndScript = `
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+    var canonicalShareUrl = getShareUrl(slug, gender);
     var shareUrl = canonicalShareUrl;
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
@@ -1460,7 +1468,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+      var canonicalShareUrl = getShareUrl(slug, gender);
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // On mobile devices supporting native file share: synchronous share during user gesture!
@@ -1513,7 +1521,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+      var canonicalShareUrl = getShareUrl(slug, gender);
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // Synchronously copy caption & link to clipboard (both execCommand and clipboard API)
@@ -1531,24 +1539,11 @@ const quizModalHtmlAndScript = `
 
       var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-      // Mobile devices: Call navigator.share SYNCHRONOUSLY inside user gesture without any await/fetch!
+      // Method 2 (Clickable Link Card): Share URL so Facebook renders preview card with 1200x630 card image + title + link
       if (isMobile && navigator.share) {
-        if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
-          navigator.share({
-            files: [cachedShareFile],
-            title: 'First Capital - ' + (prof ? prof.name : 'Investor')
-          }).catch(function(err) {
-            if (err && err.name === 'AbortError') return;
-            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
-          });
-          return false;
-        }
-
-        // If file not ready yet, share URL synchronously via native sheet
         navigator.share({
           url: canonicalShareUrl,
-          title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-          text: postText
+          title: 'First Capital - ' + (prof ? prof.name : 'Investor')
         }).catch(function(err) {
           if (err && err.name === 'AbortError') return;
           window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
@@ -1556,19 +1551,7 @@ const quizModalHtmlAndScript = `
         return false;
       }
 
-      // Desktop / Web Fallback:
-      // 1. Download card image so desktop user has the high-res file to attach
-      try {
-        var cardImg = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-        var dlLink = document.createElement('a');
-        dlLink.href = cardImg;
-        dlLink.download = 'first-capital-' + slug + '-' + gender + '.jpg';
-        document.body.appendChild(dlLink);
-        dlLink.click();
-        document.body.removeChild(dlLink);
-      } catch (dlErr) {}
-
-      // 2. Open Facebook sharer dialog with canonical preview card
+      // Desktop / Web Fallback: Open Facebook sharer dialog with canonical preview card
       var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
       var width = 600, height = 650;
       var left = Math.max(0, (window.screen.width - width) / 2);
@@ -1592,7 +1575,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+      var canonicalShareUrl = getShareUrl(slug, gender);
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
@@ -1630,20 +1613,12 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var pathname = window.location.pathname;
-      var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
-      var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
-      var shareUrl = (!isLocal && window.location.origin)
-        ? (window.location.origin + basePath + slug + '-' + gender + '.html')
-        : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
+      var shareUrl = getShareUrl(slug, gender);
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(postText).then(function() {
-          if (shareCopyText) {
-            shareCopyText.innerText = 'Copied!';
-            setTimeout(function() { shareCopyText.innerText = 'Copy Post'; }, 2500);
-          }
-        }).catch(function() {});
+      copyTextToClipboard(postText);
+      if (shareCopyText) {
+        shareCopyText.innerText = 'Copied!';
+        setTimeout(function() { shareCopyText.innerText = 'Copy Share Post & Link'; }, 2500);
       }
     });
   }
@@ -1861,11 +1836,12 @@ async function exportStatic() {
   <!-- Open Graph / WhatsApp / Facebook -->
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${pageFile}" />
+  <meta property="og:url" content="https://investor.firstcapital.lk/${pageFile}" />
+  <link rel="canonical" href="https://investor.firstcapital.lk/${pageFile}" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality with First Capital: ${p.name} - &quot;${p.vibe}&quot;. Find your investor type here!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
+  <meta property="og:image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
+  <meta property="og:image:secure_url" content="https://investor.firstcapital.lk/assets/${cardFile}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -1874,15 +1850,15 @@ async function exportStatic() {
   <!-- Schema.org / WhatsApp fallback -->
   <meta itemprop="name" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta itemprop="description" content="I just discovered my investor personality with First Capital: ${p.name}. Find your investor type here!" />
-  <meta itemprop="image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
+  <meta itemprop="image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
+  <link rel="image_src" href="https://investor.firstcapital.lk/assets/${cardFile}" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${pageFile}" />
+  <meta name="twitter:url" content="https://investor.firstcapital.lk/${pageFile}" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${p.name}. What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/assets/${cardFile}" />
+  <meta name="twitter:image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./assets/${cardFile}" />
@@ -2236,8 +2212,7 @@ ${compiledCssContent}
     }, true);
   </script>`;
     html = html.replace('</head>', `${cssTag}\n</head>`);
-    html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
-    html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/firstcapitalpages\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
+    html = html.replace(/https:\/\/(?:ai\.loopsintegrated\.co(?:\/fc|\/firstcapitalpages)?|investor\.firstcapital\.lk)\/assets\/og-image\.jpg/g, 'https://investor.firstcapital.lk/assets/og-image.jpg');
 
     // Fix image paths robustly (use direct prefix paths matching uploaded files with cache busting)
     html = html.replace(/src="[^"]*first-capital-logo\.png[^"]*"/gi, `src="${prefix}first-capital-logo.png?v=1"`);
@@ -2339,13 +2314,13 @@ ${compiledCssContent}
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
-  <link rel="canonical" href="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
+  <meta property="og:url" content="https://investor.firstcapital.lk/${v.urlSlug}.html" />
+  <link rel="canonical" href="https://investor.firstcapital.lk/${v.urlSlug}.html" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
-  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
+  <meta property="og:image" content="https://investor.firstcapital.lk/${v.card}" />
+  <meta property="og:image:url" content="https://investor.firstcapital.lk/${v.card}" />
+  <meta property="og:image:secure_url" content="https://investor.firstcapital.lk/${v.card}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2353,11 +2328,11 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
+  <meta name="twitter:url" content="https://investor.firstcapital.lk/${v.urlSlug}.html" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
+  <meta name="twitter:image" content="https://investor.firstcapital.lk/${v.card}" />
+  <link rel="image_src" href="https://investor.firstcapital.lk/${v.card}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./${v.card}?v=fc8" />
@@ -2457,50 +2432,52 @@ ${compiledCssContent}
     console.log('Copied admin bundle assets into main assets/ directory for dual-path resolution.');
   }
 
-  // Create .htaccess for Hostinger Apache / LiteSpeed
-  const htaccess = `# Apache / LiteSpeed configuration for Hostinger subfolder
+  // Create .htaccess for Apache / LiteSpeed (Root domain: https://investor.firstcapital.lk/)
+  const htaccess = `# Apache / LiteSpeed configuration for https://investor.firstcapital.lk/
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
+# Security: Protect .env and sensitive files from direct web access
+<FilesMatch "^\\.env|\\.git">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /fc/
+  RewriteBase /
 
-  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
-  RewriteRule ^$ index.html [L]
-
-  # 0b. Serve robots.txt directly
+  # 0. Serve robots.txt directly
   RewriteRule ^robots\\.txt$ robots.txt [L]
 
-  # 1. Enforce trailing slash for subdirectories so relative assets resolve properly
+  # 1. Direct route for root
+  RewriteRule ^$ index.html [L]
+
+  # 2. Enforce trailing slash for subdirectories so relative assets resolve properly
   RewriteRule ^admin$ admin/ [R=301,L]
   RewriteRule ^admin\\.html$ admin/ [R=301,L]
   RewriteRule ^admin/?$ admin/index.html [L]
   RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
   RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
-  RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
 
-  # 2. Serve existing files directly
+  # 3. Serve existing files directly
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
+  # 4. Dual-path fallback: If assets/filename exists or vice-versa
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^assets/(.+)$ $1 [L]
 
-  # 3b. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^([^/]+\\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
 
-  # 4. Do NOT rewrite backend scripts
+  # 5. Route backend API scripts cleanly
+  RewriteRule ^api/leads/?$ api/leads.php [L]
+  RewriteRule ^api/admin/(.*)$ api/leads.php [L]
   RewriteRule \\.(php|json)$ - [L]
 
-  # 5. Route personality share links cleanly
+  # 6. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
-
-  # 6. Fallback if index.html is in firstcapitalpages/
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^$ firstcapitalpages/index.html [L]
 </IfModule>
 
 # Allow crawlers and prevent CORS issues
@@ -2625,17 +2602,83 @@ DirectoryIndex index.html index.php
   }
 
   // Place clean build files and zips in ~/Downloads/firstcapital-build and clean from repo root
+  const investorDlDir = path.join(homedir, 'Downloads', 'investor.firstcapital.lk-build');
+  fs.mkdirSync(investorDlDir, { recursive: true });
+
+  const deploymentGuide = `# First Capital Investor Week - Deployment Guide
+Target URL: https://investor.firstcapital.lk/
+
+================================================================================
+1. UPLOAD FILES
+================================================================================
+Upload all files from the 'firstcapitalpages' folder (or extract 'firstcapital-production.zip')
+directly into the web root (e.g., public_html or document root) of:
+https://investor.firstcapital.lk/
+
+Make sure hidden files (.env and .htaccess) are uploaded!
+
+================================================================================
+2. DATABASE SETUP (.env)
+================================================================================
+Open the '.env' file in the root directory and enter your MySQL database credentials:
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=your_database_name
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+
+* The table 'quiz_leads' will be automatically created on the very first visit.
+* No manual SQL import is needed!
+* .htaccess is pre-configured to block public access to .env for security.
+
+================================================================================
+3. DIRECTORY STRUCTURE
+================================================================================
+- index.html                      -> Main Campaign Landing Page
+- design-option-2/index.html      -> Design Option 2 (Comic Style)
+- admin/index.html                -> Admin Leads Management Portal
+- api/leads.php                   -> Secure Lead Capture & Admin API
+- api/db.php                      -> Database Connection Script
+- .env                            -> MySQL Configuration (EDIT THIS)
+- .htaccess                       -> Apache/LiteSpeed URL Rewrites & Security
+- share-*.jpg                     -> High-Resolution Personality Cards
+
+================================================================================
+4. VERIFICATION
+================================================================================
+Once uploaded, verify by visiting:
+- https://investor.firstcapital.lk/
+- https://investor.firstcapital.lk/admin/
+- Test the quiz: your lead will appear immediately in the Admin Portal!
+`;
+
   try {
+    // 1. Copy to ~/Downloads/investor.firstcapital.lk-build
+    copyRecursive(outDir, path.join(investorDlDir, 'firstcapitalpages'));
+    fs.writeFileSync(path.join(investorDlDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf-8');
+    fs.writeFileSync(path.join(outDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf-8');
+    if (fs.existsSync('.env')) {
+      fs.copyFileSync('.env', path.join(investorDlDir, '.env'));
+    }
+
+    // 2. Copy to ~/Downloads/firstcapital-build
     copyRecursive(outDir, path.join(dlBuildDir, 'firstcapitalpages'));
+    fs.writeFileSync(path.join(dlBuildDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf-8');
+
     if (fs.existsSync('firstcapital-production.zip')) {
+      fs.copyFileSync('firstcapital-production.zip', path.join(investorDlDir, 'firstcapital-production.zip'));
+      fs.copyFileSync('firstcapital-production.zip', path.join(investorDlDir, 'investor-firstcapital-production.zip'));
       fs.copyFileSync('firstcapital-production.zip', path.join(dlBuildDir, 'firstcapital-production.zip'));
       fs.unlinkSync('firstcapital-production.zip');
     }
     if (fs.existsSync('firstcapital-clean-project.zip')) {
+      fs.copyFileSync('firstcapital-clean-project.zip', path.join(investorDlDir, 'firstcapital-clean-project.zip'));
       fs.copyFileSync('firstcapital-clean-project.zip', path.join(dlBuildDir, 'firstcapital-clean-project.zip'));
       fs.unlinkSync('firstcapital-clean-project.zip');
     }
-    console.log('Successfully placed build files and archives in: ' + dlBuildDir);
+    console.log('Successfully placed build files, archives, and .env in: ' + investorDlDir);
+    console.log('Successfully placed build files, archives, and .env in: ' + dlBuildDir);
   } catch (dlErr) {
     console.log('Note on Downloads archive:', dlErr.message);
   }

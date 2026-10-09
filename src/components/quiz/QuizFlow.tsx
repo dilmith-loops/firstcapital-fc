@@ -658,8 +658,10 @@ export function QuizFlow({
   const shareGender = leadDetails.gender || "male";
   const shareCardImage = (PROFILE_SHARE_CARDS[winnerKey] && PROFILE_SHARE_CARDS[winnerKey][shareGender]) || PROFILE_SHARE_CARDS[winnerKey]?.male;
   
-  // Canonical public share URL with cache-buster so WhatsApp and Facebook scrapers always fetch fresh image preview tags
-  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc7`;
+  // Canonical public share URL pointing to investor.firstcapital.lk
+  const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const origin = (typeof window !== "undefined" && !isLocal && window.location.origin) ? window.location.origin : "https://investor.firstcapital.lk";
+  const shareUrl = `${origin}/${personalitySlug}-${shareGender}.html`;
   const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor personality:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -734,23 +736,10 @@ export function QuizFlow({
 
     const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile && typeof navigator !== "undefined" && navigator.share) {
-      // Synchronous share call during user gesture!
-      if (preloadedShareFile && navigator.canShare && navigator.canShare({ files: [preloadedShareFile] })) {
-        navigator.share({
-          files: [preloadedShareFile],
-          title: `First Capital - ${resultProfile?.name || "Investor"}`,
-        }).catch((err: any) => {
-          if (err?.name === "AbortError") return;
-          window.open(facebookUrl, "_blank");
-        });
-        return;
-      }
-
-      // If file not ready, share link synchronously via native sheet
+      // Method 2 (Clickable Link Card): Share URL so Facebook renders preview card with 1200x630 card image + title + link
       navigator.share({
         url: shareUrl,
         title: `First Capital - ${resultProfile?.name || "Investor"}`,
-        text: sharePostText,
       }).catch((err: any) => {
         if (err?.name === "AbortError") return;
         window.open(facebookUrl, "_blank");

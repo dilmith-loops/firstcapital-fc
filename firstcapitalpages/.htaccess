@@ -1,46 +1,48 @@
-# Apache / LiteSpeed configuration for Hostinger subfolder
+# Apache / LiteSpeed configuration for https://investor.firstcapital.lk/
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
+# Security: Protect .env and sensitive files from direct web access
+<FilesMatch "^\.env|\.git">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /fc/
+  RewriteBase /
 
-  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
-  RewriteRule ^$ index.html [L]
-
-  # 0b. Serve robots.txt directly
+  # 0. Serve robots.txt directly
   RewriteRule ^robots\.txt$ robots.txt [L]
 
-  # 1. Enforce trailing slash for subdirectories so relative assets resolve properly
+  # 1. Direct route for root
+  RewriteRule ^$ index.html [L]
+
+  # 2. Enforce trailing slash for subdirectories so relative assets resolve properly
   RewriteRule ^admin$ admin/ [R=301,L]
   RewriteRule ^admin\.html$ admin/ [R=301,L]
   RewriteRule ^admin/?$ admin/index.html [L]
   RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
   RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
-  RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
 
-  # 2. Serve existing files directly
+  # 3. Serve existing files directly
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
+  # 4. Dual-path fallback: If assets/filename exists or vice-versa
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^assets/(.+)$ $1 [L]
 
-  # 3b. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^([^/]+\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
 
-  # 4. Do NOT rewrite backend scripts
+  # 5. Route backend API scripts cleanly
+  RewriteRule ^api/leads/?$ api/leads.php [L]
+  RewriteRule ^api/admin/(.*)$ api/leads.php [L]
   RewriteRule \.(php|json)$ - [L]
 
-  # 5. Route personality share links cleanly
+  # 6. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
-
-  # 6. Fallback if index.html is in firstcapitalpages/
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^$ firstcapitalpages/index.html [L]
 </IfModule>
 
 # Allow crawlers and prevent CORS issues
