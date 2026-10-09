@@ -1412,7 +1412,7 @@ const quizModalHtmlAndScript = `
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
     var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
     var shareUrl = canonicalShareUrl;
-    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
+    var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;
@@ -1427,7 +1427,7 @@ const quizModalHtmlAndScript = `
       shareSaveImg.download = 'first-capital-' + slug + '-' + gender + '.jpg';
     }
     if (shareWhatsapp) shareWhatsapp.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(postText);
-    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
+    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl) + '&quote=' + encodeURIComponent(postText);
 
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
@@ -1453,7 +1453,7 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
+      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
       if (navigator.share) {
@@ -1487,7 +1487,7 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
+      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
 
       // Copy caption & link to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1505,15 +1505,15 @@ const quizModalHtmlAndScript = `
       }
 
       // On mobile devices supporting navigator.share with files (iOS Safari, Android Chrome):
-      // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
-      // This creates an actual post containing the card photo and avoids scraper failures!
+      // Share image file WITH caption and URL attached!
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
             });
             return false;
           }
@@ -1537,8 +1537,8 @@ const quizModalHtmlAndScript = `
         }
       } catch (dlErr) {}
 
-      // 2. Open Facebook sharer dialog with canonical preview card
-      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
+      // 2. Open Facebook sharer dialog with canonical preview card and caption attached
+      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl) + '&quote=' + encodeURIComponent(postText);
       var width = 600, height = 650;
       var left = Math.max(0, (window.screen.width - width) / 2);
       var top = Math.max(0, (window.screen.height - height) / 2);
@@ -1562,16 +1562,16 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
+      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            // Share image file directly without URL so apps like Facebook/Instagram attach as photo post
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
             });
             return false;
           }
@@ -1596,13 +1596,8 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var pathname = window.location.pathname;
-      var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
-      var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
-      var shareUrl = (!isLocal && window.location.origin)
-        ? (window.location.origin + basePath + slug + '-' + gender + '.html')
-        : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).then(function() {
           if (shareCopyText) {
@@ -2188,7 +2183,11 @@ ${compiledCssContent}
       }
     }, true);
   </script>`;
-    html = html.replace('</head>', `${cssTag}\n</head>`);
+    if (html.includes('id="fck-critical-styles"')) {
+      html = html.replace(/<style id="fck-critical-styles">[\s\S]*?<\/style>/i, `<style id="fck-critical-styles">\n${compiledCssContent}\n  </style>`);
+    } else {
+      html = html.replace('</head>', `${cssTag}\n</head>`);
+    }
     html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
     html = html.replace(/https:\/\/ai\.loopsintegrated\.co\/firstcapitalpages\/assets\/og-image\.jpg/g, 'https://ai.loopsintegrated.co/fc/assets/og-image.jpg');
 
@@ -2223,9 +2222,13 @@ ${compiledCssContent}
     // Fix Admin link in footer if present
     html = html.replace(/href="\/admin"/g, `href="${prefix}admin"`);
 
-    // Insert interactive slider script, Quiz Modal, and Investment Option Modal
+    // Insert or update interactive slider script, Quiz Modal, and Investment Option Modal
     const modalFormatted = quizModalHtmlAndScript.replace(/__PREFIX__/g, prefix);
-    html = html.replace('</body>', `${sliderScript}\n${modalFormatted}\n${optionModalHtmlAndScript}\n</body>`);
+    if (html.includes('<!-- Standalone Interactive Quiz Modal (1:1 with QuizFlow.tsx) -->')) {
+      html = html.replace(/<!-- Standalone Interactive Quiz Modal \(1:1 with QuizFlow\.tsx\) -->[\s\S]*?window\.openFirstCapitalQuiz = openModal;\s*\}\)\(\);\s*<\/script>/i, modalFormatted.trim());
+    } else {
+      html = html.replace('</body>', `${sliderScript}\n${modalFormatted}\n${optionModalHtmlAndScript}\n</body>`);
+    }
 
     return html;
   }
@@ -2280,6 +2283,11 @@ ${compiledCssContent}
     ];
 
     for (const v of variants) {
+      const canonicalShareUrl = `https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc7`;
+      const postCaption = `I just discovered my investor personality with First Capital! I'm ${sp.name} (${sp.style}) • “${sp.vibe}”.\n\nTake the 1-minute quiz to find yours:\n${canonicalShareUrl}`;
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postCaption)}`;
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalShareUrl)}&quote=${encodeURIComponent(postCaption)}`;
+
       const shareHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2321,20 +2329,69 @@ ${compiledCssContent}
     
     <div style="padding: 24px 24px 0 24px;">
       <h1 style="font-size: 22px; font-weight: 800; color: #142d27; margin: 0 0 8px 0;">I'm a ${cleanName}!</h1>
-      <p style="color: #64748b; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 16px 0; line-height: 1.5;">
         Take the quick 1-minute First Capital quiz to discover your investor personality and find your match.
       </p>
-      
-      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-        <a href="./index.html?quiz=open" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); max-width: 380px; padding: 16px 28px; background: #f1c91e; color: #142d27; font-weight: 800; font-size: 16px; border-radius: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(241, 201, 30, 0.35); transition: transform 0.2s;">
-          <span>Find My Investor Type →</span>
+
+      <!-- Share Box with Caption and URL attached -->
+      <div style="margin: 0 0 16px 0; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-align: left;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 6px;">Share Caption &amp; Quiz Link:</div>
+        <p id="caption-text" style="font-size: 13px; color: #1e293b; margin: 0; line-height: 1.45; white-space: pre-line; word-break: break-word;">${postCaption}</p>
+      </div>
+
+      <!-- Share Action Buttons: WhatsApp & Facebook -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <a id="btn-wa-share" href="${waUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 14px; background: #25D366; color: #ffffff; font-weight: 700; font-size: 14px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          <span>WhatsApp</span>
         </a>
-        <a href="./index.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); max-width: 380px; padding: 11px 20px; background: #f1f5f9; color: #334155; font-weight: 700; font-size: 13px; border-radius: 12px; text-decoration: none; border: 1px solid #e2e8f0;">
+        <a id="btn-fb-share" href="${fbUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 14px; background: #1877F2; color: #ffffff; font-weight: 700; font-size: 14px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(24, 119, 242, 0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span>Facebook</span>
+        </a>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <button id="btn-copy-caption" type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 11px 20px; background: #f1f5f9; color: #334155; font-weight: 700; font-size: 13px; border-radius: 12px; border: 1px solid #cbd5e1; cursor: pointer; transition: background 0.2s;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span id="copy-caption-text">Copy Caption &amp; Link</span>
+        </button>
+        <a href="./index.html?quiz=open" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px 24px; background: #f1c91e; color: #142d27; font-weight: 800; font-size: 15px; border-radius: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(241, 201, 30, 0.35); transition: transform 0.2s; box-sizing: border-box;">
+          <span>Take Quiz &amp; Find My Match →</span>
+        </a>
+        <a href="./index.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 18px; background: transparent; color: #64748b; font-weight: 600; font-size: 13px; border-radius: 12px; text-decoration: none;">
           <span>← Back to First Capital</span>
         </a>
       </div>
     </div>
   </div>
+
+  <script>
+    var postCaption = ${JSON.stringify(postCaption)};
+    var copyBtn = document.getElementById('btn-copy-caption');
+    var copyText = document.getElementById('copy-caption-text');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(postCaption).then(function() {
+            if (copyText) {
+              copyText.textContent = 'Copied to Clipboard!';
+              setTimeout(function() { copyText.textContent = 'Copy Caption & Link'; }, 2500);
+            }
+          }).catch(function() {});
+        }
+      });
+    }
+
+    var fbBtn = document.getElementById('btn-fb-share');
+    if (fbBtn) {
+      fbBtn.addEventListener('click', function(ev) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(postCaption).catch(function() {});
+        }
+      });
+    }
+  </script>
 </body>
 </html>`;
 
