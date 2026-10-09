@@ -1169,7 +1169,7 @@ export function QuizFlow({
             {/* Dual CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <a
-                href="https://portal.firstcapital.lk/#/sign-up"
+                href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-[#1a214c] hover:bg-[#252f6b] text-white py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-center shadow-xs transition-colors flex items-center justify-center gap-2"
@@ -1444,7 +1444,7 @@ export function QuizFlow({
 
                   {/* CTA 2: Create account - Navy #1a214c */}
                   <a
-                    href="https://portal.firstcapital.lk/#/sign-up"
+                    href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#1a214c] hover:bg-[#252f6b] active:scale-[0.99] text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center cursor-pointer text-center border border-[#1a214c]"

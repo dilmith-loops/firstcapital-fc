@@ -328,7 +328,7 @@ const quizModalHtmlAndScript = `
               <!-- CTA 2: Create account - Navy #1a214c -->
               <a
                 id="fck-btn-open-account"
-                href="https://portal.firstcapital.lk/#/sign-up"
+                href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="w-full bg-[#1a214c] hover:bg-[#252f6b] active:scale-[0.99] text-white py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center cursor-pointer text-center border border-[#1a214c]"
@@ -450,7 +450,7 @@ const quizModalHtmlAndScript = `
         <!-- Dual CTAs -->
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
           <a
-            href="https://portal.firstcapital.lk/#/sign-up"
+            href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify"
             target="_blank"
             rel="noopener noreferrer"
             class="flex-1 bg-[#1a214c] hover:bg-[#252f6b] text-white py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-center shadow-xs transition-colors flex items-center justify-center gap-2"
@@ -1874,7 +1874,7 @@ const optionModalHtmlAndScript = `
     }
 
     html += '<div class="flex flex-col sm:flex-row gap-3 pt-2">' +
-      '<a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-primary text-primary-foreground font-extrabold py-3 px-4 text-xs sm:text-sm uppercase tracking-wider hover:bg-primary/90 transition-colors flex-1 text-center">I WOULD LIKE TO CREATE MY ACCOUNT →</a>' +
+      '<a href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-primary text-primary-foreground font-extrabold py-3 px-4 text-xs sm:text-sm uppercase tracking-wider hover:bg-primary/90 transition-colors flex-1 text-center">I WOULD LIKE TO CREATE MY ACCOUNT →</a>' +
       '<a href="https://firstcapital.lk/contact-us/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-primary bg-background text-primary font-extrabold py-3 px-4 text-xs sm:text-sm uppercase tracking-wider hover:bg-primary/10 transition-colors flex-1 text-center">I WOULD LIKE TO SPEAK TO SOMEONE FIRST</a>' +
     '</div>';
 

@@ -437,7 +437,7 @@ function Index() {
                 {/* CTAs inside dialog */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button asChild size="default" className="flex-1 px-4 text-xs sm:text-sm whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
-                    <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                    <a href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
                       <span style={{ color: "#142d27" }}>I would like to create my account</span> <ArrowRight className="size-4 shrink-0" style={{ color: "#142d27" }} />
                     </a>
                   </Button>
@@ -499,7 +499,7 @@ function Index() {
             </div>
             <div className="flex flex-col items-stretch sm:items-center gap-3 w-full sm:w-auto">
               <Button asChild size="lg" className="w-full sm:w-auto min-w-0 sm:min-w-[360px] px-5 sm:px-7 text-xs sm:text-sm md:text-base whitespace-nowrap bg-[#f1ca1f] text-[#142d27] hover:bg-[#e0b815] font-bold shadow-md" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
-                <a href="https://portal.firstcapital.lk/#/sign-up" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
+                <a href="https://eonboarding.firstcapital.lk/#/pre-login/account-open/verify/nic-verify" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap" style={{ backgroundColor: "#f1ca1f", color: "#142d27" }}>
                   <span style={{ color: "#142d27" }}>I would like to create my account</span>
                   <ArrowRight className="size-4.5 shrink-0" style={{ color: "#142d27" }} />
                 </a>
