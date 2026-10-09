@@ -1546,21 +1546,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   if (shareFacebook) {
-    shareFacebook.addEventListener('click', async function(ev) {
-      if (ev) ev.preventDefault();
-      if (!currentResultKey) return;
-      var prof = PROFILES[currentResultKey];
-      var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
-      var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-
-      // OG Link Share: Facebook scrapes og:image (card) + og:description (caption) from the canonical URL.
-      // The share dialog shows the card image + caption automatically — user just clicks Post.
-      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
-      var width = 600, height = 650;
-      var left = Math.max(0, (window.screen.width - width) / 2);
-      var top = Math.max(0, (window.screen.height - height) / 2);
-
+    shareFacebook.addEventListener('click', function() {
+      // href is already set to the FB sharer URL by showShareScreen().
+      // target="_blank" opens it naturally — no window.open() needed.
       var fbTextEl = document.getElementById('fck-share-fb-text');
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
       if (fbTextEl) {
@@ -1571,16 +1559,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fbNoticeEl.style.display = 'block';
         setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 7000);
       }
-
-      try {
-        var popup = window.open(fbUrl, 'facebook-share-dialog', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left + ',toolbar=0,location=0,menubar=0,scrollbars=1,resizable=1');
-        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-          window.open(fbUrl, '_blank');
-        }
-      } catch (e) {
-        window.open(fbUrl, '_blank');
-      }
-      return false;
     });
   }
 
