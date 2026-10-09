@@ -591,8 +591,8 @@ const quizModalHtmlAndScript = `
                   <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
 
-                <div id="fck-share-fb-notice" style="display:none;" class="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center leading-snug">
-                  ✨ <strong>Caption copied to clipboard!</strong> Select <strong>Facebook</strong> in the share sheet to post your personality card photo. On desktop, paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post.
+                <div id="fck-share-fb-notice" style="display:none;" class="text-[12px] text-blue-900 bg-blue-50 border border-blue-200/90 rounded-xl p-2.5 text-center leading-snug">
+                  📋 <strong>Caption copied to clipboard!</strong><br />Card photo attached. Tap &amp; hold in Facebook and select <strong>Paste</strong>!
                 </div>
 
                 <!-- Share Card Image Directly (Native Share) -->
@@ -1483,6 +1483,29 @@ const quizModalHtmlAndScript = `
     });
   }
 
+  function copyTextToClipboard(text) {
+    if (!text) return;
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '0';
+      ta.setAttribute('readonly', '');
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch(e) {}
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(function() {});
+      }
+    } catch(e) {}
+  }
+
   if (shareFacebook) {
     shareFacebook.addEventListener('click', function(ev) {
       if (ev) ev.preventDefault();
@@ -1493,10 +1516,8 @@ const quizModalHtmlAndScript = `
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // Synchronously copy caption & link to clipboard
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(postText).catch(function() {});
-      }
+      // Synchronously copy caption & link to clipboard (both execCommand and clipboard API)
+      copyTextToClipboard(postText);
       var fbTextEl = document.getElementById('fck-share-fb-text');
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
       if (fbTextEl) {

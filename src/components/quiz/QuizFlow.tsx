@@ -711,7 +711,21 @@ export function QuizFlow({
   const handleFacebookShare = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // Copy caption & link to clipboard synchronously so user can easily paste into Facebook
+    // Synchronously copy caption & link to clipboard with bulletproof dual method
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = sharePostText;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      ta.setAttribute("readonly", "");
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (_e) {}
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(sharePostText).catch(() => {});
     }
@@ -1447,8 +1461,8 @@ export function QuizFlow({
                     </a>
 
                     {fbCopied && (
-                      <p className="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center animate-in fade-in duration-200 leading-snug">
-                        ✨ <strong>Caption copied to clipboard!</strong> Select <strong>Facebook</strong> in the share sheet to post your personality card photo. On desktop, paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post.
+                      <p className="text-[12px] text-blue-900 bg-blue-50 border border-blue-200/90 rounded-xl p-2.5 text-center animate-in fade-in duration-200 leading-snug">
+                        📋 <strong>Caption copied to clipboard!</strong><br />Card photo attached. Tap &amp; hold in Facebook and select <strong>Paste</strong>!
                       </p>
                     )}
 
