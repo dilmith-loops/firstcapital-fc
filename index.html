@@ -1478,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var cardImgSrc = './share-' + slug + '-' + gender + '.jpg';
     var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
     var shareUrl = canonicalShareUrl;
-    var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
+    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;
@@ -1493,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', function() {
       shareSaveImg.download = 'first-capital-' + slug + '-' + gender + '.jpg';
     }
     if (shareWhatsapp) shareWhatsapp.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(postText);
-    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl) + '&quote=' + encodeURIComponent(postText);
+    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
 
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
@@ -1519,7 +1519,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
       if (navigator.share) {
@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // Copy caption & link to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1571,15 +1571,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // On mobile devices supporting navigator.share with files (iOS Safari, Android Chrome):
-      // Share image file WITH caption and URL attached!
+      // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
+      // This creates an actual post containing the card photo and avoids scraper failures!
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
             });
             return false;
           }
@@ -1603,8 +1603,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       } catch (dlErr) {}
 
-      // 2. Open Facebook sharer dialog with canonical preview card and caption attached
-      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl) + '&quote=' + encodeURIComponent(postText);
+      // 2. Open Facebook sharer dialog with canonical preview card
+      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
       var width = 600, height = 650;
       var left = Math.max(0, (window.screen.width - width) / 2);
       var top = Math.max(0, (window.screen.height - height) / 2);
@@ -1628,16 +1628,16 @@ document.addEventListener('DOMContentLoaded', function() {
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Share image file directly without URL so apps like Facebook/Instagram attach as photo post
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
             });
             return false;
           }
@@ -1662,8 +1662,13 @@ document.addEventListener('DOMContentLoaded', function() {
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
-      var postText = "I just discovered my investor personality with First Capital! I'm " + (prof ? prof.name : "") + (prof && prof.style ? (" (" + prof.style + ")") : "") + (prof && prof.vibe ? (" • “" + prof.vibe + "”") : "") + "." + nl + nl + "Take the 1-minute quiz to find yours:" + nl + canonicalShareUrl;
+      var pathname = window.location.pathname;
+      var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
+      var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
+      var shareUrl = (!isLocal && window.location.origin)
+        ? (window.location.origin + basePath + slug + '-' + gender + '.html')
+        : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).then(function() {
           if (shareCopyText) {
