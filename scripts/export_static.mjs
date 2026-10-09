@@ -1515,8 +1515,7 @@ const quizModalHtmlAndScript = `
         if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
           navigator.share({
             files: [cachedShareFile],
-            title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-            text: postText
+            title: 'First Capital - ' + (prof ? prof.name : 'Investor')
           }).catch(function(err) {
             if (err && err.name === 'AbortError') return;
             window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
@@ -1579,8 +1578,7 @@ const quizModalHtmlAndScript = `
         if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
           navigator.share({
             files: [cachedShareFile],
-            title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-            text: postText
+            title: 'First Capital - ' + (prof ? prof.name : 'Investor')
           }).catch(function(err) {
             if (err && err.name === 'AbortError') return;
           });
