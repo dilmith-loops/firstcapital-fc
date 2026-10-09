@@ -2494,7 +2494,36 @@ ${compiledCssContent}
         }
       }
     }
-    console.log('Synchronized export HTML and style files to repo root for instant Git / Hostinger serving');
+
+    // Synchronize built admin portal to root admin/
+    const rootAdminDir = path.resolve('admin');
+    if (!fs.existsSync(rootAdminDir)) {
+      fs.mkdirSync(rootAdminDir, { recursive: true });
+    }
+    const rootAdminAssetsDir = path.join(rootAdminDir, 'assets');
+    if (fs.existsSync(rootAdminAssetsDir)) {
+      for (const f of fs.readdirSync(rootAdminAssetsDir)) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css'))) {
+          try { fs.unlinkSync(path.join(rootAdminAssetsDir, f)); } catch {}
+        }
+      }
+    }
+    copyRecursive(adminOutDir, rootAdminDir);
+
+    // Also sync admin assets into root assets/ and clean stale bundles
+    const rootAssetsDir = path.resolve('assets');
+    if (fs.existsSync(adminAssetsDir) && fs.existsSync(rootAssetsDir)) {
+      for (const f of fs.readdirSync(rootAssetsDir)) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css'))) {
+          try { fs.unlinkSync(path.join(rootAssetsDir, f)); } catch {}
+        }
+      }
+      for (const f of fs.readdirSync(adminAssetsDir)) {
+        fs.copyFileSync(path.join(adminAssetsDir, f), path.join(rootAssetsDir, f));
+      }
+    }
+
+    console.log('Synchronized export HTML, style files, and admin portal to repo root for instant Git / Hostinger serving');
   } catch (syncErr) {
     console.warn('Repo root synchronization warning:', syncErr.message);
   }
