@@ -112,7 +112,7 @@ const investmentOptions: InvestmentOptionItem[] = [
         icon: LineChart,
         title: "First Capital Equity Fund",
         tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000"],
-        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.",
+        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).",
       },
     ],
     video: {
