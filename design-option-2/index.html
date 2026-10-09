@@ -1493,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', function() {
       shareSaveImg.download = 'first-capital-' + slug + '-' + gender + '.jpg';
     }
     if (shareWhatsapp) shareWhatsapp.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(postText);
-    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
+    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl) + '&quote=' + encodeURIComponent(postText);
 
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
@@ -1579,7 +1579,8 @@ document.addEventListener('DOMContentLoaded', function() {
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
             });
             return false;
           }
