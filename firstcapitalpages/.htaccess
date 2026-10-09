@@ -1,35 +1,55 @@
 # Apache / LiteSpeed configuration for Hostinger subfolder
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.html index.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  DirectoryIndex index.html
+  RewriteBase /fc/
 
-  # 1. Serve existing files and directories directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
+  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
+  RewriteRule ^$ index.html [L]
 
-  # 1b. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^assets/(.+)$ $1 [L]
+  # 0b. Serve robots.txt directly
+  RewriteRule ^robots\.txt$ robots.txt [L]
 
-  # 1c. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^([^/]+\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
-
-  # 2. Do NOT rewrite backend scripts
-  RewriteRule \.(php|json)$ - [L]
-
-  # 3. Enforce trailing slash for /admin so browser resolves relative assets to /admin/assets/
+  # 1. Enforce trailing slash for subdirectories so relative assets resolve properly
   RewriteRule ^admin$ admin/ [R=301,L]
   RewriteRule ^admin\.html$ admin/ [R=301,L]
   RewriteRule ^admin/?$ admin/index.html [L]
-
-  # 4. Route /design-option-2 cleanly
   RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
   RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
+  RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
+
+  # 2. Serve existing files directly
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^assets/(.+)$ $1 [L]
+
+  # 3b. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^([^/]+\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
+
+  # 4. Do NOT rewrite backend scripts
+  RewriteRule \.(php|json)$ - [L]
 
   # 5. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
+
+  # 6. Fallback if index.html is in firstcapitalpages/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^$ firstcapitalpages/index.html [L]
+</IfModule>
+
+# Allow crawlers and prevent CORS issues
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  Header set X-Robots-Tag "all"
+  <Files "robots.txt">
+    Header set Content-Type "text/plain; charset=utf-8"
+  </Files>
 </IfModule>
 
 # Enable Compression

@@ -2292,12 +2292,13 @@ ${compiledCssContent}
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc7" />
+  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
+  <link rel="canonical" href="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
-  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
+  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
+  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
+  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2305,14 +2306,14 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc7" />
+  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
+  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc8" />
 
   <!-- Preload share card -->
-  <link rel="preload" as="image" href="./${v.card}?v=fc7" />
+  <link rel="preload" as="image" href="./${v.card}?v=fc8" />
   <link rel="icon" href="./favicon.png" type="image/png" />
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #0f172a; color: #f8fafc; text-align: center; padding: 20px;">
@@ -2411,37 +2412,57 @@ ${compiledCssContent}
 
   // Create .htaccess for Hostinger Apache / LiteSpeed
   const htaccess = `# Apache / LiteSpeed configuration for Hostinger subfolder
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.html index.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  DirectoryIndex index.html
+  RewriteBase /fc/
 
-  # 1. Serve existing files and directories directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
+  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
+  RewriteRule ^$ index.html [L]
 
-  # 1b. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^assets/(.+)$ $1 [L]
+  # 0b. Serve robots.txt directly
+  RewriteRule ^robots\\.txt$ robots.txt [L]
 
-  # 1c. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^([^/]+\\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
-
-  # 2. Do NOT rewrite backend scripts
-  RewriteRule \\.(php|json)$ - [L]
-
-  # 3. Enforce trailing slash for /admin so browser resolves relative assets to /admin/assets/
+  # 1. Enforce trailing slash for subdirectories so relative assets resolve properly
   RewriteRule ^admin$ admin/ [R=301,L]
   RewriteRule ^admin\\.html$ admin/ [R=301,L]
   RewriteRule ^admin/?$ admin/index.html [L]
-
-  # 4. Route /design-option-2 cleanly
   RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
   RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
+  RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
+
+  # 2. Serve existing files directly
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^assets/(.+)$ $1 [L]
+
+  # 3b. Dual-path fallback: If filename.png is requested but only assets/filename.png exists
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^([^/]+\\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
+
+  # 4. Do NOT rewrite backend scripts
+  RewriteRule \\.(php|json)$ - [L]
 
   # 5. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
+
+  # 6. Fallback if index.html is in firstcapitalpages/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^$ firstcapitalpages/index.html [L]
+</IfModule>
+
+# Allow crawlers and prevent CORS issues
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  Header set X-Robots-Tag "all"
+  <Files "robots.txt">
+    Header set Content-Type "text/plain; charset=utf-8"
+  </Files>
 </IfModule>
 
 # Enable Compression

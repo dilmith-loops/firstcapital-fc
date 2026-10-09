@@ -1,17 +1,27 @@
 # Apache / LiteSpeed configuration for Hostinger /fc/
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.html index.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /fc/
-  DirectoryIndex index.html index.php
+
+  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
+  RewriteRule ^$ index.html [L]
+
+  # 0b. Serve robots.txt directly with text/plain
+  RewriteRule ^robots\.txt$ robots.txt [L]
 
   # 1. Enforce trailing slash for subdirectories
   RewriteRule ^admin$ admin/ [R=301,L]
+  RewriteRule ^admin\.html$ admin/ [R=301,L]
+  RewriteRule ^admin/?$ admin/index.html [L]
   RewriteRule ^design-option-2$ design-option-2/ [R=301,L]
+  RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
   RewriteRule ^firstcapitalpages$ firstcapitalpages/ [R=301,L]
 
-  # 2. Serve existing files and directories directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
+  # 2. Serve existing files directly
+  RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
   # 3. Dual-path fallback: If assets/filename.png is requested but only filename.png exists
@@ -25,16 +35,21 @@
   # 4. Do NOT rewrite backend scripts
   RewriteRule \.(php|json)$ - [L]
 
-  # 5. Clean routing for subpages
-  RewriteRule ^admin/?$ admin/index.html [L]
-  RewriteRule ^design-option-2/?$ design-option-2/index.html [L]
-
-  # 6. Route personality share links cleanly
+  # 5. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
 
-  # 7. Fallback if index.html is in firstcapitalpages/
+  # 6. Fallback if index.html is in firstcapitalpages/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^$ firstcapitalpages/index.html [L]
+</IfModule>
+
+# Allow crawlers, social bots, and prevent CORS/hotlink issues
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  Header set X-Robots-Tag "all"
+  <Files "robots.txt">
+    Header set Content-Type "text/plain; charset=utf-8"
+  </Files>
 </IfModule>
 
 # Enable Compression
@@ -51,3 +66,4 @@
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
+
