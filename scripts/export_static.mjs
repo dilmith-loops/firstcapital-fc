@@ -1146,6 +1146,7 @@ const quizModalHtmlAndScript = `
 
   function showResultScreen(key) {
     currentResultKey = key || 'A';
+    preloadShareCardFile();
     var prof = PROFILES[currentResultKey] || PROFILES['A'];
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
@@ -1366,46 +1367,53 @@ const quizModalHtmlAndScript = `
   var shareCopyText = document.getElementById('fck-share-copy-text');
   var nl = String.fromCharCode(10);
 
-  async function getShareCardFile() {
-    if (!currentResultKey) return null;
+  var cachedShareFile = null;
+
+  function preloadShareCardFile() {
+    if (!currentResultKey) return;
     var prof = PROFILES[currentResultKey];
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var fileName = 'first-capital-' + slug + '-' + gender + '.jpg';
-    var imgSrc = (shareCardImg && shareCardImg.src) ? shareCardImg.src : ('__PREFIX__share-' + slug + '-' + gender + '.jpg');
+    var imgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
 
-    try {
-      var res = await fetch(imgSrc);
-      if (res.ok) {
-        var blob = await res.blob();
-        return new File([blob], fileName, { type: 'image/jpeg' });
-      }
-    } catch (e) {
-      console.warn('Direct fetch failed, canvas fallback', e);
-    }
+    // Decode image in background
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = imgSrc;
 
-    try {
-      if (shareCardImg && shareCardImg.complete && shareCardImg.naturalWidth) {
-        var canvas = document.createElement('canvas');
-        canvas.width = shareCardImg.naturalWidth || 1200;
-        canvas.height = shareCardImg.naturalHeight || 630;
-        var ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(shareCardImg, 0, 0);
-          var blob = await new Promise(function(resolve) { canvas.toBlob(resolve, 'image/jpeg', 0.95); });
-          if (blob) {
-            return new File([blob], fileName, { type: 'image/jpeg' });
-          }
-        }
-      }
-    } catch (canvasErr) {
-      console.warn('Canvas export failed', canvasErr);
-    }
-    return null;
+    fetch(imgSrc)
+      .then(function(res) {
+        if (!res.ok) throw new Error('Fetch failed ' + res.status);
+        return res.blob();
+      })
+      .then(function(blob) {
+        cachedShareFile = new File([blob], fileName, { type: 'image/jpeg' });
+      })
+      .catch(function(err) {
+        console.warn('Share card preload fetch fallback to canvas:', err);
+        img.onload = function() {
+          try {
+            var canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 1200;
+            canvas.height = img.naturalHeight || 630;
+            var ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob(function(blob) {
+                if (blob) {
+                  cachedShareFile = new File([blob], fileName, { type: 'image/jpeg' });
+                }
+              }, 'image/jpeg', 0.95);
+            }
+          } catch(e) {}
+        };
+      });
   }
 
   function showShareScreen() {
     if (!stepShare || !currentResultKey) return;
+    preloadShareCardFile();
     var prof = PROFILES[currentResultKey];
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
@@ -1447,7 +1455,7 @@ const quizModalHtmlAndScript = `
   if (shareBackBottom) shareBackBottom.addEventListener('click', backFromShare);
 
   if (shareWhatsapp) {
-    shareWhatsapp.addEventListener('click', async function(ev) {
+    shareWhatsapp.addEventListener('click', function(ev) {
       if (!currentResultKey) return;
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
@@ -1455,24 +1463,20 @@ const quizModalHtmlAndScript = `
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // If mobile device supports native file share, share actual JPEG image into WhatsApp!
-      if (navigator.share) {
-        try {
-          var file = await getShareCardFile();
-          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            if (ev) ev.preventDefault();
-            await navigator.share({
-              files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
-            });
-            return false;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') {
-            if (ev) ev.preventDefault();
-            return false;
-          }
+      // On mobile devices supporting native file share: synchronous share during user gesture!
+      var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
+        if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
+          if (ev) ev.preventDefault();
+          navigator.share({
+            files: [cachedShareFile],
+            title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+            text: postText
+          }).catch(function(err) {
+            if (err && err.name === 'AbortError') return;
+            window.location.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(postText);
+          });
+          return false;
         }
       }
       return true;
@@ -1480,7 +1484,7 @@ const quizModalHtmlAndScript = `
   }
 
   if (shareFacebook) {
-    shareFacebook.addEventListener('click', async function(ev) {
+    shareFacebook.addEventListener('click', function(ev) {
       if (ev) ev.preventDefault();
       if (!currentResultKey) return;
       var prof = PROFILES[currentResultKey];
@@ -1489,7 +1493,7 @@ const quizModalHtmlAndScript = `
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // Copy caption & link to clipboard
+      // Synchronously copy caption & link to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).catch(function() {});
       }
@@ -1504,37 +1508,43 @@ const quizModalHtmlAndScript = `
         setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 6500);
       }
 
-      // On mobile devices supporting navigator.share with files (iOS Safari, Android Chrome):
-      // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
-      // This creates an actual post containing the card photo and avoids scraper failures!
-      if (navigator.share) {
-        try {
-          var file = await getShareCardFile();
-          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
-            });
-            return false;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') return false;
-          console.warn('Native Facebook photo post fallback:', err);
+      var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+      // Mobile devices: Call navigator.share SYNCHRONOUSLY inside user gesture without any await/fetch!
+      if (isMobile && navigator.share) {
+        if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
+          navigator.share({
+            files: [cachedShareFile],
+            title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+          }).catch(function(err) {
+            if (err && err.name === 'AbortError') return;
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
+          });
+          return false;
         }
+
+        // If file not ready yet, share URL synchronously via native sheet
+        navigator.share({
+          url: canonicalShareUrl,
+          title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+          text: postText
+        }).catch(function(err) {
+          if (err && err.name === 'AbortError') return;
+          window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
+        });
+        return false;
       }
 
       // Desktop / Web Fallback:
       // 1. Download card image so desktop user has the high-res file to attach
       try {
-        var cardImg = (PROFILE_SHARE_CARDS[currentResultKey] && PROFILE_SHARE_CARDS[currentResultKey][gender]) || PROFILE_SHARE_CARDS[currentResultKey].male;
-        if (cardImg) {
-          var dlLink = document.createElement('a');
-          dlLink.href = cardImg;
-          dlLink.download = 'first-capital-' + slug + '-' + gender + '.jpg';
-          document.body.appendChild(dlLink);
-          dlLink.click();
-          document.body.removeChild(dlLink);
-        }
+        var cardImg = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
+        var dlLink = document.createElement('a');
+        dlLink.href = cardImg;
+        dlLink.download = 'first-capital-' + slug + '-' + gender + '.jpg';
+        document.body.appendChild(dlLink);
+        dlLink.click();
+        document.body.removeChild(dlLink);
       } catch (dlErr) {}
 
       // 2. Open Facebook sharer dialog with canonical preview card
@@ -1555,7 +1565,7 @@ const quizModalHtmlAndScript = `
   }
 
   if (shareNative) {
-    shareNative.addEventListener('click', async function(ev) {
+    shareNative.addEventListener('click', function(ev) {
       if (ev) ev.preventDefault();
       if (!currentResultKey) return;
       var prof = PROFILES[currentResultKey];
@@ -1565,19 +1575,22 @@ const quizModalHtmlAndScript = `
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
-        try {
-          var file = await getShareCardFile();
-          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            // Share image file directly without URL so apps like Facebook/Instagram attach as photo post
-            await navigator.share({
-              files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
-            });
-            return false;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') return false;
+        if (cachedShareFile && navigator.canShare && navigator.canShare({ files: [cachedShareFile] })) {
+          navigator.share({
+            files: [cachedShareFile],
+            title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+          }).catch(function(err) {
+            if (err && err.name === 'AbortError') return;
+          });
+          return false;
         }
+
+        navigator.share({
+          url: canonicalShareUrl,
+          title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+          text: postText
+        }).catch(function(err) {});
+        return false;
       }
 
       // If not supported: trigger download & copy text
@@ -2147,6 +2160,23 @@ const optionModalHtmlAndScript = `
     const prefix = depth === 0 ? './' : '../';
 
     let html = rawHtml;
+
+    // Strip existing slider script, quiz modal, and option modal if html already contains them to avoid duplicates
+    const modalMarker = html.indexOf('<!-- Standalone Interactive Quiz Modal');
+    if (modalMarker !== -1) {
+      let cutPoint = modalMarker;
+      const sliderMarker = html.lastIndexOf('<script>\n(function() {\n  var sliders = document.querySelectorAll', modalMarker);
+      if (sliderMarker !== -1) {
+        cutPoint = sliderMarker;
+      }
+      html = html.substring(0, cutPoint) + '</body></html>';
+    }
+    // Also remove any existing critical style tags if present to prevent duplicating them
+    html = html.replace(/<style id="fck-critical-styles">[\s\S]*?<\/style>/gi, '');
+    html = html.replace(/<link rel="stylesheet" href="[^"]*styles\.css"[^>]*\/?>/gi, '');
+    html = html.replace(/<link rel="image_src"[^>]*\/?>/gi, '');
+    html = html.replace(/<script>\s*\/\/ Universal image recovery[\s\S]*?<\/script>/gi, '');
+
     // Remove data-tsd-source attributes
     html = html.replace(/\s*data-tsd-source="[^"]*"/g, '');
     // Remove dev styles, modulepreload links, and vite dev entry scripts

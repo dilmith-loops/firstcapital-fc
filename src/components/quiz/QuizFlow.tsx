@@ -664,99 +664,84 @@ export function QuizFlow({
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
-  const getShareImageFile = async (): Promise<File | null> => {
-    if (!shareCardImage) return null;
+  const [preloadedShareFile, setPreloadedShareFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+    if (!shareCardImage) return;
     const fileName = `first-capital-${personalitySlug}-${shareGender}.jpg`;
-    try {
-      const res = await fetch(shareCardImage);
-      if (res.ok) {
-        const blob = await res.blob();
-        return new File([blob], fileName, { type: "image/jpeg" });
-      }
-    } catch (e) {
-      console.warn("Direct fetch for share image failed:", e);
-    }
 
-    try {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = shareCardImage;
-      await new Promise((resolve, reject) => {
-        if (img.complete) return resolve(true);
-        img.onload = () => resolve(true);
-        img.onerror = reject;
-      });
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth || 1200;
-      canvas.height = img.naturalHeight || 630;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        const blob = await new Promise<Blob | null>((resolve) =>
-          canvas.toBlob(resolve, "image/jpeg", 0.95)
-        );
-        if (blob) {
-          return new File([blob], fileName, { type: "image/jpeg" });
+    fetch(shareCardImage)
+      .then((res) => (res.ok ? res.blob() : Promise.reject("Fetch failed")))
+      .then((blob) => {
+        if (isCurrent) {
+          setPreloadedShareFile(new File([blob], fileName, { type: "image/jpeg" }));
         }
-      }
-    } catch (canvasErr) {
-      console.warn("Canvas fallback for share image failed:", canvasErr);
-    }
-    return null;
-  };
+      })
+      .catch((e) => {
+        console.warn("Preload share file fallback:", e);
+      });
 
-  const handleWhatsAppShare = async (e?: React.MouseEvent) => {
+    return () => {
+      isCurrent = false;
+    };
+  }, [shareCardImage, personalitySlug, shareGender]);
+
+  const handleWhatsAppShare = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // On mobile devices supporting navigator.share with files, share the actual image file directly!
-    if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
-      try {
-        const file = await getShareImageFile();
-        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `First Capital - ${resultProfile?.name}`,
-            text: sharePostText,
-          });
-          return;
-        }
-      } catch (err: any) {
-        if (err?.name === "AbortError") return;
-        console.warn("Native WhatsApp share fallback:", err);
+    const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile && typeof navigator !== "undefined" && navigator.share) {
+      if (preloadedShareFile && navigator.canShare && navigator.canShare({ files: [preloadedShareFile] })) {
+        navigator.share({
+          files: [preloadedShareFile],
+          title: `First Capital - ${resultProfile?.name}`,
+          text: sharePostText,
+        }).catch((err: any) => {
+          if (err?.name === "AbortError") return;
+          window.location.href = whatsappUrl;
+        });
+        return;
       }
     }
 
-    // Fallback: open WhatsApp link (WhatsApp Web/app unfurls the cache-busted OG card image)
     window.open(whatsappUrl, "_blank");
   };
 
-  const handleFacebookShare = async (e?: React.MouseEvent) => {
+  const handleFacebookShare = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // Copy caption & link to clipboard so user can easily paste into Facebook
+    // Copy caption & link to clipboard synchronously so user can easily paste into Facebook
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(sharePostText).catch(() => {});
     }
     setFbCopied(true);
     setTimeout(() => setFbCopied(false), 5000);
 
-    // On mobile devices (iOS / Android) supporting Web Share with files:
-    // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
-    // This creates an actual post containing the card photo and avoids scraper failures!
-    if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
-      try {
-        const file = await getShareImageFile();
-        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `First Capital - ${resultProfile?.name || "Investor"}`,
-          });
-          return;
-        }
-      } catch (err: any) {
-        if (err?.name === "AbortError") return;
-        console.warn("Native Facebook photo post fallback:", err);
+    const isMobile = typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile && typeof navigator !== "undefined" && navigator.share) {
+      // Synchronous share call during user gesture!
+      if (preloadedShareFile && navigator.canShare && navigator.canShare({ files: [preloadedShareFile] })) {
+        navigator.share({
+          files: [preloadedShareFile],
+          title: `First Capital - ${resultProfile?.name || "Investor"}`,
+        }).catch((err: any) => {
+          if (err?.name === "AbortError") return;
+          window.open(facebookUrl, "_blank");
+        });
+        return;
       }
+
+      // If file not ready, share link synchronously via native sheet
+      navigator.share({
+        url: shareUrl,
+        title: `First Capital - ${resultProfile?.name || "Investor"}`,
+        text: sharePostText,
+      }).catch((err: any) => {
+        if (err?.name === "AbortError") return;
+        window.open(facebookUrl, "_blank");
+      });
+      return;
     }
 
     // Desktop or web fallback:
@@ -794,19 +779,26 @@ export function QuizFlow({
     }
   };
 
-  const handleNativeShareImage = async () => {
+  const handleNativeShareImage = () => {
     try {
-      if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
-        const file = await getShareImageFile();
-        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          // Share raw image with caption so social apps include the post text
-          await navigator.share({
-            files: [file],
+      if (typeof navigator !== "undefined" && navigator.share) {
+        if (preloadedShareFile && navigator.canShare && navigator.canShare({ files: [preloadedShareFile] })) {
+          navigator.share({
+            files: [preloadedShareFile],
             title: `First Capital - ${resultProfile?.name}`,
             text: sharePostText,
+          }).catch((e: any) => {
+            if (e?.name === "AbortError") return;
           });
           return true;
         }
+
+        navigator.share({
+          url: shareUrl,
+          title: `First Capital - ${resultProfile?.name}`,
+          text: sharePostText,
+        }).catch(() => {});
+        return true;
       }
     } catch (e: any) {
       if (e?.name === "AbortError") return true;
