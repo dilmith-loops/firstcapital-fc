@@ -1087,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
       var resultKey = calculateResult();
       showResultScreen(resultKey);
-    }, 2200);
+    }, 800);
   }
 
   var currentResultKey = 'A';
@@ -1211,13 +1211,18 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnBackToResultBottom) btnBackToResultBottom.addEventListener('click', backToResult);
 
   function showResultScreen(key) {
-    currentResultKey = key;
-    var prof = PROFILES[key];
+    currentResultKey = key || 'A';
+    var prof = PROFILES[currentResultKey] || PROFILES['A'];
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
     stepLoading.style.display = 'none';
     if (stepProductDetail) stepProductDetail.style.display = 'none';
     stepResult.style.display = 'block';
+
+    if (modal) {
+      var scrollContainer = modal.querySelector('.overflow-y-auto') || modal;
+      if (scrollContainer) scrollContainer.scrollTop = 0;
+    }
 
     var avatarEl = document.getElementById('fck-res-avatar');
     if (avatarEl) {
@@ -1231,14 +1236,14 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     }
 
-    if (document.getElementById('fck-res-number')) document.getElementById('fck-res-number').innerText = 'Personality ' + prof.number;
-    if (document.getElementById('fck-res-style')) document.getElementById('fck-res-style').innerText = prof.style;
-    document.getElementById('fck-res-name').innerText = prof.name;
-    document.getElementById('fck-res-vibe').innerText = '“' + prof.vibe + '”';
-    if (document.getElementById('fck-res-desc')) document.getElementById('fck-res-desc').innerText = prof.description;
-    if (document.getElementById('fck-res-product')) document.getElementById('fck-res-product').innerText = prof.product;
-    if (document.getElementById('fck-res-disclaimer')) document.getElementById('fck-res-disclaimer').innerText = prof.disclaimer.replace(/^[\*\s]*Disclaimers?:?[\s]*/i, '');
-    if (document.getElementById('fck-res-disclaimer-mob')) document.getElementById('fck-res-disclaimer-mob').innerText = prof.disclaimer.replace(/^[\*\s]*Disclaimers?:?[\s]*/i, '');
+    var numEl = document.getElementById('fck-res-number'); if (numEl) numEl.innerText = 'Personality ' + prof.number;
+    var styleEl = document.getElementById('fck-res-style'); if (styleEl) styleEl.innerText = prof.style;
+    var nameEl = document.getElementById('fck-res-name'); if (nameEl) nameEl.innerText = prof.name;
+    var vibeEl = document.getElementById('fck-res-vibe'); if (vibeEl) vibeEl.innerText = '“' + prof.vibe + '”';
+    var descEl = document.getElementById('fck-res-desc'); if (descEl) descEl.innerText = prof.description;
+    var prodEl = document.getElementById('fck-res-product'); if (prodEl) prodEl.innerText = prof.product;
+    var discEl = document.getElementById('fck-res-disclaimer'); if (discEl) discEl.innerText = (prof.disclaimer || '').replace(/^[\*\s]*Disclaimers?:?[\s]*/i, '');
+    var discMobEl = document.getElementById('fck-res-disclaimer-mob'); if (discMobEl) discMobEl.innerText = (prof.disclaimer || '').replace(/^[\*\s]*Disclaimers?:?[\s]*/i, '');
     
     var viewProductBtn = document.getElementById('fck-btn-view-product');
     if (viewProductBtn) {
@@ -1660,11 +1665,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function attachQuizTriggers() {
     document.querySelectorAll('button, a, [data-quiz-trigger], #btn-find-investor-type').forEach(function(el) {
-      var txt = (el.textContent || el.innerText || '').toLowerCase();
+      if (el.closest('#fck-quiz-modal')) return;
+      var txt = (el.textContent || el.innerText || '').toLowerCase().trim();
       if (
         txt.includes('find my investor personality') ||
         txt.includes('find my investor type') ||
-        txt.includes('investor personality') ||
         txt.includes('take the quiz') ||
         el.getAttribute('href') === '#quiz' ||
         el.getAttribute('id') === 'btn-find-investor-type' ||
@@ -1693,13 +1698,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 3. Global delegated document click listener (catches any click including inner svg/spans across any timing)
   document.addEventListener('click', function(ev) {
+    if (ev.target && ev.target.closest && ev.target.closest('#fck-quiz-modal')) return;
+
     var trigger = ev.target && ev.target.closest ? ev.target.closest('button, a, [data-quiz-trigger], #btn-find-investor-type') : null;
     if (!trigger) return;
-    var txt = (trigger.textContent || trigger.innerText || '').toLowerCase();
+    if (trigger.closest('#fck-quiz-modal')) return;
+
+    var txt = (trigger.textContent || trigger.innerText || '').toLowerCase().trim();
     if (
       txt.includes('find my investor personality') ||
       txt.includes('find my investor type') ||
-      txt.includes('investor personality') ||
       txt.includes('take the quiz') ||
       trigger.getAttribute('href') === '#quiz' ||
       trigger.getAttribute('id') === 'btn-find-investor-type' ||
