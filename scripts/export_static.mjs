@@ -1650,14 +1650,14 @@ const quizModalHtmlAndScript = `
 `;
 
 async function exportStatic() {
-  const homedir = process.env.HOME || '/Users/dilmith';
-  const dlBuildDir = path.join(homedir, 'Downloads', 'firstcapital-build');
-  const outDir = path.join(dlBuildDir, 'firstcapitalpages');
+  const outDir = path.resolve('firstcapitalpages');
   const assetsDir = path.join(outDir, 'assets');
   const option2Dir = path.join(outDir, 'design-option-2');
   const apiDir = path.join(outDir, 'api');
+  const homedir = process.env.HOME || '/Users/dilmith';
+  const dlBuildDir = path.join(homedir, 'Downloads', 'firstcapital-build');
 
-  // Clean stale build artifacts in output directory to keep bundle lightweight
+  // Clean stale build artifacts in firstcapitalpages/assets to keep bundle lightweight
   if (fs.existsSync(assetsDir)) {
     fs.rmSync(assetsDir, { recursive: true, force: true });
   }
@@ -2454,6 +2454,38 @@ ${compiledCssContent}
     }
   };
 
+  // Synchronize exported files to repository root for instant live Git hosting
+  try {
+    if (fs.existsSync(path.join(outDir, 'index.html'))) {
+      fs.copyFileSync(path.join(outDir, 'index.html'), path.resolve('index.html'));
+    }
+    if (fs.existsSync(path.join(outDir, 'styles.css'))) {
+      fs.copyFileSync(path.join(outDir, 'styles.css'), path.resolve('styles.css'));
+    }
+    if (!fs.existsSync(path.resolve('design-option-2'))) {
+      fs.mkdirSync(path.resolve('design-option-2'), { recursive: true });
+    }
+    if (fs.existsSync(path.join(option2Dir, 'index.html'))) {
+      fs.copyFileSync(path.join(option2Dir, 'index.html'), path.resolve('design-option-2/index.html'));
+    }
+    if (fs.existsSync(path.join(option2Dir, 'styles.css'))) {
+      fs.copyFileSync(path.join(option2Dir, 'styles.css'), path.resolve('design-option-2/styles.css'));
+    }
+
+    // Sync all 12 personality landing pages to root
+    for (const sp of SHARE_PROFILES) {
+      const variants = [`${sp.slug}.html`, `${sp.slug}-male.html`, `${sp.slug}-female.html`];
+      for (const fn of variants) {
+        if (fs.existsSync(path.join(outDir, fn))) {
+          fs.copyFileSync(path.join(outDir, fn), path.resolve(fn));
+        }
+      }
+    }
+    console.log('Synchronized export HTML and style files to repo root for instant Git / Hostinger serving');
+  } catch (syncErr) {
+    console.warn('Repo root synchronization warning:', syncErr.message);
+  }
+
   try {
     const { execSync } = await import('node:child_process');
     try {
@@ -2467,6 +2499,7 @@ ${compiledCssContent}
 
   // Place clean build files and zips in ~/Downloads/firstcapital-build and clean from repo root
   try {
+    copyRecursive(outDir, path.join(dlBuildDir, 'firstcapitalpages'));
     if (fs.existsSync('firstcapital-production.zip')) {
       fs.copyFileSync('firstcapital-production.zip', path.join(dlBuildDir, 'firstcapital-production.zip'));
       fs.unlinkSync('firstcapital-production.zip');
