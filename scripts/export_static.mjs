@@ -2507,15 +2507,6 @@ DirectoryIndex index.html index.php
   fs.writeFileSync(path.join(outDir, '.htaccess'), htaccess, 'utf-8');
   console.log('Generated firstcapitalpages/.htaccess');
 
-  // Copy .env and .env.example with sample values to production outDir
-  if (fs.existsSync('.env.example')) {
-    fs.copyFileSync('.env.example', path.join(outDir, '.env.example'));
-  }
-  if (fs.existsSync('.env')) {
-    fs.copyFileSync('.env', path.join(outDir, '.env'));
-  }
-
-
   const copyRecursive = (src, dest) => {
     if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
     for (const item of fs.readdirSync(src)) {
@@ -2528,6 +2519,22 @@ DirectoryIndex index.html index.php
       }
     }
   };
+
+  // Copy .env, .env.example, and schema.sql to production outDir
+  if (fs.existsSync('.env.example')) {
+    fs.copyFileSync('.env.example', path.join(outDir, '.env.example'));
+  }
+  if (fs.existsSync('.env')) {
+    fs.copyFileSync('.env', path.join(outDir, '.env'));
+  }
+  if (fs.existsSync('schema.sql')) {
+    fs.copyFileSync('schema.sql', path.join(outDir, 'schema.sql'));
+  }
+
+  // Copy latest api scripts to outDir/api
+  if (fs.existsSync('api')) {
+    copyRecursive('api', apiDir);
+  }
 
   // Synchronize exported files to repository root for instant live Git hosting
   try {
@@ -2615,11 +2622,20 @@ Upload all files from the 'firstcapitalpages' folder (or extract 'firstcapital-p
 directly into the web root (e.g., public_html or document root) of:
 https://investor.firstcapital.lk/
 
-Make sure hidden files (.env and .htaccess) are uploaded!
+Make sure hidden files (.env and .htaccess) and SQL schema (schema.sql) are uploaded!
 
 ================================================================================
-2. DATABASE SETUP (.env)
+2. DATABASE SETUP (.env & schema.sql)
 ================================================================================
+Step A - Run schema.sql:
+Open phpMyAdmin or your MySQL client, select your database, and run 'schema.sql'.
+This creates the required tables:
+- 'quiz_leads' (stores quiz submissions, personality profiles, and notes)
+- 'app_settings' (stores dynamic questions and admin portal settings)
+
+* Automatic table creation in PHP has been disabled per production security guidelines.
+
+Step B - Configure .env:
 Open the '.env' file in the root directory and enter your MySQL database credentials:
 
 DB_HOST=localhost
@@ -2628,8 +2644,6 @@ DB_NAME=your_database_name
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 
-* The table 'quiz_leads' will be automatically created on the very first visit.
-* No manual SQL import is needed!
 * .htaccess is pre-configured to block public access to .env for security.
 
 ================================================================================
@@ -2640,6 +2654,7 @@ DB_PASSWORD=your_database_password
 - admin/index.html                -> Admin Leads Management Portal
 - api/leads.php                   -> Secure Lead Capture & Admin API
 - api/db.php                      -> Database Connection Script
+- schema.sql                      -> MySQL Database Table Definitions (Run once)
 - .env                            -> MySQL Configuration (EDIT THIS)
 - .htaccess                       -> Apache/LiteSpeed URL Rewrites & Security
 - share-*.jpg                     -> High-Resolution Personality Cards
@@ -2661,10 +2676,19 @@ Once uploaded, verify by visiting:
     if (fs.existsSync('.env')) {
       fs.copyFileSync('.env', path.join(investorDlDir, '.env'));
     }
+    if (fs.existsSync('schema.sql')) {
+      fs.copyFileSync('schema.sql', path.join(investorDlDir, 'schema.sql'));
+    }
 
     // 2. Copy to ~/Downloads/firstcapital-build
     copyRecursive(outDir, path.join(dlBuildDir, 'firstcapitalpages'));
     fs.writeFileSync(path.join(dlBuildDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf-8');
+    if (fs.existsSync('.env')) {
+      fs.copyFileSync('.env', path.join(dlBuildDir, '.env'));
+    }
+    if (fs.existsSync('schema.sql')) {
+      fs.copyFileSync('schema.sql', path.join(dlBuildDir, 'schema.sql'));
+    }
 
     if (fs.existsSync('firstcapital-production.zip')) {
       fs.copyFileSync('firstcapital-production.zip', path.join(investorDlDir, 'firstcapital-production.zip'));

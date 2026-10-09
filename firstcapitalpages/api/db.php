@@ -28,9 +28,10 @@ foreach ($envPaths as $envPath) {
 }
 
 if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'u451149423_firstcapital');     // Hostinger DB name
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'u451149423_firstcapital');     // Hostinger DB user
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: (getenv('DB_PASSWORD') ?: '3Sr>26Wr')); // Hostinger DB password
+if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: '3306');
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'firstcapital_investor');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: (getenv('DB_PASSWORD') ?: ''));
 
 function getDbConnection() {
     static $pdo = null;
@@ -40,9 +41,10 @@ function getDbConnection() {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        // 1. Primary connection: Hostinger production MySQL
+        // 1. Primary connection: from .env credentials
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $port = (defined('DB_PORT') && DB_PORT) ? ';port=' . DB_PORT : '';
+            $dsn = "mysql:host=" . DB_HOST . $port . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (Throwable $e) {
             // 2. Local fallback for development (XAMPP MySQL port 3307 or 3306)

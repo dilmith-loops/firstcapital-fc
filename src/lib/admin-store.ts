@@ -623,6 +623,7 @@ export const AdminStore = {
 
   async updateLeadStatus(id: string, status: LeadStatus, notes?: string) {
     const leads = this.getLeads();
+    const target = leads.find((item) => item.id === id);
     const updated = leads.map((item) => {
       if (item.id === id) {
         return {
@@ -642,10 +643,11 @@ export const AdminStore = {
 
     // Persist to MySQL Backend API
     try {
+      const dbId = (target as any)?.dbId;
       await fetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status, notes }),
+        body: JSON.stringify({ id, dbId, status, notes }),
       });
     } catch (e) {
       console.warn("DB update sync error:", e);
@@ -654,6 +656,7 @@ export const AdminStore = {
 
   async updateLead(id: string, updates: Partial<QuizLead>) {
     const leads = this.getLeads();
+    const target = leads.find((item) => item.id === id);
     const updated = leads.map((item) => (item.id === id ? { ...item, ...updates } : item));
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
@@ -663,10 +666,11 @@ export const AdminStore = {
 
     // Persist to MySQL Backend API
     try {
+      const dbId = (target as any)?.dbId;
       await fetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: updates.status, notes: updates.notes }),
+        body: JSON.stringify({ id, dbId, status: updates.status, notes: updates.notes }),
       });
     } catch (e) {
       console.warn("DB update sync error:", e);
@@ -675,6 +679,7 @@ export const AdminStore = {
 
   async deleteLead(id: string) {
     const leads = this.getLeads();
+    const target = leads.find((item) => item.id === id);
     const updated = leads.filter((item) => item.id !== id);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
@@ -684,10 +689,11 @@ export const AdminStore = {
 
     // Delete in MySQL Backend API
     try {
+      const dbId = (target as any)?.dbId;
       await fetch(getApiUrl("api/admin/leads/delete"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, dbId }),
       });
     } catch (e) {
       console.warn("DB delete sync error:", e);

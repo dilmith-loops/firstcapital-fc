@@ -34,63 +34,20 @@ function cleanString($str, $maxLen = 255) {
     return mb_substr($clean, 0, $maxLen, 'UTF-8');
 }
 
-// Auto-create tables and clean up unused columns
-function ensureTablesExist($pdo) {
-    if (!$pdo) return;
-    try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS `quiz_leads` (
-                `id` INT AUTO_INCREMENT PRIMARY KEY,
-                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                `name` VARCHAR(100) NOT NULL,
-                `email` VARCHAR(150) NOT NULL,
-                `phone` VARCHAR(50) NOT NULL,
-                `gender` VARCHAR(20) DEFAULT 'male',
-                `result_code` CHAR(2) DEFAULT 'A',
-                `result_profile` VARCHAR(100) DEFAULT NULL,
-                `matched_product` VARCHAR(255) DEFAULT NULL,
-                `answers_json` LONGTEXT DEFAULT NULL,
-                `status` VARCHAR(20) DEFAULT 'NEW',
-                `notes` TEXT DEFAULT NULL,
-                `source` VARCHAR(100) DEFAULT 'Landing Page Quiz'
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ");
-
-        // Inspect existing columns: add required ones and drop unwanted columns
-        try {
-            $colStmt = $pdo->query("SHOW COLUMNS FROM quiz_leads");
-            $existingCols = $colStmt ? $colStmt->fetchAll(PDO::FETCH_COLUMN) : [];
-            if (!empty($existingCols)) {
-                if (!in_array('gender', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `gender` VARCHAR(20) DEFAULT 'male' AFTER `phone`");
-                }
-                if (!in_array('source', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` ADD `source` VARCHAR(100) DEFAULT 'Landing Page Quiz' AFTER `notes`");
-                }
-                // Drop unused legacy columns if present
-                if (in_array('investment_amount', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` DROP COLUMN `investment_amount`");
-                }
-                if (in_array('preferred_contact', $existingCols)) {
-                    @$pdo->exec("ALTER TABLE `quiz_leads` DROP COLUMN `preferred_contact`");
-                }
-            }
-        } catch (Throwable $eCols) {}
-
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS `app_settings` (
-                `setting_key` VARCHAR(100) PRIMARY KEY,
-                `setting_value` LONGTEXT NOT NULL,
-                `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ");
-    } catch (Throwable $e) {}
+function parseLeadId($val) {
+    if (is_numeric($val)) {
+        return (int)$val;
+    }
+    if (is_string($val)) {
+        $digits = preg_replace('/[^0-9]/', '', $val);
+        if ($digits !== '') {
+            return (int)$digits;
+        }
+    }
+    return 0;
 }
 
 $pdo = getDbConnection();
-if ($pdo) {
-    ensureTablesExist($pdo);
-}
 
 // ----------------------------------------------------
 // 1. HEALTH / STATUS CHECK
@@ -244,24 +201,49 @@ $data = json_decode($rawInput, true) ?: [];
 
 // Delete lead
 if ($action === 'delete' || (isset($data['action']) && $data['action'] === 'delete') || $method === 'DELETE') {
-    $leadId = (int)($data['id'] ?? $data['dbId'] ?? $_GET['id'] ?? 0);
+    $rawId = (string)($data['id'] ?? $data['dbId'] ?? $_GET['id'] ?? '');
+    $leadId = parseLeadId($data['dbId'] ?? $data['id'] ?? $_GET['id'] ?? 0);
+    $deletedDb = false;
+
     if ($pdo && $leadId > 0) {
         try {
             $stmt = $pdo->prepare("DELETE FROM quiz_leads WHERE id = :id");
             $stmt->execute([':id' => $leadId]);
-            http_response_code(200);
-            echo json_encode(['success' => true]);
-            exit;
+            $deletedDb = ($stmt->rowCount() > 0);
         } catch (Throwable $e) {}
     }
+
+    // Also clean up from local JSON fallback file if present
+    $jsonFile = __DIR__ . '/leads_data.json';
+    if (file_exists($jsonFile)) {
+        $fileLeads = json_decode(file_get_contents($jsonFile), true) ?: [];
+        $origCount = count($fileLeads);
+        $filtered = array_values(array_filter($fileLeads, function($item) use ($leadId, $rawId) {
+            $itemId = (string)($item['id'] ?? '');
+            $itemDbId = parseLeadId($item['dbId'] ?? $item['id'] ?? 0);
+            if ($rawId !== '' && $itemId === $rawId) return false;
+            if ($leadId > 0 && $itemDbId === $leadId) return false;
+            return true;
+        }));
+        if (count($filtered) !== $origCount) {
+            @file_put_contents($jsonFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
+    }
+
     http_response_code(200);
-    echo json_encode(['success' => true]);
+    echo json_encode([
+        'success' => true,
+        'deletedId' => $leadId,
+        'rawId' => $rawId,
+        'dbDeleted' => $deletedDb
+    ]);
     exit;
 }
 
 // Update existing lead (status or notes)
 if ($action === 'update' || (isset($data['action']) && $data['action'] === 'update') || (isset($data['dbId']) && $data['dbId'] > 0 && !isset($data['email']))) {
-    $leadId = (int)($data['dbId'] ?? $data['id'] ?? 0);
+    $rawId = (string)($data['id'] ?? $data['dbId'] ?? $_GET['id'] ?? '');
+    $leadId = parseLeadId($data['dbId'] ?? $data['id'] ?? $_GET['id'] ?? 0);
     $status = cleanString($data['status'] ?? 'NEW', 20);
     $notes = cleanString($data['notes'] ?? '', 1000);
 
@@ -270,12 +252,28 @@ if ($action === 'update' || (isset($data['action']) && $data['action'] === 'upda
             $stmt = $pdo->prepare("UPDATE quiz_leads SET status = :status, notes = :notes WHERE id = :id");
             $stmt->execute([':status' => $status, ':notes' => $notes, ':id' => $leadId]);
             http_response_code(200);
-            echo json_encode(['success' => true]);
+            echo json_encode(['success' => true, 'updatedId' => $leadId]);
             exit;
         } catch (Throwable $e) {}
     }
+
+    // JSON file fallback update
+    $jsonFile = __DIR__ . '/leads_data.json';
+    if (file_exists($jsonFile)) {
+        $fileLeads = json_decode(file_get_contents($jsonFile), true) ?: [];
+        foreach ($fileLeads as &$item) {
+            $itemId = (string)($item['id'] ?? '');
+            $itemDbId = parseLeadId($item['dbId'] ?? $item['id'] ?? 0);
+            if (($rawId !== '' && $itemId === $rawId) || ($leadId > 0 && $itemDbId === $leadId)) {
+                $item['status'] = $status;
+                if ($notes !== '') $item['notes'] = $notes;
+            }
+        }
+        @file_put_contents($jsonFile, json_encode($fileLeads, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     http_response_code(200);
-    echo json_encode(['success' => true]);
+    echo json_encode(['success' => true, 'updatedId' => $leadId]);
     exit;
 }
 
