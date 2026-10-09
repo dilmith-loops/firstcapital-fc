@@ -581,14 +581,18 @@ const quizModalHtmlAndScript = `
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] font-bold text-sm transition-colors"
+                  class="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] font-bold text-sm transition-colors cursor-pointer"
                 >
                   <div class="flex items-center gap-2.5">
                     <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
-                    <span>Share on Facebook</span>
+                    <span id="fck-share-fb-text">Share on Facebook</span>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
+
+                <div id="fck-share-fb-notice" style="display:none;" class="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center leading-snug">
+                  ✨ Caption copied to clipboard! Paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post to share your story.
+                </div>
 
                 <!-- Copy Post / Link -->
                 <button
@@ -1347,12 +1351,8 @@ const quizModalHtmlAndScript = `
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-    var pathname = window.location.pathname;
-    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/fc/';
-    var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
-    var shareUrl = (!isLocal && window.location.origin)
-      ? (window.location.origin + basePath + slug + '-' + gender + '.html')
-      : ('https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html');
+    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html';
+    var shareUrl = canonicalShareUrl;
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
 
     if (shareCardImg) {
@@ -1368,7 +1368,7 @@ const quizModalHtmlAndScript = `
       shareSaveImg.download = 'first-capital-' + slug + '-' + gender + '.jpg';
     }
     if (shareWhatsapp) shareWhatsapp.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(postText);
-    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+    if (shareFacebook) shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
 
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'none';
@@ -1386,6 +1386,39 @@ const quizModalHtmlAndScript = `
   if (btnShare) btnShare.addEventListener('click', showShareScreen);
   if (shareBackTop) shareBackTop.addEventListener('click', backFromShare);
   if (shareBackBottom) shareBackBottom.addEventListener('click', backFromShare);
+
+  if (shareFacebook) {
+    shareFacebook.addEventListener('click', function(ev) {
+      if (ev) ev.preventDefault();
+      if (!currentResultKey) return;
+      var prof = PROFILES[currentResultKey];
+      var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
+      var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html';
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + canonicalShareUrl;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(postText).catch(function() {});
+      }
+      var fbTextEl = document.getElementById('fck-share-fb-text');
+      var fbNoticeEl = document.getElementById('fck-share-fb-notice');
+      if (fbTextEl) {
+        fbTextEl.innerText = 'Caption Copied! Opening FB...';
+        setTimeout(function() { fbTextEl.innerText = 'Share on Facebook'; }, 3500);
+      }
+      if (fbNoticeEl) {
+        fbNoticeEl.style.display = 'block';
+        setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 6000);
+      }
+
+      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
+      var width = 600, height = 650;
+      var left = Math.max(0, (window.screen.width - width) / 2);
+      var top = Math.max(0, (window.screen.height - height) / 2);
+      window.open(fbUrl, 'facebook-share-dialog', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left + ',toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1');
+      return false;
+    });
+  }
   if (shareCopyBtn) {
     shareCopyBtn.addEventListener('click', function() {
       if (!currentResultKey) return;

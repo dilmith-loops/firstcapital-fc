@@ -463,6 +463,7 @@ export function QuizFlow({
   const [isSubmittingDetails, setIsSubmittingDetails] = useState(false);
   const [detailsErrors, setDetailsErrors] = useState<Record<string, string>>({});
   const [postCopied, setPostCopied] = useState(false);
+  const [fbCopied, setFbCopied] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
   const totalQuestions = questions.length || 1;
@@ -656,16 +657,31 @@ export function QuizFlow({
   const personalitySlug = PROFILE_SLUGS[winnerKey] || "keep-it-cool";
   const shareGender = leadDetails.gender || "male";
   const shareCardImage = (PROFILE_SHARE_CARDS[winnerKey] && PROFILE_SHARE_CARDS[winnerKey][shareGender]) || PROFILE_SHARE_CARDS[winnerKey]?.male;
-  const basePath = typeof window !== "undefined"
-    ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1)
-    : "/fc/";
-  const isLocalHost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.includes("192.168."));
-  const shareUrl = typeof window !== "undefined" && !isLocalHost
-    ? `${window.location.origin}${basePath}${personalitySlug}-${shareGender}.html?v=fc3`
-    : `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc3`;
+  
+  // Canonical public share URL where high-res OG tags and preview cards are verified and hosted
+  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html`;
   const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor type here:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+  const handleFacebookShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(sharePostText).catch(() => {});
+    }
+    setFbCopied(true);
+    setTimeout(() => setFbCopied(false), 3500);
+
+    const width = 600;
+    const height = 650;
+    const left = typeof window !== "undefined" ? Math.max(0, (window.screen.width - width) / 2) : 100;
+    const top = typeof window !== "undefined" ? Math.max(0, (window.screen.height - height) / 2) : 100;
+    window.open(
+      facebookUrl,
+      "facebook-share-dialog",
+      `width=${width},height=${height},top=${top},left=${left},toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1`
+    );
+  };
 
   const handleNativeShareImage = async () => {
     try {
@@ -1297,19 +1313,25 @@ export function QuizFlow({
                       href={facebookUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => {
-                        if (typeof navigator !== "undefined" && navigator.clipboard) {
-                          navigator.clipboard.writeText(sharePostText);
-                        }
-                      }}
-                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] font-bold text-sm transition-colors"
+                      onClick={handleFacebookShare}
+                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] font-bold text-sm transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">
                         <FacebookIcon className="size-5 shrink-0" />
-                        <span>Share on Facebook</span>
+                        <span>{fbCopied ? "Caption Copied! Opening FB..." : "Share on Facebook"}</span>
                       </div>
-                      <ArrowRight className="size-4 opacity-70" />
+                      {fbCopied ? (
+                        <Check className="size-4 text-[#1877F2] stroke-[3]" />
+                      ) : (
+                        <ArrowRight className="size-4 opacity-70" />
+                      )}
                     </a>
+
+                    {fbCopied && (
+                      <p className="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center animate-in fade-in duration-200 leading-snug">
+                        ✨ Caption copied to clipboard! Paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post to share your story.
+                      </p>
+                    )}
 
                     {/* Copy Post / Link */}
                     <button
