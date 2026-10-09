@@ -662,7 +662,7 @@ export function QuizFlow({
   const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc7`;
   const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor personality:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
-  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(sharePostText)}`;
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   const getShareImageFile = async (): Promise<File | null> => {
     if (!shareCardImage) return null;
@@ -750,7 +750,6 @@ export function QuizFlow({
           await navigator.share({
             files: [file],
             title: `First Capital - ${resultProfile?.name || "Investor"}`,
-            text: sharePostText,
           });
           return;
         }
