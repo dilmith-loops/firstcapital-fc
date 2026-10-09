@@ -8,12 +8,13 @@ import tsconfigPathsPlugin from 'vite-tsconfig-paths';
 
 function fetchHtml(url) {
   return new Promise((resolve, reject) => {
-    http.get(url, (res) => {
+    const req = http.get(url, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
       res.on('end', () => resolve(data));
       res.on('error', reject);
     });
+    req.on('error', reject);
   });
 }
 
@@ -591,7 +592,7 @@ const quizModalHtmlAndScript = `
                 </a>
 
                 <div id="fck-share-fb-notice" style="display:none;" class="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center leading-snug">
-                  ✨ Caption copied to clipboard! Paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post. On desktop, save the image on the left to attach your photo.
+                  ✨ <strong>Caption copied to clipboard!</strong> Select <strong>Facebook</strong> in the share sheet to post your personality card photo. On desktop, paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post.
                 </div>
 
                 <!-- Share Card Image Directly (Native Share) -->
@@ -1409,7 +1410,7 @@ const quizModalHtmlAndScript = `
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
+    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
     var shareUrl = canonicalShareUrl;
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
@@ -1451,7 +1452,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
@@ -1485,24 +1486,58 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // Copy caption & safely open Facebook sharer with rich preview card
+      // Copy caption & link to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).catch(function() {});
       }
       var fbTextEl = document.getElementById('fck-share-fb-text');
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
       if (fbTextEl) {
-        fbTextEl.innerText = 'Caption Copied! Opening FB...';
+        fbTextEl.innerText = 'Opening Facebook...';
         setTimeout(function() { fbTextEl.innerText = 'Share on Facebook'; }, 4500);
       }
       if (fbNoticeEl) {
         fbNoticeEl.style.display = 'block';
-        setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 6000);
+        setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 6500);
       }
 
+      // On mobile devices supporting navigator.share with files (iOS Safari, Android Chrome):
+      // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
+      // This creates an actual post containing the card photo and avoids scraper failures!
+      if (navigator.share) {
+        try {
+          var file = await getShareCardFile();
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+            });
+            return false;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return false;
+          console.warn('Native Facebook photo post fallback:', err);
+        }
+      }
+
+      // Desktop / Web Fallback:
+      // 1. Download card image so desktop user has the high-res file to attach
+      try {
+        var cardImg = (PROFILE_SHARE_CARDS[currentResultKey] && PROFILE_SHARE_CARDS[currentResultKey][gender]) || PROFILE_SHARE_CARDS[currentResultKey].male;
+        if (cardImg) {
+          var dlLink = document.createElement('a');
+          dlLink.href = cardImg;
+          dlLink.download = 'first-capital-' + slug + '-' + gender + '.jpg';
+          document.body.appendChild(dlLink);
+          dlLink.click();
+          document.body.removeChild(dlLink);
+        }
+      } catch (dlErr) {}
+
+      // 2. Open Facebook sharer dialog with canonical preview card
       var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl);
       var width = 600, height = 650;
       var left = Math.max(0, (window.screen.width - width) / 2);
@@ -1526,7 +1561,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
@@ -1664,11 +1699,18 @@ async function exportStatic() {
   fs.mkdirSync(option2Dir, { recursive: true });
   fs.mkdirSync(apiDir, { recursive: true });
 
-  console.log('Fetching live pre-rendered HTML from local dev server...');
-  const [html1, html2] = await Promise.all([
-    fetchHtml('http://localhost:8080/'),
-    fetchHtml('http://localhost:8080/design-option-2')
-  ]);
+  console.log('Fetching live pre-rendered HTML from local dev server or local files...');
+  let html1, html2;
+  try {
+    [html1, html2] = await Promise.all([
+      fetchHtml('http://localhost:8080/'),
+      fetchHtml('http://localhost:8080/design-option-2')
+    ]);
+  } catch (err) {
+    console.log('Dev server not running on 8080, using existing index.html files as base');
+    html1 = fs.readFileSync('index.html', 'utf-8');
+    html2 = fs.readFileSync('design-option-2/index.html', 'utf-8');
+  }
 
   // Compile fresh production CSS directly from src/styles.css using Tailwind v4
   console.log('Compiling fresh Tailwind CSS from src/styles.css...');
@@ -2250,12 +2292,12 @@ ${compiledCssContent}
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc6" />
+  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc7" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
-  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
+  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
+  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
+  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2263,14 +2305,14 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc6" />
+  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc7" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
+  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc7" />
 
   <!-- Preload share card -->
-  <link rel="preload" as="image" href="./${v.card}?v=fc6" />
+  <link rel="preload" as="image" href="./${v.card}?v=fc7" />
   <link rel="icon" href="./favicon.png" type="image/png" />
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #0f172a; color: #f8fafc; text-align: center; padding: 20px;">

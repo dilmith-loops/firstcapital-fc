@@ -659,7 +659,7 @@ export function QuizFlow({
   const shareCardImage = (PROFILE_SHARE_CARDS[winnerKey] && PROFILE_SHARE_CARDS[winnerKey][shareGender]) || PROFILE_SHARE_CARDS[winnerKey]?.male;
   
   // Canonical public share URL with cache-buster so WhatsApp and Facebook scrapers always fetch fresh image preview tags
-  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc6`;
+  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc7`;
   const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor personality:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -733,13 +733,48 @@ export function QuizFlow({
   const handleFacebookShare = async (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // Copy caption & safely open Facebook sharer with canonical preview card
+    // Copy caption & link to clipboard so user can easily paste into Facebook
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(sharePostText).catch(() => {});
     }
     setFbCopied(true);
-    setTimeout(() => setFbCopied(false), 4500);
+    setTimeout(() => setFbCopied(false), 5000);
 
+    // On mobile devices (iOS / Android) supporting Web Share with files:
+    // Share image file directly WITHOUT URL so Facebook opens in native Photo Post mode.
+    // This creates an actual post containing the card photo and avoids scraper failures!
+    if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
+      try {
+        const file = await getShareImageFile();
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `First Capital - ${resultProfile?.name || "Investor"}`,
+          });
+          return;
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        console.warn("Native Facebook photo post fallback:", err);
+      }
+    }
+
+    // Desktop or web fallback:
+    // 1. Download card image so desktop user has the high-res file to attach
+    if (typeof window !== "undefined" && shareCardImage) {
+      try {
+        const a = document.createElement("a");
+        a.href = shareCardImage;
+        a.download = `first-capital-${personalitySlug}-${shareGender}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (dlErr) {
+        console.warn("Download card fallback:", dlErr);
+      }
+    }
+
+    // 2. Open Facebook sharer dialog
     const width = 600;
     const height = 650;
     const left = typeof window !== "undefined" ? Math.max(0, (window.screen.width - width) / 2) : 100;
@@ -1409,7 +1444,7 @@ export function QuizFlow({
                     >
                       <div className="flex items-center gap-2.5">
                         <FacebookIcon className="size-5 shrink-0" />
-                        <span>{fbCopied ? "Caption Copied! Opening FB..." : "Share on Facebook"}</span>
+                        <span>{fbCopied ? "Opening Facebook..." : "Share on Facebook"}</span>
                       </div>
                       {fbCopied ? (
                         <Check className="size-4 text-[#1877F2] stroke-[3]" />
@@ -1420,7 +1455,7 @@ export function QuizFlow({
 
                     {fbCopied && (
                       <p className="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center animate-in fade-in duration-200 leading-snug">
-                        ✨ Caption copied to clipboard! Paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post. On desktop, save the image on the left to attach your photo.
+                        ✨ <strong>Caption copied to clipboard!</strong> Select <strong>Facebook</strong> in the share sheet to post your personality card photo. On desktop, paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post.
                       </p>
                     )}
 
