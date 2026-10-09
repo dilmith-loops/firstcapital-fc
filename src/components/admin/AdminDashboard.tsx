@@ -695,12 +695,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <div className="p-3 border-b border-slate-100 mb-2">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
               <p className="text-sm font-extrabold text-[#142d27] truncate mt-0.5">{settings.adminEmail}</p>
-              <div className="flex items-center gap-1.5 mt-2">
-                <span className={`size-2 rounded-full ${dbStatus?.connected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-                <span className={`text-[11px] font-semibold ${dbStatus?.connected ? "text-emerald-700" : "text-amber-700"}`}>
-                  {dbStatus?.connected ? "MySQL Database Connected" : "Local Storage Mode"}
-                </span>
-              </div>
             </div>
 
             <nav className="space-y-1">
@@ -845,65 +839,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
               </div>
 
-              {/* Database Connection & Sync Status Banner */}
-              <div
-                className={`p-4 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  dbStatus?.connected
-                    ? "bg-gradient-to-r from-emerald-950 to-[#142d27] text-white border-emerald-800/80 shadow-md"
-                    : "bg-gradient-to-r from-amber-950 to-slate-900 text-white border-amber-800/80 shadow-md"
-                }`}
-              >
-                <div className="flex items-start sm:items-center gap-3.5">
-                  <div
-                    className={`p-2.5 rounded-xl border shrink-0 ${
-                      dbStatus?.connected
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                        : "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                    }`}
-                  >
-                    <Database className="size-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black uppercase tracking-wider text-emerald-400">
-                        {dbStatus?.connected ? "Database Connected" : "Local Storage Mode"}
-                      </span>
-                      <span
-                        className={`size-2 rounded-full ${
-                          dbStatus?.connected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
-                        }`}
-                      />
-                    </div>
-                    <p className="text-sm font-bold text-white mt-0.5">
-                      {dbStatus?.connected ? (
-                        <>
-                          MySQL Server: <code className="text-[#f1c91e] font-mono text-xs">{dbStatus.database}</code> on{" "}
-                          <code className="text-slate-300 font-mono text-xs">{dbStatus.host}:{dbStatus.port}</code>
-                        </>
-                      ) : (
-                        <>Local Offline Cache (MySQL connection pending)</>
-                      )}
-                    </p>
-                    <p className="text-[11px] text-slate-300">
-                      {dbStatus?.connected
-                        ? `Live database sync active. Total records in DB: ${dbStatus.totalLeads} | Tables: ${dbStatus.tables?.join(", ") || "quiz_leads, app_settings"}`
-                        : dbStatus?.error || "Running in-memory/browser persistence. Will auto-sync when MySQL is available."}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => syncDatabase(true)}
-                    disabled={isSyncing}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#f1c91e] hover:bg-[#e0b815] text-[#142d27] transition-all cursor-pointer shadow-sm disabled:opacity-50"
-                  >
-                    <RefreshCw className={`size-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-                    {isSyncing ? "Syncing..." : "Sync Database Now"}
-                  </button>
-                </div>
-              </div>
 
               {/* Total Leads Stat Card */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
