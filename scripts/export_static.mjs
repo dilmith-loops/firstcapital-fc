@@ -2162,14 +2162,10 @@ const optionModalHtmlAndScript = `
     let html = rawHtml;
 
     // Strip existing slider script, quiz modal, and option modal if html already contains them to avoid duplicates
+    html = html.replace(/<script>\s*document\.addEventListener\('DOMContentLoaded',\s*function\(\)\s*\{[\s\S]*?testimonial-slider[\s\S]*?<\/script>/gi, '');
     const modalMarker = html.indexOf('<!-- Standalone Interactive Quiz Modal');
     if (modalMarker !== -1) {
-      let cutPoint = modalMarker;
-      const sliderMarker = html.lastIndexOf('<script>\n(function() {\n  var sliders = document.querySelectorAll', modalMarker);
-      if (sliderMarker !== -1) {
-        cutPoint = sliderMarker;
-      }
-      html = html.substring(0, cutPoint) + '</body></html>';
+      html = html.substring(0, modalMarker) + '</body></html>';
     }
     // Also remove any existing critical style tags if present to prevent duplicating them
     html = html.replace(/<style id="fck-critical-styles">[\s\S]*?<\/style>/gi, '');
