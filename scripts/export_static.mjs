@@ -721,7 +721,7 @@ const quizModalHtmlAndScript = `
       keyBenefits: ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
       video: {
         title: 'Government Securities explained',
-        url: 'https://www.youtube.com/shorts/HGL82Tv1wJE',
+        url: 'https://www.youtube.com/watch?v=LZoAwRqGr9M&t=20s',
         platform: 'YouTube'
       },
       disclaimer: '*Disclaimer: Terms & Conditions apply | Please refer to the Procedure Guide related Treasuries/Government Securities to understand our internal procedures related to products and transactions: ',
@@ -1767,7 +1767,7 @@ const optionModalHtmlAndScript = `
       keyBenefits: ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
       video: {
         title: 'Government Securities explained',
-        url: 'https://www.youtube.com/shorts/HGL82Tv1wJE',
+        url: 'https://www.youtube.com/watch?v=LZoAwRqGr9M&t=20s',
         platform: 'YouTube'
       },
       disclaimer: '*Disclaimer: Terms & Conditions apply | Please refer to the Procedure Guide related Treasuries/Government Securities to understand our internal procedures related to products and transactions: ',
