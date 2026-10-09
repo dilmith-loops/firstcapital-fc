@@ -658,38 +658,130 @@ export function QuizFlow({
   const shareGender = leadDetails.gender || "male";
   const shareCardImage = (PROFILE_SHARE_CARDS[winnerKey] && PROFILE_SHARE_CARDS[winnerKey][shareGender]) || PROFILE_SHARE_CARDS[winnerKey]?.male;
   
-  // Canonical public share URL where high-res OG tags and preview cards are verified and hosted
-  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html`;
-  const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor type here:\n${shareUrl}`;
+  // Canonical public share URL with cache-buster so WhatsApp and Facebook scrapers always fetch fresh image preview tags
+  const shareUrl = `https://ai.loopsintegrated.co/fc/${personalitySlug}-${shareGender}.html?v=fc5`;
+  const sharePostText = `I just found my investor personality with First Capital! I'm "${resultProfile?.name || "Investor"}" - "${resultProfile?.vibe || ""}".\n\nFind your investor personality:\n${shareUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharePostText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
-  const handleFacebookShare = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const getShareImageFile = async (): Promise<File | null> => {
+    if (!shareCardImage) return null;
+    const fileName = `first-capital-${personalitySlug}-${shareGender}.jpg`;
+    try {
+      const res = await fetch(shareCardImage);
+      if (res.ok) {
+        const blob = await res.blob();
+        return new File([blob], fileName, { type: "image/jpeg" });
+      }
+    } catch (e) {
+      console.warn("Direct fetch for share image failed:", e);
+    }
+
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = shareCardImage;
+      await new Promise((resolve, reject) => {
+        if (img.complete) return resolve(true);
+        img.onload = () => resolve(true);
+        img.onerror = reject;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || 1200;
+      canvas.height = img.naturalHeight || 630;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, "image/jpeg", 0.95)
+        );
+        if (blob) {
+          return new File([blob], fileName, { type: "image/jpeg" });
+        }
+      }
+    } catch (canvasErr) {
+      console.warn("Canvas fallback for share image failed:", canvasErr);
+    }
+    return null;
+  };
+
+  const handleWhatsAppShare = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
+    // On mobile devices supporting navigator.share with files, share the actual image file directly!
+    if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
+      try {
+        const file = await getShareImageFile();
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `First Capital - ${resultProfile?.name}`,
+            text: sharePostText,
+          });
+          return;
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        console.warn("Native WhatsApp share fallback:", err);
+      }
+    }
+
+    // Fallback: open WhatsApp link (WhatsApp Web/app unfurls the cache-busted OG card image)
+    window.open(whatsappUrl, "_blank");
+  };
+
+  const handleFacebookShare = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
+    // On mobile devices supporting navigator.share with files, launch system share sheet to create a Facebook post
+    if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
+      try {
+        const file = await getShareImageFile();
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `First Capital - ${resultProfile?.name}`,
+            text: sharePostText,
+          });
+          return;
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        console.warn("Native Facebook share fallback:", err);
+      }
+    }
+
+    // Web / desktop fallback: copy caption & safely open Facebook sharer
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(sharePostText).catch(() => {});
     }
     setFbCopied(true);
-    setTimeout(() => setFbCopied(false), 3500);
+    setTimeout(() => setFbCopied(false), 4500);
 
     const width = 600;
     const height = 650;
     const left = typeof window !== "undefined" ? Math.max(0, (window.screen.width - width) / 2) : 100;
     const top = typeof window !== "undefined" ? Math.max(0, (window.screen.height - height) / 2) : 100;
-    window.open(
-      facebookUrl,
-      "facebook-share-dialog",
-      `width=${width},height=${height},top=${top},left=${left},toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1`
-    );
+
+    try {
+      const popup = window.open(
+        facebookUrl,
+        "facebook-share-dialog",
+        `width=${width},height=${height},top=${top},left=${left},toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1`
+      );
+      if (!popup || popup.closed || typeof popup.closed === "undefined") {
+        window.open(facebookUrl, "_blank");
+      }
+    } catch {
+      window.open(facebookUrl, "_blank");
+    }
   };
 
   const handleNativeShareImage = async () => {
     try {
       if (typeof navigator !== "undefined" && navigator.share && shareCardImage) {
-        const res = await fetch(shareCardImage);
-        const blob = await res.blob();
-        const file = new File([blob], `first-capital-${personalitySlug}-${shareGender}.jpg`, { type: "image/jpeg" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        const file = await getShareImageFile();
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: `First Capital - ${resultProfile?.name}`,
@@ -698,8 +790,24 @@ export function QuizFlow({
           return true;
         }
       }
-    } catch (e) {
-      console.log("Native share fallback", e);
+    } catch (e: any) {
+      if (e?.name === "AbortError") return true;
+      console.warn("Direct image share fallback", e);
+    }
+
+    // Fallback if native file share is unsupported: trigger download and copy caption
+    if (typeof window !== "undefined" && shareCardImage) {
+      const a = document.createElement("a");
+      a.href = shareCardImage;
+      a.download = `first-capital-${personalitySlug}-${shareGender}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(sharePostText).catch(() => {});
+      }
+      setPostCopied(true);
+      setTimeout(() => setPostCopied(false), 2500);
     }
     return false;
   };
@@ -1299,7 +1407,8 @@ export function QuizFlow({
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] font-bold text-sm transition-colors"
+                      onClick={handleWhatsAppShare}
+                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] font-bold text-sm transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">
                         <WhatsAppIcon className="size-5 shrink-0" />
@@ -1329,9 +1438,22 @@ export function QuizFlow({
 
                     {fbCopied && (
                       <p className="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center animate-in fade-in duration-200 leading-snug">
-                        ✨ Caption copied to clipboard! Paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post to share your story.
+                        ✨ Caption copied to clipboard! Paste (<kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post. On desktop, save the image on the left to attach your photo.
                       </p>
                     )}
+
+                    {/* Share Card Image Directly (Native Share) */}
+                    <button
+                      type="button"
+                      onClick={handleNativeShareImage}
+                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-[#1a214c] font-bold text-sm transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Share2 className="size-5 shrink-0 text-[#e0b815]" />
+                        <span>Share Card Image (All Apps)</span>
+                      </div>
+                      <ArrowRight className="size-4 opacity-70" />
+                    </button>
 
                     {/* Copy Post / Link */}
                     <button

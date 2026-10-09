@@ -591,8 +591,21 @@ const quizModalHtmlAndScript = `
                 </a>
 
                 <div id="fck-share-fb-notice" style="display:none;" class="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2 text-center leading-snug">
-                  ✨ Caption copied to clipboard! Paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post to share your story.
+                  ✨ Caption copied to clipboard! Paste (<kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Ctrl+V</kbd> / <kbd class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-[10px]">Cmd+V</kbd>) into your Facebook post. On desktop, save the image on the left to attach your photo.
                 </div>
+
+                <!-- Share Card Image Directly (Native Share) -->
+                <button
+                  id="fck-share-native"
+                  type="button"
+                  class="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-[#1a214c] font-bold text-sm transition-colors cursor-pointer"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0 text-[#e0b815]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+                    <span>Share Card Image (All Apps)</span>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
 
                 <!-- Copy Post / Link -->
                 <button
@@ -1342,8 +1355,47 @@ const quizModalHtmlAndScript = `
   var shareCardImg = document.getElementById('fck-share-card-img');
   var shareWhatsapp = document.getElementById('fck-share-whatsapp');
   var shareFacebook = document.getElementById('fck-share-facebook');
+  var shareNative = document.getElementById('fck-share-native');
   var shareCopyBtn = document.getElementById('fck-share-copy');
   var shareCopyText = document.getElementById('fck-share-copy-text');
+
+  async function getShareCardFile() {
+    if (!currentResultKey) return null;
+    var prof = PROFILES[currentResultKey];
+    var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
+    var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
+    var fileName = 'first-capital-' + slug + '-' + gender + '.jpg';
+    var imgSrc = (shareCardImg && shareCardImg.src) ? shareCardImg.src : ('__PREFIX__share-' + slug + '-' + gender + '.jpg');
+
+    try {
+      var res = await fetch(imgSrc);
+      if (res.ok) {
+        var blob = await res.blob();
+        return new File([blob], fileName, { type: 'image/jpeg' });
+      }
+    } catch (e) {
+      console.warn('Direct fetch failed, canvas fallback', e);
+    }
+
+    try {
+      if (shareCardImg && shareCardImg.complete && shareCardImg.naturalWidth) {
+        var canvas = document.createElement('canvas');
+        canvas.width = shareCardImg.naturalWidth || 1200;
+        canvas.height = shareCardImg.naturalHeight || 630;
+        var ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(shareCardImg, 0, 0);
+          var blob = await new Promise(function(resolve) { canvas.toBlob(resolve, 'image/jpeg', 0.95); });
+          if (blob) {
+            return new File([blob], fileName, { type: 'image/jpeg' });
+          }
+        }
+      }
+    } catch (canvasErr) {
+      console.warn('Canvas export failed', canvasErr);
+    }
+    return null;
+  }
 
   function showShareScreen() {
     if (!stepShare || !currentResultKey) return;
@@ -1351,9 +1403,9 @@ const quizModalHtmlAndScript = `
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html';
+    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
     var shareUrl = canonicalShareUrl;
-    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + shareUrl;
+    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + shareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;
@@ -1387,16 +1439,67 @@ const quizModalHtmlAndScript = `
   if (shareBackTop) shareBackTop.addEventListener('click', backFromShare);
   if (shareBackBottom) shareBackBottom.addEventListener('click', backFromShare);
 
+  if (shareWhatsapp) {
+    shareWhatsapp.addEventListener('click', async function(ev) {
+      if (!currentResultKey) return;
+      var prof = PROFILES[currentResultKey];
+      var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
+      var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
+
+      // If mobile device supports native file share, share actual JPEG image into WhatsApp!
+      if (navigator.share) {
+        try {
+          var file = await getShareCardFile();
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            if (ev) ev.preventDefault();
+            await navigator.share({
+              files: [file],
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
+            });
+            return false;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') {
+            if (ev) ev.preventDefault();
+            return false;
+          }
+        }
+      }
+      return true;
+    });
+  }
+
   if (shareFacebook) {
-    shareFacebook.addEventListener('click', function(ev) {
+    shareFacebook.addEventListener('click', async function(ev) {
       if (ev) ev.preventDefault();
       if (!currentResultKey) return;
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ". Find your investor type here: " + canonicalShareUrl;
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
 
+      // If mobile device supports native file share, open native share sheet so user posts directly via Facebook app!
+      if (navigator.share) {
+        try {
+          var file = await getShareCardFile();
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
+            });
+            return false;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return false;
+        }
+      }
+
+      // Web / desktop fallback: copy caption & safely open Facebook sharer
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).catch(function() {});
       }
@@ -1404,7 +1507,7 @@ const quizModalHtmlAndScript = `
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
       if (fbTextEl) {
         fbTextEl.innerText = 'Caption Copied! Opening FB...';
-        setTimeout(function() { fbTextEl.innerText = 'Share on Facebook'; }, 3500);
+        setTimeout(function() { fbTextEl.innerText = 'Share on Facebook'; }, 4500);
       }
       if (fbNoticeEl) {
         fbNoticeEl.style.display = 'block';
@@ -1415,7 +1518,51 @@ const quizModalHtmlAndScript = `
       var width = 600, height = 650;
       var left = Math.max(0, (window.screen.width - width) / 2);
       var top = Math.max(0, (window.screen.height - height) / 2);
-      window.open(fbUrl, 'facebook-share-dialog', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left + ',toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1');
+      try {
+        var popup = window.open(fbUrl, 'facebook-share-dialog', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left + ',toolbar=0,location=0,menubar=0,directories=0,scrollbars=1,resizable=1');
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          window.open(fbUrl, '_blank');
+        }
+      } catch (e) {
+        window.open(fbUrl, '_blank');
+      }
+      return false;
+    });
+  }
+
+  if (shareNative) {
+    shareNative.addEventListener('click', async function(ev) {
+      if (ev) ev.preventDefault();
+      if (!currentResultKey) return;
+      var prof = PROFILES[currentResultKey];
+      var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
+      var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
+
+      if (navigator.share) {
+        try {
+          var file = await getShareCardFile();
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
+              text: postText
+            });
+            return false;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return false;
+        }
+      }
+
+      // If not supported: trigger download & copy text
+      if (shareSaveImg) {
+        shareSaveImg.click();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(postText).catch(function() {});
+      }
       return false;
     });
   }
@@ -1503,17 +1650,20 @@ const quizModalHtmlAndScript = `
 `;
 
 async function exportStatic() {
-  const outDir = path.resolve('firstcapitalpages');
+  const homedir = process.env.HOME || '/Users/dilmith';
+  const dlBuildDir = path.join(homedir, 'Downloads', 'firstcapital-build');
+  const outDir = path.join(dlBuildDir, 'firstcapitalpages');
   const assetsDir = path.join(outDir, 'assets');
   const option2Dir = path.join(outDir, 'design-option-2');
   const apiDir = path.join(outDir, 'api');
 
-  // Clean stale build artifacts in firstcapitalpages/assets to keep bundle lightweight
+  // Clean stale build artifacts in output directory to keep bundle lightweight
   if (fs.existsSync(assetsDir)) {
     fs.rmSync(assetsDir, { recursive: true, force: true });
   }
 
   // Ensure directories exist
+  fs.mkdirSync(dlBuildDir, { recursive: true });
   fs.mkdirSync(assetsDir, { recursive: true });
   fs.mkdirSync(option2Dir, { recursive: true });
   fs.mkdirSync(apiDir, { recursive: true });
@@ -2100,12 +2250,15 @@ ${compiledCssContent}
   <title>I'm a ${cleanName}! What's Your Investor Type? | First Capital</title>
   <meta name="description" content="I just discovered my investor personality with First Capital: ${sp.name} (${sp.style}). “${sp.vibe}” What's yours? Take the 1-minute quiz!" />
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:site_name" content="First Capital" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
   <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}" />
+  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}" />
   <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -2312,23 +2465,19 @@ ${compiledCssContent}
     console.log('Note: could not auto-zip, folder firstcapitalpages is ready.');
   }
 
-  // Place clean build files and zips in ~/Downloads/firstcapital-build
+  // Place clean build files and zips in ~/Downloads/firstcapital-build and clean from repo root
   try {
-    const homedir = process.env.HOME || '/Users/dilmith';
-    const dlBuildDir = path.join(homedir, 'Downloads', 'firstcapital-build');
-    if (!fs.existsSync(dlBuildDir)) {
-      fs.mkdirSync(dlBuildDir, { recursive: true });
-    }
-    copyRecursive(outDir, path.join(dlBuildDir, 'firstcapitalpages'));
     if (fs.existsSync('firstcapital-production.zip')) {
       fs.copyFileSync('firstcapital-production.zip', path.join(dlBuildDir, 'firstcapital-production.zip'));
+      fs.unlinkSync('firstcapital-production.zip');
     }
     if (fs.existsSync('firstcapital-clean-project.zip')) {
       fs.copyFileSync('firstcapital-clean-project.zip', path.join(dlBuildDir, 'firstcapital-clean-project.zip'));
+      fs.unlinkSync('firstcapital-clean-project.zip');
     }
-    console.log('Successfully placed build files in: ' + dlBuildDir);
+    console.log('Successfully placed build files and archives in: ' + dlBuildDir);
   } catch (dlErr) {
-    console.log('Note on Downloads copy:', dlErr.message);
+    console.log('Note on Downloads archive:', dlErr.message);
   }
 }
 
