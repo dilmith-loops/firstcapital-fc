@@ -1358,6 +1358,7 @@ const quizModalHtmlAndScript = `
   var shareNative = document.getElementById('fck-share-native');
   var shareCopyBtn = document.getElementById('fck-share-copy');
   var shareCopyText = document.getElementById('fck-share-copy-text');
+  var nl = String.fromCharCode(10);
 
   async function getShareCardFile() {
     if (!currentResultKey) return null;
@@ -1405,7 +1406,7 @@ const quizModalHtmlAndScript = `
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
     var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
     var shareUrl = canonicalShareUrl;
-    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + shareUrl;
+    var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
     if (shareCardImg) {
       shareCardImg.src = cardImgSrc;
@@ -1446,7 +1447,7 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
       if (navigator.share) {
@@ -1480,7 +1481,7 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, open native share sheet so user posts directly via Facebook app!
       if (navigator.share) {
@@ -1538,7 +1539,7 @@ const quizModalHtmlAndScript = `
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
-      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + ".\n\nFind your investor personality:\n" + canonicalShareUrl;
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
         try {
@@ -1594,7 +1595,9 @@ const quizModalHtmlAndScript = `
     document.querySelectorAll('button, a, [data-quiz-trigger], #btn-find-investor-type').forEach(function(el) {
       var txt = (el.textContent || el.innerText || '').toLowerCase();
       if (
+        txt.includes('find my investor personality') ||
         txt.includes('find my investor type') ||
+        txt.includes('investor personality') ||
         txt.includes('take the quiz') ||
         el.getAttribute('href') === '#quiz' ||
         el.getAttribute('id') === 'btn-find-investor-type' ||
@@ -1627,7 +1630,9 @@ const quizModalHtmlAndScript = `
     if (!trigger) return;
     var txt = (trigger.textContent || trigger.innerText || '').toLowerCase();
     if (
+      txt.includes('find my investor personality') ||
       txt.includes('find my investor type') ||
+      txt.includes('investor personality') ||
       txt.includes('take the quiz') ||
       trigger.getAttribute('href') === '#quiz' ||
       trigger.getAttribute('id') === 'btn-find-investor-type' ||
