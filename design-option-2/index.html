@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </a>
 
                 <div id="fck-share-fb-notice" style="display:none;" class="text-[11px] text-slate-600 bg-blue-50/90 border border-blue-200/80 rounded-lg p-2.5 text-center leading-snug">
-                  🖼️ Your personality card image and caption will appear in the Facebook post — just click <strong>Post</strong>!
+                  📸 <strong>Image ready to post!</strong> Caption copied to clipboard — tap <strong>"Say something..."</strong> and paste (<strong>long-press → Paste</strong>).
                 </div>
 
                 <!-- Share Card Image Directly (Native Share) -->
@@ -1547,12 +1547,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (shareFacebook) {
     shareFacebook.addEventListener('click', async function(ev) {
+      if (ev) ev.preventDefault();
       if (!currentResultKey) return;
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
       var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : '') + ' - ' + (prof ? prof.vibe : '') + '.' + nl + nl + 'Find your investor personality:' + nl + canonicalShareUrl;
+
+      // Copy caption to clipboard so user can paste it into the Facebook post
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(postText).catch(function() {});
+      }
 
       var fbTextEl = document.getElementById('fck-share-fb-text');
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
@@ -1562,26 +1568,36 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       if (fbNoticeEl) {
         fbNoticeEl.style.display = 'block';
-        setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 7000);
+        setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 10000);
       }
 
-      // On mobile: use native share sheet so Facebook app gets the link + caption correctly.
-      // The Facebook sharer URL gets intercepted by the FB app and shows the home screen instead.
+      // On mobile: share the actual card image file into Facebook's photo post composer
       var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
       if (isMobile && navigator.share) {
-        ev.preventDefault();
         try {
-          await navigator.share({ url: canonicalShareUrl, text: postText });
-        } catch (err) {
-          if (err && err.name !== 'AbortError') {
-            // Fallback: open FB sharer in new tab
-            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
+          var file = await getShareCardFile();
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
+            });
+            return;
           }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+          console.warn('File share fallback:', err);
         }
-        return;
+        // Fallback: share URL via native sheet
+        try {
+          await navigator.share({ url: canonicalShareUrl });
+          return;
+        } catch (err2) {
+          if (err2 && err2.name === 'AbortError') return;
+        }
       }
 
-      // Desktop: let the <a href> (set by showShareScreen) navigate naturally via target="_blank"
+      // Desktop: open Facebook sharer URL in new tab
+      window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
     });
   }
 
