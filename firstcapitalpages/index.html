@@ -1476,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = './share-' + slug + '-' + gender + '.jpg';
-    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
     var shareUrl = canonicalShareUrl;
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
@@ -1518,7 +1518,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
@@ -1552,27 +1552,10 @@ document.addEventListener('DOMContentLoaded', function() {
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // If mobile device supports native file share, open native share sheet so user posts directly via Facebook app!
-      if (navigator.share) {
-        try {
-          var file = await getShareCardFile();
-          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
-            });
-            return false;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') return false;
-        }
-      }
-
-      // Web / desktop fallback: copy caption & safely open Facebook sharer
+      // Copy caption & safely open Facebook sharer with rich preview card
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).catch(function() {});
       }
@@ -1610,17 +1593,17 @@ document.addEventListener('DOMContentLoaded', function() {
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Share image file directly without URL so apps like Facebook/Instagram attach as photo post
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
             });
             return false;
           }

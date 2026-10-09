@@ -1409,7 +1409,7 @@ const quizModalHtmlAndScript = `
     var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
     var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
     var cardImgSrc = '__PREFIX__share-' + slug + '-' + gender + '.jpg';
-    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+    var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
     var shareUrl = canonicalShareUrl;
     var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + shareUrl;
 
@@ -1451,7 +1451,7 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       // If mobile device supports native file share, share actual JPEG image into WhatsApp!
@@ -1485,27 +1485,10 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
-      // If mobile device supports native file share, open native share sheet so user posts directly via Facebook app!
-      if (navigator.share) {
-        try {
-          var file = await getShareCardFile();
-          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
-            });
-            return false;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') return false;
-        }
-      }
-
-      // Web / desktop fallback: copy caption & safely open Facebook sharer
+      // Copy caption & safely open Facebook sharer with rich preview card
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(postText).catch(function() {});
       }
@@ -1543,17 +1526,17 @@ const quizModalHtmlAndScript = `
       var prof = PROFILES[currentResultKey];
       var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
       var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
-      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc5';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc6';
       var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : "") + " - " + (prof ? prof.vibe : "") + "." + nl + nl + "Find your investor personality:" + nl + canonicalShareUrl;
 
       if (navigator.share) {
         try {
           var file = await getShareCardFile();
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Share image file directly without URL so apps like Facebook/Instagram attach as photo post
             await navigator.share({
               files: [file],
-              title: 'First Capital - ' + (prof ? prof.name : 'Investor'),
-              text: postText
+              title: 'First Capital - ' + (prof ? prof.name : 'Investor')
             });
             return false;
           }
@@ -2267,12 +2250,12 @@ ${compiledCssContent}
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
+  <meta property="og:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc6" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}" />
-  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}" />
-  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}" />
+  <meta property="og:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
+  <meta property="og:image:url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
+  <meta property="og:image:secure_url" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2280,14 +2263,14 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html" />
+  <meta name="twitter:url" content="https://ai.loopsintegrated.co/fc/${v.urlSlug}.html?v=fc6" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}" />
+  <meta name="twitter:image" content="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
+  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/${v.card}?v=fc6" />
 
   <!-- Preload share card -->
-  <link rel="preload" as="image" href="./${v.card}" />
+  <link rel="preload" as="image" href="./${v.card}?v=fc6" />
   <link rel="icon" href="./favicon.png" type="image/png" />
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #0f172a; color: #f8fafc; text-align: center; padding: 20px;">
@@ -2300,24 +2283,16 @@ ${compiledCssContent}
         Take the quick 1-minute First Capital quiz to discover your investor personality and find your match.
       </p>
       
-      <a href="./index.html?quiz=open" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); max-width: 380px; padding: 16px 28px; background: #f1c91e; color: #142d27; font-weight: 800; font-size: 16px; border-radius: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(241, 201, 30, 0.35); transition: transform 0.2s;">
-        <span>Find My Investor Type →</span>
-      </a>
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <a href="./index.html?quiz=open" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); max-width: 380px; padding: 16px 28px; background: #f1c91e; color: #142d27; font-weight: 800; font-size: 16px; border-radius: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(241, 201, 30, 0.35); transition: transform 0.2s;">
+          <span>Find My Investor Type →</span>
+        </a>
+        <a href="./index.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); max-width: 380px; padding: 11px 20px; background: #f1f5f9; color: #334155; font-weight: 700; font-size: 13px; border-radius: 12px; text-decoration: none; border: 1px solid #e2e8f0;">
+          <span>← Back to First Capital</span>
+        </a>
+      </div>
     </div>
   </div>
-
-  <script>
-    // Seamless human redirect after a short moment if user is clicking through from a social feed
-    (function() {
-      var ua = (navigator.userAgent || '').toLowerCase();
-      var isSocialScraper = /facebookexternalhit|facebot|twitterbot|linkedinbot|whatsapp|telegram|slack|pinterest|bingbot|googlebot/i.test(ua);
-      if (!isSocialScraper) {
-        setTimeout(function() {
-          window.location.replace('./index.html?quiz=open');
-        }, 1200);
-      }
-    })();
-  </script>
 </body>
 </html>`;
 
