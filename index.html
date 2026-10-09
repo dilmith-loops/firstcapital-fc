@@ -1546,9 +1546,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   if (shareFacebook) {
-    shareFacebook.addEventListener('click', function() {
-      // href is already set to the FB sharer URL by showShareScreen().
-      // target="_blank" opens it naturally — no window.open() needed.
+    shareFacebook.addEventListener('click', async function(ev) {
+      if (!currentResultKey) return;
+      var prof = PROFILES[currentResultKey];
+      var gender = (currentLead && currentLead.gender === 'female') ? 'female' : 'male';
+      var slug = prof ? (prof.slug || 'keep-it-cool') : 'keep-it-cool';
+      var canonicalShareUrl = 'https://ai.loopsintegrated.co/fc/' + slug + '-' + gender + '.html?v=fc7';
+      var postText = "I just found my investor personality with First Capital! I'm " + (prof ? prof.name : '') + ' - ' + (prof ? prof.vibe : '') + '.' + nl + nl + 'Find your investor personality:' + nl + canonicalShareUrl;
+
       var fbTextEl = document.getElementById('fck-share-fb-text');
       var fbNoticeEl = document.getElementById('fck-share-fb-notice');
       if (fbTextEl) {
@@ -1559,6 +1564,24 @@ document.addEventListener('DOMContentLoaded', function() {
         fbNoticeEl.style.display = 'block';
         setTimeout(function() { fbNoticeEl.style.display = 'none'; }, 7000);
       }
+
+      // On mobile: use native share sheet so Facebook app gets the link + caption correctly.
+      // The Facebook sharer URL gets intercepted by the FB app and shows the home screen instead.
+      var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
+        ev.preventDefault();
+        try {
+          await navigator.share({ url: canonicalShareUrl, text: postText });
+        } catch (err) {
+          if (err && err.name !== 'AbortError') {
+            // Fallback: open FB sharer in new tab
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(canonicalShareUrl), '_blank');
+          }
+        }
+        return;
+      }
+
+      // Desktop: let the <a href> (set by showShareScreen) navigate naturally via target="_blank"
     });
   }
 
