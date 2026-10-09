@@ -2288,32 +2288,18 @@ ${compiledCssContent}
   }
 
 
-  // Also sync key static pages and folders to root so hosting in /fc/ serves directly from root
-  try {
-    fs.copyFileSync(path.join(outDir, 'index.html'), path.resolve('index.html'));
-    if (fs.existsSync(path.join(outDir, 'styles.css'))) {
-      fs.copyFileSync(path.join(outDir, 'styles.css'), path.resolve('styles.css'));
-    }
-    const copyRecursive = (src, dest) => {
-      if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-      for (const item of fs.readdirSync(src)) {
-        const s = path.join(src, item);
-        const d = path.join(dest, item);
-        if (fs.statSync(s).isDirectory()) {
-          copyRecursive(s, d);
-        } else {
-          fs.copyFileSync(s, d);
-        }
+  const copyRecursive = (src, dest) => {
+    if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+    for (const item of fs.readdirSync(src)) {
+      const s = path.join(src, item);
+      const d = path.join(dest, item);
+      if (fs.statSync(s).isDirectory()) {
+        copyRecursive(s, d);
+      } else {
+        fs.copyFileSync(s, d);
       }
-    };
-    copyRecursive(path.join(outDir, 'design-option-2'), path.resolve('design-option-2'));
-    copyRecursive(path.join(outDir, 'admin'), path.resolve('admin'));
-    copyRecursive(path.join(outDir, 'assets'), path.resolve('assets'));
-    copyRecursive(path.join(outDir, 'api'), path.resolve('api'));
-    console.log('Synchronized static bundles to root for instant /fc/ hosting.');
-  } catch (syncErr) {
-    console.log('Note on root sync:', syncErr.message);
-  }
+    }
+  };
 
   try {
     const { execSync } = await import('node:child_process');
@@ -2324,6 +2310,25 @@ ${compiledCssContent}
     }
   } catch (e) {
     console.log('Note: could not auto-zip, folder firstcapitalpages is ready.');
+  }
+
+  // Place clean build files and zips in ~/Downloads/firstcapital-build
+  try {
+    const homedir = process.env.HOME || '/Users/dilmith';
+    const dlBuildDir = path.join(homedir, 'Downloads', 'firstcapital-build');
+    if (!fs.existsSync(dlBuildDir)) {
+      fs.mkdirSync(dlBuildDir, { recursive: true });
+    }
+    copyRecursive(outDir, path.join(dlBuildDir, 'firstcapitalpages'));
+    if (fs.existsSync('firstcapital-production.zip')) {
+      fs.copyFileSync('firstcapital-production.zip', path.join(dlBuildDir, 'firstcapital-production.zip'));
+    }
+    if (fs.existsSync('firstcapital-clean-project.zip')) {
+      fs.copyFileSync('firstcapital-clean-project.zip', path.join(dlBuildDir, 'firstcapital-clean-project.zip'));
+    }
+    console.log('Successfully placed build files in: ' + dlBuildDir);
+  } catch (dlErr) {
+    console.log('Note on Downloads copy:', dlErr.message);
   }
 }
 
