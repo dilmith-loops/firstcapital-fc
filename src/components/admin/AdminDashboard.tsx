@@ -1181,9 +1181,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <button
                         type="button"
                         onClick={() => setEditingProduct(p)}
-                        className="flex-1 bg-slate-100 hover:bg-[#142d27] hover:text-[#f1c91e] text-slate-800 font-bold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="flex-1 bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                       >
-                        <Edit className="size-3.5" /> Edit Product Parameters
+                        <Edit className="size-3.5 text-[#f1c91e]" /> Edit Product Parameters
                       </button>
                     </div>
                   </div>
@@ -1251,10 +1251,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         <button
                           type="button"
                           onClick={() => setEditingQuestion(JSON.parse(JSON.stringify(q)))}
-                          className="bg-slate-100 hover:bg-[#142d27] hover:text-[#f1c91e] text-slate-700 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                           title="Edit Question & Options"
                         >
-                          <Edit className="size-3.5" />
+                          <Edit className="size-3.5 text-slate-700" />
                           <span className="hidden sm:inline">Edit</span>
                         </button>
                         <button

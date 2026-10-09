@@ -391,35 +391,35 @@
 }
 
 /* First Capital Core Brand Overrides & Utilities */
-.bg-fck-gold, [class*="bg-[#f1ca1f]"] {
-  background-color: #f1ca1f !important;
+.bg-fck-gold, .bg-\[\#f1ca1f\] {
+  background-color: #f1ca1f;
 }
-.text-fck-gold, [class*="text-[#f1ca1f]"] {
-  color: #f1ca1f !important;
+.text-fck-gold, .text-\[\#f1ca1f\] {
+  color: #f1ca1f;
 }
-.fill-fck-gold, [class*="fill-[#f1ca1f]"] {
-  fill: #f1ca1f !important;
+.fill-fck-gold, .fill-\[\#f1ca1f\] {
+  fill: #f1ca1f;
 }
-.border-fck-gold, [class*="border-[#f1ca1f]"] {
-  border-color: #f1ca1f !important;
+.border-fck-gold, .border-\[\#f1ca1f\] {
+  border-color: #f1ca1f;
 }
-.bg-fck-navy, [class*="bg-[#1a214c]"] {
-  background-color: #1a214c !important;
+.bg-fck-navy, .bg-\[\#1a214c\] {
+  background-color: #1a214c;
 }
-.text-fck-navy, [class*="text-[#1a214c]"] {
-  color: #1a214c !important;
+.text-fck-navy, .text-\[\#1a214c\] {
+  color: #1a214c;
 }
-.fill-fck-navy, [class*="fill-[#1a214c]"] {
-  fill: #1a214c !important;
+.fill-fck-navy, .fill-\[\#1a214c\] {
+  fill: #1a214c;
 }
-.border-fck-navy, [class*="border-[#1a214c]"] {
-  border-color: #1a214c !important;
+.border-fck-navy, .border-\[\#1a214c\] {
+  border-color: #1a214c;
 }
-.text-fck-forest, [class*="text-[#142d27]"] {
-  color: #142d27 !important;
+.text-fck-forest, .text-\[\#142d27\] {
+  color: #142d27;
 }
-.bg-fck-forest, [class*="bg-[#142d27]"] {
-  background-color: #142d27 !important;
+.bg-fck-forest, .bg-\[\#142d27\] {
+  background-color: #142d27;
 }
 
 .slider-nav {
