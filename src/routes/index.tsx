@@ -386,7 +386,7 @@ function Index() {
                               {idx + 1}
                             </span>
                             <span className="text-xs sm:text-sm font-bold text-foreground">
-                              {step.trim()}
+                              {step.trim() ? step.trim().charAt(0).toUpperCase() + step.trim().slice(1) : ""}
                             </span>
                           </div>
                           {idx < arr.length - 1 && (

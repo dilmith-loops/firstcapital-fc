@@ -11,7 +11,13 @@ function fetchHtml(url) {
     const req = http.get(url, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
-      res.on('end', () => resolve(data));
+      res.on('end', () => {
+        if (res.statusCode === 200 && data.includes('<html') && !data.includes('Not Found')) {
+          resolve(data);
+        } else {
+          reject(new Error(`Server returned status ${res.statusCode}`));
+        }
+      });
       res.on('error', reject);
     });
     req.on('error', reject);
@@ -1994,7 +2000,7 @@ const optionModalHtmlAndScript = `
       number: '02',
       title: 'Government Securities',
       fullCopy: '',
-      simplyPut: 'You invest → the government uses your money → you receive interest → your investment is repaid at maturity.',
+      simplyPut: 'You invest → The government uses your money → You receive interest → Your investment is repaid at maturity.',
       keyBenefits: ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
       video: {
         title: 'Government Securities explained',
@@ -2009,7 +2015,7 @@ const optionModalHtmlAndScript = `
       number: '03',
       title: 'Equities',
       fullCopy: '',
-      simplyPut: 'You buy shares → you own a small part of a company → the share value can rise or fall → you can benefit if the value increases.',
+      simplyPut: 'You buy shares → You own a part of a company → The share value can rise or fall → You can benefit if the value increases.',
       keyBenefits: ['Long-term growth potential', 'Own listed shares', 'Market participation'],
       video: {
         title: 'How do equities work?',
@@ -2068,10 +2074,12 @@ const optionModalHtmlAndScript = `
         '<h4 class="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">Simply put:</h4>' +
         '<div class="flex flex-wrap items-center gap-2 sm:gap-2.5">';
       steps.forEach(function(step, idx) {
+        var trimmed = step.trim();
+        var capStep = trimmed ? (trimmed.charAt(0).toUpperCase() + trimmed.slice(1)) : '';
         html += '<div class="flex items-center gap-2 sm:gap-2.5">' +
           '<div class="flex items-center gap-2 border border-border bg-card px-3.5 py-2 shadow-xs">' +
             '<span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-black text-primary-foreground">' + (idx + 1) + '</span>' +
-            '<span class="text-xs sm:text-sm font-bold text-foreground">' + step.trim() + '</span>' +
+            '<span class="text-xs sm:text-sm font-bold text-foreground">' + capStep + '</span>' +
           '</div>' +
           (idx < steps.length - 1 ? '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 text-primary stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>' : '') +
         '</div>';
