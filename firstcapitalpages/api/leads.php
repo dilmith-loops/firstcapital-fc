@@ -18,8 +18,10 @@ $action = $_GET['action'] ?? '';
 $uri = $_SERVER['REQUEST_URI'] ?? '';
 if (strpos($uri, '/api/admin/status') !== false) {
     $action = 'status';
-} elseif (strpos($uri, '/api/admin/settings') !== false) {
+} elseif (strpos($uri, '/api/admin/settings') !== false || strpos($uri, '/api/settings') !== false) {
     $action = 'settings';
+} elseif (strpos($uri, '/api/questions') !== false || strpos($uri, '/api/quiz/questions') !== false) {
+    $action = 'questions';
 } elseif (strpos($uri, '/api/admin/leads/update') !== false) {
     $action = 'update';
 } elseif (strpos($uri, '/api/admin/leads/delete') !== false) {
@@ -47,7 +49,110 @@ function parseLeadId($val) {
     return 0;
 }
 
+function getDefaultQuizQuestions() {
+    return [
+        [
+            'id' => 1,
+            'question' => "You have some extra money sitting in your account. What’s your first thought?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "I’d keep it somewhere safe, but I want to be able to access it anytime."],
+                ['key' => 'B', 'label' => 'B', 'text' => "I’m happy to leave it invested for a few months if I can earn a return."],
+                ['key' => 'C', 'label' => 'C', 'text' => "I’m comfortable leaving it invested for longer if it can grow steadily."],
+                ['key' => 'D', 'label' => 'D', 'text' => "I’d rather invest for the potential of higher long-term growth"]
+            ]
+        ],
+        [
+            'id' => 2,
+            'question' => "How long can you comfortably leave your money invested?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "1 - 6 months"],
+                ['key' => 'B', 'label' => 'B', 'text' => "6 months – 1 year"],
+                ['key' => 'C', 'label' => 'C', 'text' => "1–2 years"],
+                ['key' => 'D', 'label' => 'D', 'text' => "More than 2 years"]
+            ]
+        ],
+        [
+            'id' => 3,
+            'question' => "Interest rates in the market move up and down frequently. What is your reaction?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "I’d probably want to take my money out."],
+                ['key' => 'B', 'label' => 'B', 'text' => "A little movement is fine, but I prefer stability."],
+                ['key' => 'C', 'label' => 'C', 'text' => "I can handle some ups and downs if I have a longer-term plan."],
+                ['key' => 'D', 'label' => 'D', 'text' => "I’m comfortable with bigger ups and downs for the chance of higher growth."]
+            ]
+        ],
+        [
+            'id' => 4,
+            'question' => "What is your priority for investing right now?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "A financial safety net"],
+                ['key' => 'B', 'label' => 'B', 'text' => "A goal coming up in the next year or so"],
+                ['key' => 'C', 'label' => 'C', 'text' => "A bigger milestone in the next few years"],
+                ['key' => 'D', 'label' => 'D', 'text' => "Long-term wealth and financial freedom"]
+            ]
+        ],
+        [
+            'id' => 5,
+            'question' => "What would you say is your pattern for investing?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "Setting aside an amount every month"],
+                ['key' => 'B', 'label' => 'B', 'text' => "Investing when I have some extra money"],
+                ['key' => 'C', 'label' => 'C', 'text' => "Investing a large amount at once and letting it work"],
+                ['key' => 'D', 'label' => 'D', 'text' => "Investing when I spot an opportunity I believe in"]
+            ]
+        ],
+        [
+            'id' => 6,
+            'question' => "Imagine you have LKR 500,000 ready to invest. Which sounds like you?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "Keep it flexible and invest for the short term."],
+                ['key' => 'B', 'label' => 'B', 'text' => "Aim for a relatively stable return while keeping access to my money."],
+                ['key' => 'C', 'label' => 'C', 'text' => "Lock it into a longer-term government investment and earn regular interest."],
+                ['key' => 'D', 'label' => 'D', 'text' => "Invest in shares and stay invested for long-term growth."]
+            ]
+        ],
+        [
+            'id' => 7,
+            'question' => "Which statement sounds most like you?",
+            'options' => [
+                ['key' => 'A', 'label' => 'A', 'text' => "“I like knowing my money is there when I need it.”"],
+                ['key' => 'B', 'label' => 'B', 'text' => "“I want my money to grow, without taking on too much risk.”"],
+                ['key' => 'C', 'label' => 'C', 'text' => "“I’m happy to wait if it means building my money for the potential of long-term growth.”"],
+                ['key' => 'D', 'label' => 'D', 'text' => "“I’m playing the long game when it comes to my wealth.”"]
+            ]
+        ]
+    ];
+}
+
+function ensureTablesExist($pdo) {
+    if (!$pdo) return;
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `app_settings` (
+            `setting_key` VARCHAR(100) PRIMARY KEY,
+            `setting_value` LONGTEXT NOT NULL,
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `quiz_leads` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            `name` VARCHAR(100) NOT NULL,
+            `email` VARCHAR(150) NOT NULL,
+            `phone` VARCHAR(50) NOT NULL,
+            `gender` VARCHAR(20) DEFAULT 'male',
+            `result_code` CHAR(2) DEFAULT 'A',
+            `result_profile` VARCHAR(100) DEFAULT NULL,
+            `matched_product` VARCHAR(255) DEFAULT NULL,
+            `answers_json` LONGTEXT DEFAULT NULL,
+            `status` VARCHAR(20) DEFAULT 'NEW',
+            `notes` TEXT DEFAULT NULL,
+            `source` VARCHAR(100) DEFAULT 'Landing Page Quiz'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Throwable $e) {}
+}
+
 $pdo = getDbConnection();
+ensureTablesExist($pdo);
 
 // ----------------------------------------------------
 // 1. HEALTH / STATUS CHECK
@@ -102,7 +207,10 @@ if ($action === 'status') {
 // ----------------------------------------------------
 // 2. APP SETTINGS (Questions, Products, Testimonials, Admins)
 // ----------------------------------------------------
-if ($action === 'settings') {
+if ($action === 'questions' || $action === 'settings') {
+    if ($action === 'questions') {
+        $_GET['key'] = 'quiz_questions';
+    }
     if ($method === 'GET') {
         $key = cleanString($_GET['key'] ?? 'quiz_questions', 100);
         if ($pdo) {
@@ -110,14 +218,34 @@ if ($action === 'settings') {
                 $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = :k");
                 $stmt->execute([':k' => $key]);
                 $row = $stmt->fetch();
-                if ($row && isset($row['setting_value'])) {
+                if ($row && isset($row['setting_value']) && !empty($row['setting_value'])) {
                     $decoded = json_decode($row['setting_value'], true);
                     http_response_code(200);
-                    echo json_encode(['success' => true, 'data' => $decoded !== null ? $decoded : $row['setting_value']]);
+                    echo json_encode([
+                        'success' => true,
+                        'source' => 'db',
+                        'data' => $decoded !== null ? $decoded : $row['setting_value']
+                    ]);
                     exit;
                 }
             } catch (Throwable $e) {}
         }
+
+        // If requesting quiz_questions and not found in DB: return default questions and seed to DB
+        if ($key === 'quiz_questions') {
+            $defaultQuestions = getDefaultQuizQuestions();
+            if ($pdo) {
+                try {
+                    $valJson = json_encode($defaultQuestions, JSON_UNESCAPED_UNICODE);
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_questions', :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                    $ins->execute([':v' => $valJson]);
+                } catch (Throwable $e) {}
+            }
+            http_response_code(200);
+            echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultQuestions]);
+            exit;
+        }
+
         http_response_code(200);
         echo json_encode(['success' => true, 'data' => null]);
         exit;
@@ -125,7 +253,7 @@ if ($action === 'settings') {
         $raw = file_get_contents('php://input');
         $body = json_decode($raw, true);
         $key = cleanString($body['key'] ?? '', 100);
-        $val = isset($body['value']) ? json_encode($body['value'], JSON_UNESCAPED_UNICODE) : '';
+        $val = isset($body['value']) ? (is_string($body['value']) ? $body['value'] : json_encode($body['value'], JSON_UNESCAPED_UNICODE)) : '';
         if ($pdo && $key) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");

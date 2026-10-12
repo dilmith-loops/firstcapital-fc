@@ -955,30 +955,35 @@ export const AdminStore = {
     return this.getQuestions();
   },
 
-  async persistQuestionsToDb(questions: QuestionItem[]) {
+  async persistQuestionsToDb(questions: QuestionItem[]): Promise<boolean> {
     try {
-      await fetch(getApiUrl("api/admin/settings"), {
+      const res = await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "quiz_questions", value: questions }),
       });
+      if (res.ok) {
+        const json = await res.json();
+        return !!json.success;
+      }
     } catch (err) {
       console.warn("Could not persist questions to DB:", err);
     }
+    return false;
   },
 
-  saveQuestion(question: QuestionItem) {
+  async saveQuestion(question: QuestionItem): Promise<boolean> {
     const list = this.getQuestions();
     const updated = list.map((q) => (q.id === question.id ? question : q));
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(updated));
     }
-    this.persistQuestionsToDb(updated);
     this.addLog("QUESTION_UPDATED", `Updated Question #${question.id}: "${question.question.slice(0, 45)}..."`);
     notify();
+    return await this.persistQuestionsToDb(updated);
   },
 
-  addQuestion(data: { question: string; options: QuestionOption[] }): QuestionItem {
+  async addQuestion(data: { question: string; options: QuestionOption[] }): Promise<QuestionItem> {
     const list = this.getQuestions();
     const maxId = list.reduce((max, q) => Math.max(max, q.id), 0);
     const newQuestion: QuestionItem = {
@@ -990,31 +995,31 @@ export const AdminStore = {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(updated));
     }
-    this.persistQuestionsToDb(updated);
     this.addLog("QUESTION_CREATED", `Added new Question #${newQuestion.id}: "${newQuestion.question.slice(0, 45)}..."`);
     notify();
+    await this.persistQuestionsToDb(updated);
     return newQuestion;
   },
 
-  deleteQuestion(id: number) {
+  async deleteQuestion(id: number): Promise<boolean> {
     const list = this.getQuestions();
     const target = list.find((q) => q.id === id);
     const updated = list.filter((q) => q.id !== id);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(updated));
     }
-    this.persistQuestionsToDb(updated);
     this.addLog("QUESTION_DELETED", `Deleted Question #${id}${target ? `: "${target.question.slice(0, 30)}..."` : ""}`);
     notify();
+    return await this.persistQuestionsToDb(updated);
   },
 
-  resetDefaultQuestions() {
+  async resetDefaultQuestions(): Promise<boolean> {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(DEFAULT_QUESTIONS));
     }
-    this.persistQuestionsToDb(DEFAULT_QUESTIONS);
     this.addLog("QUESTIONS_RESET", "Quiz questions reset to default standard set");
     notify();
+    return await this.persistQuestionsToDb(DEFAULT_QUESTIONS);
   },
 
   // Testimonials Operations (Live DB sync + Local Fallback)

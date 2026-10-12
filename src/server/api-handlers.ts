@@ -372,19 +372,36 @@ export async function handleDeleteLead(id: string | number): Promise<{ success: 
 
 export async function handleGetAppSetting(key: string): Promise<any> {
   const pool = getDbPool();
-  const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT setting_value FROM app_settings WHERE setting_key = ?",
-    [key]
-  );
-  if (rows.length === 0) return null;
-  const row0 = rows[0];
-  if (!row0) return null;
-  const val = row0["setting_value"];
   try {
-    return JSON.parse(val);
-  } catch {
-    return val;
+    const [rows] = await pool.query<RowDataPacket[]>(
+      "SELECT setting_value FROM app_settings WHERE setting_key = ?",
+      [key]
+    );
+    if (rows.length > 0) {
+      const row0 = rows[0];
+      if (row0) {
+        const val = row0["setting_value"];
+        try {
+          return JSON.parse(val);
+        } catch {
+          return val;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not query app_settings from pool:", err);
   }
+
+  // Fallback for quiz_questions
+  if (key === "quiz_questions") {
+    const { DEFAULT_QUESTIONS } = await import("../lib/admin-store");
+    try {
+      await handleSaveAppSetting("quiz_questions", DEFAULT_QUESTIONS);
+    } catch {}
+    return DEFAULT_QUESTIONS;
+  }
+
+  return null;
 }
 
 export async function handleSaveAppSetting(key: string, value: any): Promise<{ success: boolean }> {

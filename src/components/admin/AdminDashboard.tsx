@@ -365,7 +365,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   };
 
-  const handleSaveQuestion = (e: React.FormEvent) => {
+  const handleSaveQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingQuestion || !editingQuestion.question.trim()) return;
     const hasEmptyOption = editingQuestion.options.some((o) => !o.text.trim());
@@ -373,12 +373,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       alert("Please ensure all 4 options have answer text.");
       return;
     }
-    AdminStore.saveQuestion(editingQuestion);
+    const qId = editingQuestion.id;
+    const qObj = { ...editingQuestion };
     setEditingQuestion(null);
-    showToast(`Question #${editingQuestion.id} updated successfully!`);
+    showToast(`Saving Question #${qId} to database...`);
+    const success = await AdminStore.saveQuestion(qObj);
+    showToast(success ? `Question #${qId} saved to database & live quiz!` : `Question #${qId} updated!`);
   };
 
-  const handleAddQuestion = (e: React.FormEvent) => {
+  const handleAddQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newQuestionText.trim()) {
       alert("Please enter the question text.");
@@ -390,13 +393,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
-    const created = AdminStore.addQuestion({
+    const payload = {
       question: newQuestionText.trim(),
       options: newQuestionOptions.map((o) => ({
         ...o,
         text: o.text.trim(),
       })),
-    });
+    };
 
     setIsAddQuestionOpen(false);
     setNewQuestionText("");
@@ -406,27 +409,28 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       { key: "C", label: "C", text: "" },
       { key: "D", label: "D", text: "" },
     ]);
-    showToast(`New Question #${created.id} added!`);
+    const created = await AdminStore.addQuestion(payload);
+    showToast(`New Question #${created.id} saved to database & live quiz!`);
   };
 
-  const handleDeleteQuestion = (id: number) => {
+  const handleDeleteQuestion = async (id: number) => {
     if (questions.length <= 1) {
       alert("You must keep at least 1 question for the quiz flow.");
       return;
     }
     if (window.confirm(`Are you sure you want to delete Question #${id}?`)) {
-      AdminStore.deleteQuestion(id);
       if (editingQuestion?.id === id) {
         setEditingQuestion(null);
       }
-      showToast(`Question #${id} removed.`);
+      await AdminStore.deleteQuestion(id);
+      showToast(`Question #${id} removed from database.`);
     }
   };
 
-  const handleResetQuestions = () => {
+  const handleResetQuestions = async () => {
     if (window.confirm("Reset all quiz questions back to the standard 7 campaign questions?")) {
-      AdminStore.resetDefaultQuestions();
-      showToast("Default quiz questions restored!");
+      await AdminStore.resetDefaultQuestions();
+      showToast("Default quiz questions restored in DB & live quiz!");
     }
   };
 

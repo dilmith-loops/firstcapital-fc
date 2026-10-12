@@ -768,7 +768,7 @@ const quizModalHtmlAndScript = `
     }
   };
 
-  var QUESTIONS = [
+  var DEFAULT_QUESTIONS = [
     {
       id: 1,
       question: "You have some extra money sitting in your account. What’s your first thought?",
@@ -841,6 +841,82 @@ const quizModalHtmlAndScript = `
     }
   ];
 
+  var QUESTIONS = DEFAULT_QUESTIONS;
+
+  function syncQuestionsFromDbOrStorage(callback) {
+    // 1. Immediately read from localStorage if admin previously edited questions or if cached
+    try {
+      var cached = localStorage.getItem('fc_admin_questions');
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          QUESTIONS = parsed;
+        }
+      }
+    } catch(e) {}
+
+    // 2. Fetch from DB via API (works on Hostinger / PHP / Apache / Node)
+    var endpoints = [
+      '__PREFIX__api/leads.php?action=settings&key=quiz_questions',
+      '__PREFIX__api/leads.php?action=questions',
+      '/api/admin/settings?key=quiz_questions',
+      '/fc/api/leads.php?action=settings&key=quiz_questions'
+    ];
+
+    function tryFetchIndex(idx) {
+      if (idx >= endpoints.length) {
+        if (typeof callback === 'function') callback(QUESTIONS);
+        return;
+      }
+      var url = endpoints[idx];
+      fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var items = json && json.data;
+          if (Array.isArray(items) && items.length > 0) {
+            QUESTIONS = items;
+            try {
+              localStorage.setItem('fc_admin_questions', JSON.stringify(items));
+            } catch(e) {}
+            // If quiz modal is currently visible on a question screen, re-render with fresh questions
+            if (modal && modal.style.display === 'flex' && stepQuestion && stepQuestion.style.display === 'block') {
+              if (currentStep >= QUESTIONS.length) currentStep = 0;
+              showQuestionScreen(currentStep);
+            }
+            if (typeof callback === 'function') callback(QUESTIONS);
+          } else {
+            tryFetchIndex(idx + 1);
+          }
+        })
+        .catch(function() {
+          tryFetchIndex(idx + 1);
+        });
+    }
+
+    tryFetchIndex(0);
+  }
+
+  // Preload questions on page load
+  syncQuestionsFromDbOrStorage();
+
+  // Multi-tab real-time sync with Admin Portal
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'fc_admin_questions' && e.newValue) {
+      try {
+        var updated = JSON.parse(e.newValue);
+        if (Array.isArray(updated) && updated.length > 0) {
+          QUESTIONS = updated;
+          if (modal && modal.style.display === 'flex' && stepQuestion && stepQuestion.style.display === 'block') {
+            showQuestionScreen(Math.min(currentStep, QUESTIONS.length - 1));
+          }
+        }
+      } catch(err) {}
+    }
+  });
+
   var modal = document.getElementById('fck-quiz-modal');
   var closeBtn = document.getElementById('fck-modal-close');
   var stepDetails = document.getElementById('fck-step-details');
@@ -894,6 +970,8 @@ const quizModalHtmlAndScript = `
     document.body.style.overflow = 'hidden';
     userAnswers = {};
     if (stepProductDetail) stepProductDetail.style.display = 'none';
+    // Sync latest questions from localStorage and DB whenever modal is opened
+    syncQuestionsFromDbOrStorage();
     showQuestionScreen(0);
   }
 
@@ -965,6 +1043,8 @@ const quizModalHtmlAndScript = `
   }
 
   function showQuestionScreen(stepIdx) {
+    if (!QUESTIONS || QUESTIONS.length === 0) QUESTIONS = DEFAULT_QUESTIONS;
+    if (stepIdx >= QUESTIONS.length) stepIdx = 0;
     currentStep = stepIdx;
     stepDetails.style.display = 'none';
     stepQuestion.style.display = 'block';
@@ -973,7 +1053,8 @@ const quizModalHtmlAndScript = `
     if (stepProductDetail) stepProductDetail.style.display = 'none';
 
     var q = QUESTIONS[stepIdx];
-    var numStr = String(stepIdx + 1).padStart(2, '0') + '-07';
+    var totalCountStr = String(QUESTIONS.length).padStart(2, '0');
+    var numStr = String(stepIdx + 1).padStart(2, '0') + '-' + totalCountStr;
     qCounter.innerText = numStr;
     qProgress.style.width = Math.round(((stepIdx + 1) / QUESTIONS.length) * 100) + '%';
     qText.innerText = q.question;
@@ -1006,15 +1087,17 @@ const quizModalHtmlAndScript = `
 
     if (topKeys.length === 1) return topKeys[0];
 
-    // Primary tie-breaker: Question 6
-    var q6Ans = userAnswers[6];
-    if (topKeys.includes(q6Ans)) return q6Ans;
+    // Primary tie-breaker: Question 6 or second-to-last question
+    var q6Id = (QUESTIONS.length >= 6) ? QUESTIONS[5].id : (QUESTIONS[QUESTIONS.length - 1] ? QUESTIONS[QUESTIONS.length - 1].id : 6);
+    var q6Ans = userAnswers[6] || userAnswers[q6Id];
+    if (q6Ans && topKeys.includes(q6Ans)) return q6Ans;
 
     // Secondary tie-breaker: Question 3
-    var q3Ans = userAnswers[3];
-    if (topKeys.includes(q3Ans)) return q3Ans;
+    var q3Id = (QUESTIONS.length >= 3) ? QUESTIONS[2].id : 3;
+    var q3Ans = userAnswers[3] || userAnswers[q3Id];
+    if (q3Ans && topKeys.includes(q3Ans)) return q3Ans;
 
-    return topKeys[0];
+    return topKeys[0] || 'A';
   }
 
   function showLoadingScreen() {

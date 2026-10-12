@@ -82,6 +82,50 @@ export default {
         }
       }
 
+      if (url.pathname === "/api/admin/settings" || url.pathname === "/api/questions") {
+        try {
+          const { handleGetAppSetting, handleSaveAppSetting } = await import("./server/api-handlers");
+          if (request.method === "GET") {
+            const key = url.searchParams.get("key") || "quiz_questions";
+            const data = await handleGetAppSetting(key);
+            return new Response(JSON.stringify({ success: true, data }), {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            });
+          } else if (request.method === "POST") {
+            const body = (await request.json()) as any;
+            const key = body?.key || "quiz_questions";
+            const value = body?.value;
+            await handleSaveAppSetting(key, value);
+            return new Response(JSON.stringify({ success: true }), {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            });
+          }
+        } catch (err: any) {
+          return new Response(JSON.stringify({ error: err?.message || "Settings error" }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          });
+        }
+      }
+
+      if (url.pathname === "/api/admin/status" && request.method === "GET") {
+        try {
+          const { handleGetDbStatus } = await import("./server/api-handlers");
+          const status = await handleGetDbStatus();
+          return new Response(JSON.stringify({ success: true, ...status }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        } catch (err: any) {
+          return new Response(JSON.stringify({ success: false, connected: false, error: err?.message }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

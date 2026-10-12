@@ -445,11 +445,38 @@ export function QuizFlow({
   const [questions, setQuestions] = useState<QuestionItem[]>(() => AdminStore.getQuestions());
 
   useEffect(() => {
+    // 1. Initial local/cached questions
     setQuestions(AdminStore.getQuestions());
+
+    // 2. Fetch live questions from Database
+    AdminStore.fetchQuestionsFromDb().then((dbQuestions) => {
+      if (Array.isArray(dbQuestions) && dbQuestions.length > 0) {
+        setQuestions(dbQuestions);
+      }
+    });
+
+    // 3. Subscribe to local AdminStore updates
     const unsub = AdminStore.subscribe(() => {
       setQuestions(AdminStore.getQuestions());
     });
-    return unsub;
+
+    // 4. Multi-tab sync: if admin edits in another tab, update immediately
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "fc_admin_questions" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(parsed);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      unsub();
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   // User details state
