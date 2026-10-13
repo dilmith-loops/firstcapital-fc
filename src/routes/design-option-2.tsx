@@ -256,11 +256,13 @@ function DesignOptionTwo() {
                 Save, Plan and<br />
                 Prepare for<br />
                 the Future.
-                <span className="block w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+              </h1>
+              <div className="w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+              <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
                 But Do You Know<br />
                 Your Investor<br />
                 Personality?
-              </h1>
+              </h2>
               <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-normal leading-snug sm:leading-relaxed">
                 Answer 7 simple questions<br />
                 and discover your investor<br />
