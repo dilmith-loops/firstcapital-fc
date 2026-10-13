@@ -461,8 +461,8 @@
   /* Image sits at the top of the hero behind the headline, right-aligned,
      with a soft white wash on the left for legibility and a fade at its bottom */
   .hero-mobile-bg {
-    --hero-img-h: min(48vw, 380px);
-    --hero-img-top: 3.5rem;
+    --hero-img-h: min(62vw, 440px);
+    --hero-img-top: 1.5rem;
     position: relative;
   }
   .hero-mobile-bg::before {
@@ -475,8 +475,8 @@
     width: 100vw;
     background-color: #ffffff;
     background-image:
-      linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 18%, rgba(255, 255, 255, 0) 60%, #ffffff 88%),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 35%, rgba(255, 255, 255, 0) 62%),
+      linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0) 70%, #ffffff 92%),
+      linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 30%, rgba(255, 255, 255, 0) 60%),
       url('./FCmain.png?v=4');
     background-repeat: no-repeat;
     background-position: left 0 top var(--hero-img-top), left 0 top var(--hero-img-top), right top var(--hero-img-top);
