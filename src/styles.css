@@ -461,8 +461,8 @@
   /* Image sits at the top of the hero behind the headline, right-aligned,
      with a soft white wash on the left for legibility and a fade at its bottom */
   .hero-mobile-bg {
-    --hero-img-h: min(62vw, 440px);
-    --hero-img-top: 1.5rem;
+    --hero-img-h: min(54vw, 400px);
+    --hero-img-top: 2.5rem;
     position: relative;
   }
   .hero-mobile-bg::before {
