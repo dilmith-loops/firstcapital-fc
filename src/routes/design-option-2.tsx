@@ -283,7 +283,7 @@ function DesignOptionTwo() {
               </p>
             </div>
 
-            <div className="relative flex items-center justify-center w-full">
+            <div className="relative flex items-center justify-center w-full lg:-translate-y-8 xl:-translate-y-12">
               <div className="comic-shadow absolute bottom-4 left-1/2 -translate-x-1/2 h-[68%] w-[94%] border-b-[18px] border-primary" />
               <img
                 src={FCmainImage}

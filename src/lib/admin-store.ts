@@ -1,4 +1,4 @@
-import { ProfileKey, PROFILES, ProfileInfo } from "@/components/quiz/QuizFlow";
+import { ProfileKey, PROFILES, ProfileInfo } from "../components/quiz/QuizFlow";
 import { getApiUrl } from "./api-url";
 
 export type LeadStatus = "NEW" | "CONTACTED" | "IN_PROGRESS" | "CONVERTED" | "CLOSED";
