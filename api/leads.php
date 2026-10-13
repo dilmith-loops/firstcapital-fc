@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/smtp.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
@@ -27,61 +26,12 @@ if (strpos($uri, '/api/admin/status') !== false) {
     $action = 'testimonials';
 } elseif (strpos($uri, '/api/results') !== false || strpos($uri, '/api/quiz/results') !== false || strpos($uri, '/api/profiles') !== false) {
     $action = 'results';
-} elseif (strpos($uri, '/api/admin/test_smtp') !== false || strpos($uri, '/api/test_smtp') !== false || strpos($uri, '/api/test_email') !== false) {
-    $action = 'test_smtp';
 } elseif (strpos($uri, '/api/admin/leads/update') !== false) {
     $action = 'update';
 } elseif (strpos($uri, '/api/admin/leads/delete') !== false) {
     $action = 'delete';
 } elseif (strpos($uri, '/api/admin/leads') !== false && $method === 'GET') {
     $action = 'leads';
-}
-
-// Diagnostic SMTP test endpoint (accessible by admin to verify .env credentials)
-if ($action === 'test_smtp' || $action === 'test_email') {
-    $mailer = new FirstCapitalMailer();
-    $isConfigured = $mailer->isConfigured();
-    $adminEmail = trim((string)(getenv('ADMIN_EMAIL') ?: (defined('ADMIN_EMAIL') ? ADMIN_EMAIL : (getenv('SMTP_TO_EMAIL') ?: ''))));
-    $host = trim((string)(getenv('SMTP_HOST') ?: (defined('SMTP_HOST') ? SMTP_HOST : '')));
-    $port = (int)(getenv('SMTP_PORT') ?: (defined('SMTP_PORT') ? SMTP_PORT : 465));
-    $user = trim((string)(getenv('SMTP_USER') ?: (defined('SMTP_USER') ? SMTP_USER : '')));
-    
-    if (!$isConfigured) {
-        http_response_code(200);
-        echo json_encode([
-            'success' => false,
-            'configured' => false,
-            'message' => 'SMTP is not fully configured in .env. Please set SMTP_HOST, SMTP_USER, SMTP_PASS, and ADMIN_EMAIL in your .env file.',
-            'settings' => [
-                'SMTP_HOST' => $host ?: '(not set)',
-                'SMTP_PORT' => $port,
-                'SMTP_USER' => $user ?: '(not set)',
-                'ADMIN_EMAIL' => $adminEmail ?: '(not set)'
-            ]
-        ]);
-        exit;
-    }
-    
-    $testResult = $mailer->send(
-        $adminEmail,
-        "✅ First Capital SMTP Test Notification",
-        "<div style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:24px;background:#f8fafc;border-radius:12px;max-width:550px;margin:0 auto;border:1px solid #e2e8f0;'><h2 style='color:#1a214c;margin-top:0;'>First Capital SMTP Configuration Test</h2><p style='color:#334155;'>This is a test notification confirming that your SMTP settings in <strong>.env</strong> are working correctly!</p><div style='background:#ffffff;padding:12px 16px;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;color:#1e293b;'><strong>Host:</strong> {$host}:{$port}<br><strong>User:</strong> {$user}<br><strong>Admin Recipient:</strong> {$adminEmail}</div><p style='font-size:12px;color:#64748b;margin-bottom:0;margin-top:16px;'>Sent at " . date('Y-m-d H:i:s T') . "</p></div>",
-        "First Capital SMTP Configuration Test\nThis test confirms that your SMTP settings in .env are working correctly.\nHost: {$host}:{$port}\nRecipient: {$adminEmail}"
-    );
-    
-    http_response_code(200);
-    echo json_encode([
-        'success' => $testResult['success'] ?? false,
-        'configured' => true,
-        'result' => $testResult,
-        'settings' => [
-            'SMTP_HOST' => $host,
-            'SMTP_PORT' => $port,
-            'SMTP_USER' => $user,
-            'ADMIN_EMAIL' => $adminEmail
-        ]
-    ]);
-    exit;
 }
 
 function cleanString($str, $maxLen = 255) {
@@ -723,34 +673,12 @@ $notes = cleanString($data['notes'] ?? '', 1000);
 $source = cleanString($data['source'] ?? 'Landing Page Quiz', 100);
 
 function finalizeLeadSubmission($refId, $leadId, $data, $name, $email, $phone, $gender, $profileKey, $profileName, $matchedProduct, $source, $pdo, $storageType) {
-    $emailResult = null;
-    if (function_exists('sendLeadNotificationEmail')) {
-        $leadPayloadForEmail = [
-            'id' => $refId,
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'gender' => $gender,
-            'profileKey' => $profileKey,
-            'profileName' => $profileName,
-            'matchedProduct' => $matchedProduct,
-            'answers' => $data['answers'] ?? [],
-            'source' => $source
-        ];
-        try {
-            $emailResult = sendLeadNotificationEmail($leadPayloadForEmail, $pdo);
-        } catch (Throwable $eMail) {
-            $emailResult = ['success' => false, 'error' => $eMail->getMessage()];
-        }
-    }
-
     http_response_code(200);
     echo json_encode([
         'success' => true,
         'leadId' => (int)$leadId,
         'id' => $refId,
-        'storage' => $storageType,
-        'emailNotification' => $emailResult
+        'storage' => $storageType
     ]);
     exit;
 }

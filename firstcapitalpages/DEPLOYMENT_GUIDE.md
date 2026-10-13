@@ -30,17 +30,6 @@ DB_NAME=your_database_name
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 
-Step C - Configure SMTP in .env:
-Enter your outgoing SMTP mail server credentials to send new quiz submissions to your admin inbox:
-
-SMTP_ENABLED=true
-ADMIN_EMAIL=admin@firstcapital.lk
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_SECURE=ssl
-SMTP_USER=leads@firstcapital.lk
-SMTP_PASS=your_smtp_password_here
-
 * .htaccess is pre-configured to block public access to .env for security.
 
 ================================================================================
@@ -51,9 +40,8 @@ SMTP_PASS=your_smtp_password_here
 - admin/index.html                -> Admin Leads Management Portal
 - api/leads.php                   -> Secure Lead Capture & Admin API
 - api/db.php                      -> Database Connection Script
-- api/smtp.php                    -> SMTP Email Client (Quiz Results to Admin)
 - schema.sql                      -> MySQL Database Table Definitions (Run once)
-- .env                            -> MySQL & SMTP Configuration (EDIT THIS)
+- .env                            -> MySQL Database Configuration (EDIT THIS)
 - .htaccess                       -> Apache/LiteSpeed URL Rewrites & Security
 - share-*.jpg                     -> High-Resolution Personality Cards
 
