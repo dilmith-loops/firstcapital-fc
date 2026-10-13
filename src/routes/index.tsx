@@ -259,6 +259,14 @@ function Index() {
                 "linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 32%, rgba(255, 255, 255, 0.38) 48%, rgba(255, 255, 255, 0) 66%)",
             }}
           />
+          {/* Mobile soft overlay for crisp typography legibility while showcasing the background */}
+          <div
+            className="absolute inset-0 block lg:hidden pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 42%, rgba(255, 255, 255, 0.82) 65%, rgba(255, 255, 255, 0.35) 85%, rgba(255, 255, 255, 0) 100%)",
+            }}
+          />
 
           <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
             <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
@@ -285,13 +293,13 @@ function Index() {
                   onClick={() => setIsQuizOpen(true)}
                   className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
                 >
-                  <span>FIND MY INVESTOR PERSONALITY</span>
+                  <span>DISCOVER MY INVESTOR PERSONALITY</span>
                   <ArrowRight className="size-5 stroke-[2.5]" />
                 </Button>
               </div>
 
-              {/* Mobile & Tablet illustration below copy */}
-              <div className="block lg:hidden relative mt-8 mb-2">
+              {/* Mobile & Tablet illustration (hidden because it is now the full background) */}
+              <div className="hidden relative mt-8 mb-2">
                 <img
                   src={FCmainImage}
                   alt="First Capital Investor Personas"

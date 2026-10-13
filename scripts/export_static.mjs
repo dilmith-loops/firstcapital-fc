@@ -1795,6 +1795,7 @@ const quizModalHtmlAndScript = `
       var txt = (el.textContent || el.innerText || '').toLowerCase().trim();
       if (
         txt.includes('find my investor personality') ||
+        txt.includes('discover my investor personality') ||
         txt.includes('find my investor type') ||
         txt.includes('take the quiz') ||
         el.getAttribute('href') === '#quiz' ||
@@ -1833,6 +1834,7 @@ const quizModalHtmlAndScript = `
     var txt = (trigger.textContent || trigger.innerText || '').toLowerCase().trim();
     if (
       txt.includes('find my investor personality') ||
+      txt.includes('discover my investor personality') ||
       txt.includes('find my investor type') ||
       txt.includes('take the quiz') ||
       trigger.getAttribute('href') === '#quiz' ||
