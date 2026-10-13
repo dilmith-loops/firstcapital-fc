@@ -249,7 +249,7 @@ function DesignOptionTwo() {
 
       <main id="top">
         <section className="relative py-6 sm:py-10 lg:py-14">
-          <div className="comic-hero mx-auto grid max-w-7xl w-full items-center gap-8 px-5 sm:px-8 lg:grid-cols-[1fr_1.18fr] lg:gap-10 lg:px-12">
+          <div className="comic-hero mx-auto grid max-w-7xl xl:max-w-[1360px] w-full items-center gap-8 px-5 sm:px-8 lg:grid-cols-[0.88fr_1.3fr] xl:grid-cols-[0.82fr_1.38fr] lg:gap-8 xl:gap-10 lg:px-12">
             <div className="relative z-10 max-w-xl xl:max-w-2xl flex flex-col justify-center">
               <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
                 You Already<br />
@@ -283,12 +283,12 @@ function DesignOptionTwo() {
               </p>
             </div>
 
-            <div className="relative flex items-center justify-center w-full lg:-translate-y-8 xl:-translate-y-12">
+            <div className="relative flex items-center justify-center w-full lg:-translate-y-6 xl:-translate-y-10">
               <div className="comic-shadow absolute bottom-4 left-1/2 -translate-x-1/2 h-[68%] w-[94%] border-b-[18px] border-primary" />
               <img
                 src={FCmainImage}
                 alt="First Capital Investor Personas"
-                className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-105 object-contain mx-auto transition-transform"
+                className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-110 xl:scale-118 object-contain mx-auto transition-transform"
                 width={1024}
                 height={576}
               />
