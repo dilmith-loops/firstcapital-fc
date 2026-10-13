@@ -128,7 +128,6 @@ export async function sendNodeSmtpNotification(lead: LeadNotificationData): Prom
 
   const subject = `🎯 New Investor Quiz Lead: ${name} (${profileName}) - Ref: ${lead.id}`;
 
-  const logoUrl = "https://investor.firstcapital.lk/first-capital-logo.png";
   const htmlBody = `
     <!DOCTYPE html>
     <html>
@@ -137,33 +136,13 @@ export async function sendNodeSmtpNotification(lead: LeadNotificationData): Prom
       <table width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 0;">
         <tr><td align="center">
           <table width="620" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.06);">
-            <!-- Top Brand Header with Logo -->
-            <tr>
-              <td style="background-color: #ffffff; padding: 20px 28px; border-bottom: 1px solid #e2e8f0;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td align="left" style="vertical-align: middle;">
-                      <a href="https://investor.firstcapital.lk/" target="_blank" style="text-decoration: none;">
-                        <img src="${logoUrl}" alt="First Capital — A Janashakthi Group Company" width="165" height="42" style="width: 165px; max-width: 165px; height: auto; display: block; border: 0;" />
-                      </a>
-                    </td>
-                    <td align="right" style="vertical-align: middle;">
-                      <div style="display: inline-block; border-left: 2px solid #f1ca1f; padding-left: 10px; text-align: right;">
-                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; display: block; line-height: 1.2;">Investor</span>
-                        <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1a214c; display: block; line-height: 1.2;">Week</span>
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
             <!-- Header Banner -->
             <tr>
-              <td style="background-color: #1a214c; padding: 22px 28px; border-bottom: 4px solid #f1ca1f;">
+              <td style="background-color: #1a214c; padding: 24px 28px; border-bottom: 4px solid #f1ca1f;">
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td>
-                      <div style="font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; color: #f1ca1f; margin-bottom: 4px;">Lead Notification</div>
+                      <div style="font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; color: #f1ca1f; margin-bottom: 4px;">First Capital Investor Week</div>
                       <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff;">New Investor Quiz Submission</h1>
                     </td>
                     <td align="right" style="vertical-align: middle;">
