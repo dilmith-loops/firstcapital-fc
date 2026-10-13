@@ -263,14 +263,14 @@ function DesignOptionTwo() {
           <div className="comic-hero relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
             <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
               <div className="hero-mobile-bg">
-                <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                <h1 className="text-[26px] sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
                   You Already<br />
                   Save, Plan and<br />
                   Prepare for<br />
                   the Future.
                 </h1>
-                <div className="w-full max-w-[280px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
-                <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
+                <div className="w-full max-w-[200px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+                <h2 className="text-lg sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
                   But Do You Know<br />
                   Your Investor<br />
                   Personality?
