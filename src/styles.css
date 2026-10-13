@@ -466,7 +466,7 @@
     position: relative;
   }
   .hero-mobile-bg .hero-cta {
-    margin-top: calc(var(--hero-img-h) - 2.5rem);
+    margin-top: calc(var(--hero-img-h) * 0.74);
   }
   .hero-mobile-bg::before {
     content: "";
