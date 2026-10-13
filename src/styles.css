@@ -458,10 +458,15 @@
     min-height: auto !important;
   }
 
-  /* Image runs from the top of the hero down to just below the CTA, right-aligned,
-     with a white fade on the left so the headline sits on clean space */
+  /* Image sits as a band between the intro copy and the CTA (full width, nothing hidden
+     behind text), fading up into white behind the headline */
   .hero-mobile-bg {
+    --hero-img-h: min(65vw, 420px);
+    --hero-img-bottom: 3rem;
     position: relative;
+  }
+  .hero-mobile-bg .hero-cta {
+    margin-top: calc(var(--hero-img-h) - 2.5rem);
   }
   .hero-mobile-bg::before {
     content: "";
@@ -473,12 +478,17 @@
     width: 100vw;
     background-color: #ffffff;
     background-image:
-      linear-gradient(180deg, rgba(255, 255, 255, 0) 88%, #ffffff 100%),
-      linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 30%, rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0) 80%),
+      linear-gradient(
+        180deg,
+        #ffffff calc(100% - var(--hero-img-bottom) - var(--hero-img-h)),
+        rgba(255, 255, 255, 0) calc(100% - var(--hero-img-bottom) - var(--hero-img-h) * 0.62),
+        rgba(255, 255, 255, 0) calc(100% - var(--hero-img-bottom) - 2.5rem),
+        #ffffff calc(100% - var(--hero-img-bottom))
+      ),
       url('./FCmain.png?v=4');
     background-repeat: no-repeat;
-    background-position: center, center, 80% center;
-    background-size: cover, cover, cover;
+    background-position: center, left 72% bottom var(--hero-img-bottom);
+    background-size: 100% 100%, auto var(--hero-img-h);
     pointer-events: none;
   }
 }

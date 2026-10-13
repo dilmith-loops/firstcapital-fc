@@ -280,7 +280,7 @@ function DesignOptionTwo() {
                   and discover your investor<br />
                   personality.
                 </p>
-                <div className="mt-5 sm:mt-6">
+                <div className="hero-cta mt-5 sm:mt-6">
                   <Button
                     id="btn-find-investor-type"
                     onClick={() => setIsQuizOpen(true)}
