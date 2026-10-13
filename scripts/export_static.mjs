@@ -2515,7 +2515,10 @@ const optionModalHtmlAndScript = `
     Landmark: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
     CircleDollarSign: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
     Building2: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
-    BookOpen: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'
+    BookOpen: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+    TrendingUp: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    ShieldCheck: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+    LineChart: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>'
   };
 
   function escapeHtml(str) {
@@ -2523,14 +2526,43 @@ const optionModalHtmlAndScript = `
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function isItemVisible(r) {
+    if (!r) return false;
+    if (r.visible === false || r.visible === 'false' || r.visible === 0 || r.visible === '0') return false;
+    return true;
+  }
+
+  function findReasonsGrids() {
+    var grids = Array.from(document.querySelectorAll('#fc-reasons-grid, [data-fc-reasons-grid="true"], .fc-reasons-grid'));
+    if (grids.length) return grids;
+
+    var headings = document.querySelectorAll('h2, h3');
+    headings.forEach(function(h) {
+      if (h.textContent && h.textContent.trim().toLowerCase().indexOf('why first capital') !== -1) {
+        var el = h.nextElementSibling;
+        while (el) {
+          if (el.classList.contains('grid') || el.querySelector('.grid')) {
+            var target = el.classList.contains('grid') ? el : el.querySelector('.grid');
+            if (target) {
+              target.id = 'fc-reasons-grid';
+              target.classList.add('fc-reasons-grid');
+              grids.push(target);
+              break;
+            }
+          }
+          el = el.nextElementSibling;
+        }
+      }
+    });
+    return grids;
+  }
+
   function renderReasonsGrid(reasons) {
-    if (!Array.isArray(reasons) || reasons.length === 0) return;
-    var grids = document.querySelectorAll('#fc-reasons-grid, [data-fc-reasons-grid="true"], .fc-reasons-grid');
+    if (!Array.isArray(reasons)) return;
+    var grids = findReasonsGrids();
     if (!grids.length) return;
 
-    var visibleList = reasons.filter(function(r) {
-      return r.visible !== false;
-    });
+    var visibleList = reasons.filter(isItemVisible);
 
     grids.forEach(function(grid) {
       var html = '';
@@ -2547,6 +2579,7 @@ const optionModalHtmlAndScript = `
   }
 
   function syncReasonsFromDbOrStorage() {
+    // 1. Immediately read from localStorage if cached
     try {
       var cached = localStorage.getItem('fc_admin_why_reasons');
       if (cached) {
@@ -2557,10 +2590,12 @@ const optionModalHtmlAndScript = `
       }
     } catch(e) {}
 
+    // 2. Fetch fresh reasons from MySQL DB / API endpoints
     var endpoints = [
       '__PREFIX__api/leads.php?action=settings&key=why_first_capital',
       '__PREFIX__api/leads.php?action=reasons',
       '/api/admin/settings?key=why_first_capital',
+      '/api/leads.php?action=settings&key=why_first_capital',
       '/fc/api/leads.php?action=settings&key=why_first_capital'
     ];
 
@@ -2601,6 +2636,9 @@ const optionModalHtmlAndScript = `
       } catch(err) {}
     }
   });
+
+  window.addEventListener('fc_admin_store_updated', syncReasonsFromDbOrStorage);
+  window.addEventListener('focus', syncReasonsFromDbOrStorage);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', syncReasonsFromDbOrStorage);
@@ -2644,6 +2682,14 @@ const optionModalHtmlAndScript = `
     html = html.replace(/<script>\(function\(a,f\)[\s\S]*?<\/script>/gi, '');
     html = html.replace(/<!--\/\$--\>/g, '');
     html = html.replace(/<!--\/\*.*?-->/g, '');
+
+    // Strip hardcoded cards inside Why First Capital and replace with dynamic container
+    html = html.replace(/(<h2[^>]*>Why First Capital\?<\/h2>\s*)<div[^>]*class="[^"]*grid[^"]*"[^>]*>[\s\S]*?<\/article>\s*<\/div>(\s*<\/div>\s*<\/section>)/gi, (match, p1, p2) => {
+      return `${p1}<div id="fc-reasons-grid" data-fc-reasons-grid="true" class="fc-reasons-grid mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4"></div>${p2}`;
+    });
+    html = html.replace(/(<h2[^>]*>Why First Capital\?<\/h2>\s*)<div[^>]*id="fc-reasons-grid"[^>]*>[\s\S]*?<\/article>\s*<\/div>(\s*<\/div>\s*<\/section>)/gi, (match, p1, p2) => {
+      return `${p1}<div id="fc-reasons-grid" data-fc-reasons-grid="true" class="fc-reasons-grid mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4"></div>${p2}`;
+    });
 
     // Add production inlined stylesheet (100% fail-safe against 404s/subfolders) plus external links
     const cssTag = `  <style id="fck-critical-styles">

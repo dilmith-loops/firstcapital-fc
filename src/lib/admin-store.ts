@@ -407,6 +407,9 @@ const listeners = new Set<Listener>();
 
 function notify() {
   listeners.forEach((l) => l());
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("fc_admin_store_updated"));
+  }
 }
 
 export const AdminStore = {
@@ -1372,12 +1375,16 @@ export const AdminStore = {
 
   async saveWhyReason(reason: WhyReasonItem): Promise<boolean> {
     const list = this.getWhyReasons();
+    const cleanReason: WhyReasonItem = {
+      ...reason,
+      visible: reason.visible !== false && (reason.visible as any) !== "false" && (reason.visible as any) !== 0 && (reason.visible as any) !== "0",
+    };
     const exists = list.some((r) => r.id === reason.id);
-    const updated = exists ? list.map((r) => (r.id === reason.id ? reason : r)) : [...list, reason];
+    const updated = exists ? list.map((r) => (r.id === reason.id ? cleanReason : r)) : [...list, cleanReason];
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));
     }
-    this.addLog("REASON_UPDATED", `Updated Why First Capital card: "${reason.title}" (Visible: ${reason.visible !== false ? "Yes" : "No"})`);
+    this.addLog("REASON_UPDATED", `Updated Why First Capital card: "${cleanReason.title}" (Visible: ${cleanReason.visible ? "Yes" : "No"})`);
     notify();
     return await this.persistWhyReasonsToDb(updated);
   },
@@ -1386,7 +1393,8 @@ export const AdminStore = {
     const list = this.getWhyReasons();
     const target = list.find((r) => r.id === id);
     if (!target) return false;
-    const newVisible = target.visible === false;
+    const isCurrentlyVis = target.visible !== false && (target.visible as any) !== "false" && (target.visible as any) !== 0 && (target.visible as any) !== "0";
+    const newVisible = !isCurrentlyVis;
     const updated = list.map((r) => (r.id === id ? { ...r, visible: newVisible } : r));
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));

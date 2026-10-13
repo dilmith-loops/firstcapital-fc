@@ -23,21 +23,34 @@ export function getApiUrl(endpoint: string): string {
 
   if (!base.endsWith("/")) base += "/";
 
-  // Check if we are running in production / PHP environment (not local Vite dev server on localhost:8080)
-  const isPhpHost =
-    window.location.hostname !== "localhost" &&
-    window.location.hostname !== "127.0.0.1" &&
-    !window.location.port.includes("8080") &&
-    !window.location.port.includes("5173");
+  // Check if we are running in local Vite dev server (port 8080 or 5173 on localhost)
+  const isViteDev =
+    (window.location.port === "8080" || window.location.port === "5173") &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+  // Everywhere else (Apache, XAMPP, cPanel, Hostinger, php -S) is a PHP environment
+  const isPhpHost = !isViteDev;
 
   if (isPhpHost) {
     // Map REST routes directly to api/leads.php so it works without server rewrite dependency
     if (clean === "api/admin/status") {
       return `${base}api/leads.php?action=status`;
     }
-    if (clean.startsWith("api/admin/settings")) {
+    if (clean.startsWith("api/admin/settings") || clean.startsWith("api/settings")) {
       const query = clean.includes("?") ? clean.split("?")[1] : "";
       return `${base}api/leads.php?action=settings${query ? "&" + query : ""}`;
+    }
+    if (clean.startsWith("api/reasons") || clean.startsWith("api/why_first_capital")) {
+      const query = clean.includes("?") ? clean.split("?")[1] : "";
+      return `${base}api/leads.php?action=settings&key=why_first_capital${query ? "&" + query : ""}`;
+    }
+    if (clean.startsWith("api/testimonials")) {
+      const query = clean.includes("?") ? clean.split("?")[1] : "";
+      return `${base}api/leads.php?action=settings&key=testimonials${query ? "&" + query : ""}`;
+    }
+    if (clean.startsWith("api/questions")) {
+      const query = clean.includes("?") ? clean.split("?")[1] : "";
+      return `${base}api/leads.php?action=settings&key=quiz_questions${query ? "&" + query : ""}`;
     }
     if (clean === "api/admin/leads/update") {
       return `${base}api/leads.php?action=update`;

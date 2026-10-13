@@ -183,16 +183,46 @@ function SectionLabel({ children, className = "" }: { children: React.ReactNode;
 function Index() {
   const [reasonsList, setReasonsList] = useState<WhyReasonItem[]>(() => AdminStore.getWhyReasons());
 
+  const isReasonVisible = (r: WhyReasonItem) =>
+    r.visible !== false && (r.visible as any) !== "false" && (r.visible as any) !== 0 && (r.visible as any) !== "0";
+
   useEffect(() => {
-    AdminStore.fetchWhyReasonsFromDb().then((data) => {
-      if (data && data.length > 0) setReasonsList(data);
-    });
-    return AdminStore.subscribe(() => {
+    const syncReasons = () => {
+      AdminStore.fetchWhyReasonsFromDb().then((data) => {
+        if (data && data.length > 0) setReasonsList(data);
+        else setReasonsList(AdminStore.getWhyReasons());
+      });
+    };
+
+    syncReasons();
+    const unsub = AdminStore.subscribe(() => {
       setReasonsList(AdminStore.getWhyReasons());
     });
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "fc_admin_why_reasons" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setReasonsList(parsed);
+        } catch {}
+      }
+    };
+
+    const handleFocus = () => {
+      syncReasons();
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      unsub();
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
-  const visibleReasons = reasonsList.filter((r) => r.visible !== false);
+  const visibleReasons = reasonsList.filter(isReasonVisible);
 
   const [isQuizOpen, setIsQuizOpen] = useState(() => {
     if (typeof window !== "undefined") {
