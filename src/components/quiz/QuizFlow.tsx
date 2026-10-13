@@ -61,7 +61,7 @@ export interface ProfileInfo {
   procedureGuide?: {
     label: string;
     url: string;
-  };
+  } | undefined;
   colorClass: string;
   badgeBg: string;
   image: string;
