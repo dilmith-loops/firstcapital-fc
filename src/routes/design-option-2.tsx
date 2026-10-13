@@ -252,13 +252,19 @@ function DesignOptionTwo() {
           <div className="comic-hero mx-auto grid max-w-7xl w-full items-center gap-8 px-5 sm:px-8 lg:grid-cols-[1fr_1.18fr] lg:gap-10 lg:px-12">
             <div className="relative z-10 max-w-xl xl:max-w-2xl flex flex-col justify-center">
               <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
-                You Already Save, Plan and Prepare for the Future.<br />
-                <span className="comic-title-highlight relative inline-block mt-2 border-b-[6px] sm:border-b-[8px] border-primary pb-2 sm:pb-3 text-[#1a214c]">
-                  It’s the same with investing.
-                </span>
+                You Already<br />
+                Save, Plan and<br />
+                Prepare for<br />
+                the Future.
+                <span className="block w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+                But Do You Know<br />
+                Your Investor<br />
+                Personality?
               </h1>
-              <p className="mt-4 sm:mt-5 text-sm sm:text-base italic font-medium text-slate-600">
-                Answer 7 simple questions and discover your investor personality.
+              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-normal leading-snug sm:leading-relaxed">
+                Answer 7 simple questions<br />
+                and discover your investor<br />
+                personality.
               </p>
               <div className="mt-5 sm:mt-6">
                 <Button
