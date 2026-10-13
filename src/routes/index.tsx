@@ -247,67 +247,62 @@ function Index() {
       </header>
 
       <main id="top">
-        <section className="relative overflow-hidden bg-white py-8 sm:py-12 lg:py-20">
-          {/* Right-aligned seamless background image on desktop */}
-          <div className="absolute inset-0 pointer-events-none z-0 hidden lg:block">
-            <div
-              className="absolute top-0 bottom-0 right-0 w-[58%] xl:w-[62%] 2xl:w-[65%] bg-no-repeat bg-[center_right] bg-contain"
-              style={{ backgroundImage: `url(${FCmainImage})` }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(90deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.85) 54%, rgba(255, 255, 255, 0) 72%)",
-              }}
-            />
-          </div>
+        <section
+          className="hero-full-bg relative overflow-hidden bg-white py-10 sm:py-14 lg:py-24 xl:py-28 min-h-[560px] lg:min-h-[660px] flex items-center"
+        >
+          {/* Desktop soft overlay for crisp typography legibility while showcasing the full background */}
+          <div
+            className="absolute inset-0 hidden lg:block pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 32%, rgba(255, 255, 255, 0.38) 48%, rgba(255, 255, 255, 0) 66%)",
+            }}
+          />
 
-          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-            <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] items-center">
-              <div className="max-w-xl xl:max-w-2xl flex flex-col justify-center">
-                <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
-                  You Already<br />
-                  Save, Plan and<br />
-                  Prepare for<br />
-                  the Future.
-                </h1>
-                <div className="w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
-                <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
-                  But Do You Know<br />
-                  Your Investor<br />
-                  Personality?
-                </h2>
-                <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-normal leading-snug sm:leading-relaxed">
-                  Answer 7 simple questions<br />
-                  and discover your investor<br />
-                  personality.
-                </p>
-                <div className="mt-5 sm:mt-6">
-                  <Button
-                    id="btn-find-investor-type"
-                    onClick={() => setIsQuizOpen(true)}
-                    className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
-                  >
-                    <span>FIND MY INVESTOR PERSONALITY</span>
-                    <ArrowRight className="size-5 stroke-[2.5]" />
-                  </Button>
-                </div>
-                <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-                  <span className="font-bold text-foreground">Disclaimer: </span>{disclaimer}
-                </p>
+          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
+            <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
+              <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                You Already<br />
+                Save, Plan and<br />
+                Prepare for<br />
+                the Future.
+              </h1>
+              <div className="w-full max-w-[280px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+              <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
+                But Do You Know<br />
+                Your Investor<br />
+                Personality?
+              </h2>
+              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-700 font-normal leading-snug sm:leading-relaxed">
+                Answer 7 simple questions<br />
+                and discover your investor<br />
+                personality.
+              </p>
+              <div className="mt-5 sm:mt-6">
+                <Button
+                  id="btn-find-investor-type"
+                  onClick={() => setIsQuizOpen(true)}
+                  className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
+                >
+                  <span>FIND MY INVESTOR PERSONALITY</span>
+                  <ArrowRight className="size-5 stroke-[2.5]" />
+                </Button>
               </div>
 
               {/* Mobile & Tablet illustration below copy */}
-              <div className="block lg:hidden relative mt-4 sm:mt-6">
+              <div className="block lg:hidden relative mt-8 mb-2">
                 <img
                   src={FCmainImage}
                   alt="First Capital Investor Personas"
-                  className="relative z-10 h-auto w-full max-w-2xl object-contain mx-auto"
+                  className="relative z-10 h-auto w-full max-w-lg object-contain mx-auto rounded-2xl shadow-md border border-slate-100"
                   width={1024}
                   height={576}
                 />
               </div>
+
+              <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-slate-700 font-medium">
+                <span className="font-bold text-[#1a214c]">Disclaimer: </span>{disclaimer}
+              </p>
             </div>
           </div>
         </section>
