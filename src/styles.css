@@ -436,13 +436,18 @@
   color: #ffffff !important;
 }
 
-/* Hero Full-bleed Background Styles */
+/* Hero Full-bleed Background Styles (100vh) */
+.hero-full-bg {
+  min-height: 100vh !important;
+}
+
 @media (min-width: 1024px) {
   .hero-full-bg {
     background-image: url('./FCmain.png?v=4') !important;
     background-repeat: no-repeat !important;
     background-position: right center !important;
     background-size: cover !important;
+    min-height: 100vh !important;
   }
 }
 
@@ -450,7 +455,9 @@
   .hero-full-bg {
     background-image: none !important;
     background-color: #ffffff !important;
+    min-height: 100vh !important;
   }
 }
+
 
 

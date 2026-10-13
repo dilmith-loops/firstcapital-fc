@@ -248,7 +248,8 @@ function Index() {
 
       <main id="top">
         <section
-          className="hero-full-bg relative overflow-hidden bg-white py-10 sm:py-14 lg:py-24 xl:py-28 min-h-[560px] lg:min-h-[660px] flex items-center"
+          className="hero-full-bg relative overflow-hidden bg-white min-h-screen flex items-center py-10 sm:py-14 lg:py-16"
+          style={{ minHeight: "100vh" }}
         >
           {/* Desktop soft overlay for crisp typography legibility while showcasing the full background */}
           <div
