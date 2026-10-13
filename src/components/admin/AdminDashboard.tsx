@@ -1931,56 +1931,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       Update Password
                     </button>
                   </form>
-
-                  {/* System Reset & Database Diagnostics */}
-                  <div className="mt-8 pt-6 border-t border-slate-100">
-                    <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
-                      MySQL Database Diagnostics
-                    </h3>
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 mb-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-semibold">Connection Status:</span>
-                        <span className={`font-bold flex items-center gap-1.5 ${dbStatus?.connected ? "text-emerald-700" : "text-rose-700"}`}>
-                          <span className={`size-2 rounded-full ${dbStatus?.connected ? "bg-emerald-500" : "bg-rose-500"}`} />
-                          {dbStatus?.connected ? "CONNECTED (MySQL 8+)" : "DISCONNECTED / OFFLINE"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-semibold">Target Database:</span>
-                        <span className="font-mono font-bold text-slate-800">{dbStatus?.database || "firstcapital"}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-semibold">Host & Port:</span>
-                        <span className="font-mono text-slate-800">{dbStatus?.host || "localhost"}:{dbStatus?.port || 3306}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-semibold">Total Leads in DB:</span>
-                        <span className="font-bold text-slate-900">{dbStatus?.totalLeads ?? 0}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-semibold">Synchronized Tables:</span>
-                        <span className="font-mono text-[11px] text-slate-700">{dbStatus?.tables?.join(", ") || "quiz_leads, app_settings"}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => syncDatabase(true)}
-                        disabled={isSyncing}
-                        className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-bold text-xs py-2 px-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
-                      >
-                        <RefreshCw className={`size-3.5 ${isSyncing ? "animate-spin" : ""}`} /> Test & Re-sync MySQL
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleResetDemoData}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs py-2 px-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <RotateCcw className="size-3.5" /> Re-fetch All Leads
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
