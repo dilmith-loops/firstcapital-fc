@@ -248,76 +248,66 @@ function DesignOptionTwo() {
       </header>
 
       <main id="top">
-        <section className="relative py-6 sm:py-10 lg:py-14">
-          <div className="comic-hero mx-auto grid max-w-7xl xl:max-w-[1360px] w-full items-center gap-8 px-5 sm:px-8 lg:grid-cols-[0.88fr_1.3fr] xl:grid-cols-[0.82fr_1.38fr] lg:gap-8 xl:gap-10 lg:px-12">
-            <div className="relative z-10 max-w-xl xl:max-w-2xl flex flex-col justify-center">
-              <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
-                You Already<br />
-                Save, Plan and<br />
-                Prepare for<br />
-                the Future.
-              </h1>
-              <div className="w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
-              <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
-                But Do You Know<br />
-                Your Investor<br />
-                Personality?
-              </h2>
-              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-normal leading-snug sm:leading-relaxed">
-                Answer 7 simple questions<br />
-                and discover your investor<br />
-                personality.
-              </p>
-              <div className="mt-5 sm:mt-6">
-                <Button
-                  id="btn-find-investor-type"
-                  onClick={() => setIsQuizOpen(true)}
-                  className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all uppercase"
-                >
-                  <span>FIND MY INVESTOR PERSONALITY</span>
-                  <ArrowRight className="size-5 stroke-[2.5]" />
-                </Button>
-              </div>
-              <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-                <span className="font-bold text-foreground">Disclaimer: </span>{disclaimer}
-              </p>
-            </div>
+        <section className="relative overflow-hidden bg-white py-8 sm:py-12 lg:py-20">
+          {/* Right-aligned seamless background image on desktop */}
+          <div className="absolute inset-0 pointer-events-none z-0 hidden lg:block">
+            <div
+              className="absolute top-0 bottom-0 right-0 w-[58%] xl:w-[62%] 2xl:w-[65%] bg-no-repeat bg-[center_right] bg-contain"
+              style={{ backgroundImage: `url(${FCmainImage})` }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.85) 54%, rgba(255, 255, 255, 0) 72%)",
+              }}
+            />
+          </div>
 
-            <div className="relative flex items-center justify-center w-full lg:-translate-y-6 xl:-translate-y-10">
-              <div className="comic-shadow absolute bottom-4 left-1/2 -translate-x-1/2 h-[68%] w-[94%] border-b-[18px] border-primary" />
-              <img
-                src={FCmainImage}
-                alt="First Capital Investor Personas"
-                className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-110 xl:scale-118 object-contain mx-auto transition-transform"
-                width={1024}
-                height={576}
-              />
-              <div style={{ display: "none" }} className="hidden relative z-20 mt-4 sm:mt-5 grid grid-cols-2 border border-border bg-background sm:grid-cols-4">
-                {[
-                  { name: "Keep-It-Cool", number: "01", image: investorType01 },
-                  { name: "Smooth Operator", number: "02", image: investorType02 },
-                  { name: "Patient Player", number: "03", image: investorType03 },
-                  { name: "Opportunity Hunter", number: "04", image: investorType04 },
-                ].map((type, index) => (
-                  <div
-                    key={type.name}
-                    className={`comic-panel flex flex-col p-3 sm:p-4 ${
-                      index > 0 ? "sm:border-l sm:border-border" : ""
-                    }`}
+          <div className="comic-hero relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+            <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] items-center">
+              <div className="max-w-xl xl:max-w-2xl flex flex-col justify-center">
+                <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                  You Already<br />
+                  Save, Plan and<br />
+                  Prepare for<br />
+                  the Future.
+                </h1>
+                <div className="w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[450px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+                <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
+                  But Do You Know<br />
+                  Your Investor<br />
+                  Personality?
+                </h2>
+                <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-normal leading-snug sm:leading-relaxed">
+                  Answer 7 simple questions<br />
+                  and discover your investor<br />
+                  personality.
+                </p>
+                <div className="mt-5 sm:mt-6">
+                  <Button
+                    id="btn-find-investor-type"
+                    onClick={() => setIsQuizOpen(true)}
+                    className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all uppercase"
                   >
-                    <div className="mb-2.5 size-11 sm:size-14 shrink-0 overflow-hidden rounded-full border-2 border-primary/40 bg-secondary/30 shadow-xs">
-                      <img
-                        src={type.image}
-                        alt={type.name}
-                        className="size-full object-cover"
-                        width={56}
-                        height={56}
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-muted-foreground">{type.number}</span>
-                    <p className="mt-1 text-xs font-extrabold leading-tight sm:text-sm">{type.name}</p>
-                  </div>
-                ))}
+                    <span>FIND MY INVESTOR PERSONALITY</span>
+                    <ArrowRight className="size-5 stroke-[2.5]" />
+                  </Button>
+                </div>
+                <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
+                  <span className="font-bold text-foreground">Disclaimer: </span>{disclaimer}
+                </p>
+              </div>
+
+              {/* Mobile & Tablet illustration below copy */}
+              <div className="block lg:hidden relative mt-4 sm:mt-6">
+                <img
+                  src={FCmainImage}
+                  alt="First Capital Investor Personas"
+                  className="relative z-10 h-auto w-full max-w-2xl object-contain mx-auto"
+                  width={1024}
+                  height={576}
+                />
               </div>
             </div>
           </div>
