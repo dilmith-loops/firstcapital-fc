@@ -1,5 +1,33 @@
+import fs from "node:fs";
 import net from "node:net";
+import path from "node:path";
 import tls from "node:tls";
+
+function ensureEnvLoaded(): void {
+  if (process.env["SMTP_HOST"]) return;
+  try {
+    const candidates = [
+      path.resolve(process.cwd(), ".env"),
+      path.resolve(process.cwd(), "../.env"),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) {
+        const content = fs.readFileSync(p, "utf-8");
+        for (const line of content.split("\n")) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+          const [key, ...rest] = trimmed.split("=");
+          const val = rest.join("=").trim().replace(/^["']|["']$/g, "");
+          const k = key?.trim();
+          if (k && !process.env[k]) {
+            process.env[k] = val;
+          }
+        }
+        break;
+      }
+    }
+  } catch {}
+}
 
 interface LeadNotificationData {
   id: string;
@@ -83,6 +111,7 @@ const DEFAULT_QUESTIONS: Record<number, { question: string; options: Record<stri
 };
 
 export async function sendNodeSmtpNotification(lead: LeadNotificationData): Promise<boolean> {
+  ensureEnvLoaded();
   const isEnabled = process.env["SMTP_ENABLED"] !== "false" && process.env["SMTP_ENABLED"] !== "0";
   const host = (process.env["SMTP_HOST"] || "").trim();
   const port = parseInt(process.env["SMTP_PORT"] || "465", 10);
@@ -93,7 +122,14 @@ export async function sendNodeSmtpNotification(lead: LeadNotificationData): Prom
   const fromName = (process.env["SMTP_FROM_NAME"] || "First Capital Investor Week").trim();
   const toEmail = (process.env["ADMIN_EMAIL"] || process.env["SMTP_TO_EMAIL"] || "").trim();
 
-  if (!isEnabled || !host || !toEmail || pass === "your_smtp_password_here") {
+  if (!isEnabled) {
+    return false;
+  }
+  if (!host || !toEmail || !pass || pass === "your_smtp_password_here") {
+    console.warn(
+      "[SMTP] Email notification skipped: SMTP is not fully configured in .env.\n" +
+      `Host: ${host || '(missing)'}, User: ${user || '(missing)'}, Pass: ${pass === 'your_smtp_password_here' ? '(placeholder - please update SMTP_PASS in .env)' : (pass ? '(set)' : '(missing)')}, Recipient: ${toEmail || '(missing)'}`
+    );
     return false;
   }
 

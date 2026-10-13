@@ -10,6 +10,33 @@
  * - Credentials loaded exclusively from .env
  */
 
+// Automatically load credentials from .env if present and not already defined
+if (!defined('SMTP_HOST') && empty(getenv('SMTP_HOST'))) {
+    $envPaths = [__DIR__ . '/.env', __DIR__ . '/../.env', __DIR__ . '/../../.env'];
+    foreach ($envPaths as $envPath) {
+        if (file_exists($envPath)) {
+            $lines = @file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if ($lines) {
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '' || strpos($line, '#') === 0) continue;
+                    if (strpos($line, '=') !== false) {
+                        list($name, $val) = explode('=', $line, 2);
+                        $name = trim($name);
+                        $val = trim($val, " \t\n\r\0\x0B\"'");
+                        if (!defined($name)) {
+                            define($name, $val);
+                        }
+                        putenv("$name=$val");
+                        $_ENV[$name] = $val;
+                    }
+                }
+            }
+            break;
+        }
+    }
+}
+
 class FirstCapitalMailer {
     private $host;
     private $port;
@@ -24,7 +51,7 @@ class FirstCapitalMailer {
     private $lastLog = [];
 
     public function __construct() {
-        // Read configuration exclusively from environment / .env
+        // Read configuration from environment / .env / constants
         $this->host = trim((string)(getenv('SMTP_HOST') ?: (defined('SMTP_HOST') ? SMTP_HOST : '')));
         $this->port = (int)(getenv('SMTP_PORT') ?: (defined('SMTP_PORT') ? SMTP_PORT : 465));
         
@@ -108,11 +135,55 @@ class FirstCapitalMailer {
         return $this->readResponse($expectedCode);
     }
 
+    public function diagnose() {
+        $placeholder = ($this->pass === 'your_smtp_password_here');
+        $configured = $this->isConfigured();
+        $connTest = null;
+        
+        if (!empty($this->host)) {
+            $proto = ($this->secure === 'ssl') ? 'ssl://' : 'tcp://';
+            $errno = 0;
+            $errstr = '';
+            $t0 = microtime(true);
+            $s = @stream_socket_client($proto . $this->host . ':' . $this->port, $errno, $errstr, 5, STREAM_CLIENT_CONNECT);
+            if ($s) {
+                $banner = fgets($s);
+                fclose($s);
+                $connTest = [
+                    'reachable' => true,
+                    'latency_ms' => round((microtime(true) - $t0) * 1000, 1),
+                    'server_banner' => trim($banner)
+                ];
+            } else {
+                $connTest = [
+                    'reachable' => false,
+                    'error' => "$errstr ($errno)"
+                ];
+            }
+        }
+
+        return [
+            'is_configured' => $configured,
+            'smtp_host' => $this->host ?: '(not set)',
+            'smtp_port' => $this->port,
+            'smtp_secure' => $this->secure,
+            'smtp_user' => $this->user ?: '(not set)',
+            'admin_recipient' => $this->toEmail ?: '(not set)',
+            'password_status' => empty($this->pass) ? 'missing' : ($placeholder ? 'placeholder (your_smtp_password_here)' : 'configured'),
+            'server_connection' => $connTest,
+            'diagnostic_message' => ($placeholder || empty($this->pass))
+                ? 'CRITICAL: SMTP_PASS in .env is still set to placeholder. Please update SMTP_PASS in your .env file with your real email mailbox password.'
+                : ($configured ? 'SMTP is fully configured and ready.' : 'SMTP is missing host or recipient.')
+        ];
+    }
+
     public function send($to, $subject, $htmlBody, $textBody = '', $replyTo = null) {
         if (!$this->isConfigured()) {
             return [
                 'success' => false,
-                'error' => 'SMTP is not configured in .env (SMTP_HOST, SMTP_USER, SMTP_PASS, or ADMIN_EMAIL is missing).'
+                'error' => ($this->pass === 'your_smtp_password_here' || empty($this->pass))
+                    ? 'SMTP is not active: SMTP_PASS in .env is still set to placeholder (your_smtp_password_here). Please update .env with your real mailbox password.'
+                    : 'SMTP is not configured in .env (SMTP_HOST, SMTP_USER, SMTP_PASS, or ADMIN_EMAIL is missing).'
             ];
         }
 
@@ -145,6 +216,25 @@ class FirstCapitalMailer {
                 $context
             );
 
+            // Automatic port fallback if primary fails (e.g. host blocks 465, try 587)
+            if (!$this->socket) {
+                $fallbackPort = ($this->port === 465) ? 587 : 465;
+                $fallbackProtocol = ($fallbackPort === 465) ? 'ssl://' : 'tcp://';
+                $this->log("Primary connect failed ($errstr). Trying fallback $fallbackProtocol{$this->host}:$fallbackPort...");
+                $this->socket = @stream_socket_client(
+                    $fallbackProtocol . $this->host . ':' . $fallbackPort,
+                    $errno,
+                    $errstr,
+                    $this->timeout,
+                    STREAM_CLIENT_CONNECT,
+                    $context
+                );
+                if ($this->socket) {
+                    $this->port = $fallbackPort;
+                    $this->secure = ($fallbackPort === 465) ? 'ssl' : 'tls';
+                }
+            }
+
             if (!$this->socket) {
                 throw new Exception("Failed to connect to SMTP server: $errstr ($errno)");
             }
@@ -154,8 +244,8 @@ class FirstCapitalMailer {
             // 1. Initial Greeting (220)
             $this->readResponse(220);
 
-            // 2. EHLO
-            $clientDomain = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'firstcapital.lk';
+            // 2. EHLO with clean domain
+            $clientDomain = 'firstcapital.lk';
             try {
                 $this->sendCommand("EHLO $clientDomain", 250);
             } catch (Exception $e) {
@@ -166,6 +256,9 @@ class FirstCapitalMailer {
             if ($this->secure === 'tls') {
                 $this->sendCommand("STARTTLS", 220);
                 $crypto = @stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                if (!$crypto) {
+                    $crypto = @stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT);
+                }
                 if (!$crypto) {
                     throw new Exception("Failed to initiate TLS encryption.");
                 }
@@ -179,9 +272,9 @@ class FirstCapitalMailer {
                 $this->sendCommand(base64_encode($this->pass), 235);
             }
 
-            // 5. Envelope
-            $this->sendCommand("MAIL FROM: <{$this->fromEmail}>", 250);
-            $this->sendCommand("RCPT TO: <{$recipient}>", 250);
+            // 5. Envelope (RFC 5321 compliant)
+            $this->sendCommand("MAIL FROM:<{$this->fromEmail}>", 250);
+            $this->sendCommand("RCPT TO:<{$recipient}>", 250);
 
             // 6. Message Data
             $this->sendCommand("DATA", 354);
@@ -473,4 +566,16 @@ function sendLeadNotificationEmail(array $leadData, $pdo = null) {
     // Send email with Reply-To set to the user's email address
     $replyToEmail = (filter_var($leadData['email'] ?? '', FILTER_VALIDATE_EMAIL)) ? $leadData['email'] : null;
     return $mailer->send(null, $subject, $htmlBody, $textBody, $replyToEmail);
+}
+
+// Direct CLI diagnostic or Web ?test=1 diagnostic
+if (php_sapi_name() === 'cli' && isset($argv[0]) && realpath($argv[0]) === realpath(__FILE__)) {
+    $m = new FirstCapitalMailer();
+    echo "\n=== First Capital SMTP Diagnostic ===\n";
+    echo json_encode($m->diagnose(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n";
+} elseif (isset($_GET['test']) && $_GET['test'] === '1') {
+    header('Content-Type: application/json; charset=utf-8');
+    $m = new FirstCapitalMailer();
+    echo json_encode($m->diagnose(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    exit;
 }
