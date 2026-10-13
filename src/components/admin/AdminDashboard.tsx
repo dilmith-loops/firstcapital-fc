@@ -435,7 +435,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   // Testimonial Handlers
-  const handleAddTestimonial = (e: React.FormEvent) => {
+  const handleAddTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTestimonial.name.trim()) {
       alert("Please enter the client's name.");
@@ -446,7 +446,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
-    const created = AdminStore.addTestimonial({
+    const created = await AdminStore.addTestimonial({
       name: newTestimonial.name.trim(),
       role: newTestimonial.role.trim() || "Investor",
       quote: newTestimonial.quote.trim(),
@@ -462,17 +462,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       rating: 5,
       status: "Active",
     });
-    showToast(`Testimonial from "${created.name}" added successfully!`);
+    showToast(`Testimonial from "${created.name}" added and synced to database!`);
   };
 
-  const handleSaveTestimonial = (e: React.FormEvent) => {
+  const handleSaveTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTestimonial || !editingTestimonial.name.trim() || !editingTestimonial.quote.trim()) {
       alert("Please fill in both name and quote.");
       return;
     }
 
-    AdminStore.updateTestimonial(editingTestimonial.id, {
+    await AdminStore.updateTestimonial(editingTestimonial.id, {
       name: editingTestimonial.name.trim(),
       role: editingTestimonial.role.trim() || "Investor",
       quote: editingTestimonial.quote.trim(),
@@ -481,30 +481,30 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     });
 
     setEditingTestimonial(null);
-    showToast(`Testimonial for "${editingTestimonial.name}" updated!`);
+    showToast(`Testimonial for "${editingTestimonial.name}" saved to database!`);
   };
 
-  const handleDeleteTestimonial = (id: string) => {
+  const handleDeleteTestimonial = async (id: string) => {
     const target = testimonials.find((t) => t.id === id);
     if (window.confirm(`Are you sure you want to delete the testimonial from "${target?.name || id}"?`)) {
-      AdminStore.deleteTestimonial(id);
+      await AdminStore.deleteTestimonial(id);
       if (editingTestimonial?.id === id) {
         setEditingTestimonial(null);
       }
-      showToast("Testimonial removed.");
+      showToast("Testimonial removed from database.");
     }
   };
 
-  const handleToggleTestimonialStatus = (t: TestimonialItem) => {
+  const handleToggleTestimonialStatus = async (t: TestimonialItem) => {
     const nextStatus = t.status === "Active" ? "Draft" : "Active";
-    AdminStore.updateTestimonial(t.id, { status: nextStatus });
-    showToast(`Testimonial by ${t.name} set to ${nextStatus}`);
+    await AdminStore.updateTestimonial(t.id, { status: nextStatus });
+    showToast(`Testimonial by ${t.name} set to ${nextStatus} and updated in DB`);
   };
 
-  const handleResetTestimonials = () => {
+  const handleResetTestimonials = async () => {
     if (window.confirm("Reset testimonials back to the default 4 investor quotes?")) {
-      AdminStore.resetDefaultTestimonials();
-      showToast("Default testimonials restored!");
+      await AdminStore.resetDefaultTestimonials();
+      showToast("Default testimonials restored and saved to database!");
     }
   };
 

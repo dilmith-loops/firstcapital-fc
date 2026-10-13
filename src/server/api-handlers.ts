@@ -401,6 +401,15 @@ export async function handleGetAppSetting(key: string): Promise<any> {
     return DEFAULT_QUESTIONS;
   }
 
+  // Fallback for testimonials
+  if (key === "testimonials") {
+    const { DEFAULT_TESTIMONIALS } = await import("../lib/admin-store");
+    try {
+      await handleSaveAppSetting("testimonials", DEFAULT_TESTIMONIALS);
+    } catch {}
+    return DEFAULT_TESTIMONIALS;
+  }
+
   return null;
 }
 

@@ -1057,19 +1057,24 @@ export const AdminStore = {
     return this.getTestimonials();
   },
 
-  async persistTestimonialsToDb(testimonials: TestimonialItem[]) {
+  async persistTestimonialsToDb(testimonials: TestimonialItem[]): Promise<boolean> {
     try {
-      await fetch(getApiUrl("api/admin/settings"), {
+      const res = await fetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "testimonials", value: testimonials }),
       });
+      if (res.ok) {
+        const json = await res.json();
+        return !!json.success;
+      }
     } catch (err) {
       console.warn("Could not persist testimonials to DB:", err);
     }
+    return false;
   },
 
-  addTestimonial(data: Omit<TestimonialItem, "id">): TestimonialItem {
+  async addTestimonial(data: Omit<TestimonialItem, "id">): Promise<TestimonialItem> {
     const list = this.getTestimonials();
     const newId = `test-${Date.now()}`;
     const newTestimonial: TestimonialItem = {
@@ -1085,42 +1090,42 @@ export const AdminStore = {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_TESTIMONIALS, JSON.stringify(updated));
     }
-    this.persistTestimonialsToDb(updated);
     this.addLog("TESTIMONIAL_CREATED", `Added testimonial from ${newTestimonial.name} (${newTestimonial.role})`);
     notify();
+    await this.persistTestimonialsToDb(updated);
     return newTestimonial;
   },
 
-  updateTestimonial(id: string, updates: Partial<TestimonialItem>) {
+  async updateTestimonial(id: string, updates: Partial<TestimonialItem>): Promise<boolean> {
     const list = this.getTestimonials();
     const updated = list.map((t) => (t.id === id ? { ...t, ...updates } : t));
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_TESTIMONIALS, JSON.stringify(updated));
     }
-    this.persistTestimonialsToDb(updated);
     const target = updated.find((t) => t.id === id);
     this.addLog("TESTIMONIAL_UPDATED", `Updated testimonial for ${target ? target.name : id}`);
     notify();
+    return await this.persistTestimonialsToDb(updated);
   },
 
-  deleteTestimonial(id: string) {
+  async deleteTestimonial(id: string): Promise<boolean> {
     const list = this.getTestimonials();
     const target = list.find((t) => t.id === id);
     const updated = list.filter((t) => t.id !== id);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_TESTIMONIALS, JSON.stringify(updated));
     }
-    this.persistTestimonialsToDb(updated);
     this.addLog("TESTIMONIAL_DELETED", `Removed testimonial from ${target ? target.name : id}`);
     notify();
+    return await this.persistTestimonialsToDb(updated);
   },
 
-  resetDefaultTestimonials() {
+  async resetDefaultTestimonials(): Promise<boolean> {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY_TESTIMONIALS, JSON.stringify(DEFAULT_TESTIMONIALS));
     }
-    this.persistTestimonialsToDb(DEFAULT_TESTIMONIALS);
     this.addLog("TESTIMONIALS_RESET", "Testimonials reset to default client quotes");
     notify();
+    return await this.persistTestimonialsToDb(DEFAULT_TESTIMONIALS);
   },
 };

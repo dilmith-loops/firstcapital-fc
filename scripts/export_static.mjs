@@ -1983,23 +1983,110 @@ async function exportStatic() {
   fs.copyFileSync('public/favicon.png', path.join(outDir, 'favicon.png'));
   console.log('Copied all image assets and created share pages in outDir');
 
-  // Slider interactive script
+  // Dynamic Testimonials Slider interactive script
   const sliderScript = `
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.testimonial-slider').forEach(function(slider) {
-    var active = 0;
+<!-- Dynamic Testimonials Slider Script -->
+<script id="fc-testimonial-slider-script">
+(function() {
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  var QUOTE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1a214c" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-quote size-5 text-[#1a214c] fill-[#1a214c]" style="color:#1a214c;fill:#1a214c"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg>';
+
+  var STAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f1ca1f" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-4 fill-[#f1ca1f] text-[#f1ca1f]" style="color:#f1ca1f;fill:#f1ca1f"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>';
+
+  function buildStars(count) {
+    var rating = Number(count) || 5;
+    var html = '';
+    for (var i = 0; i < rating; i++) {
+      html += STAR_SVG;
+    }
+    return html;
+  }
+
+  function renderSlider(slider, items) {
     var frame = slider.querySelector('.slider-frame > div');
     if (!frame) return;
+
+    if (!items || items.length === 0) {
+      slider.style.display = 'none';
+      return;
+    }
+    slider.style.display = '';
+
+    if (slider._timer) {
+      clearInterval(slider._timer);
+      slider._timer = null;
+    }
+
+    var slidesHtml = items.map(function(item, idx) {
+      var isFirst = idx === 0;
+      var stars = buildStars(item.rating || 5);
+      return '<figure class="w-full shrink-0 p-6 sm:p-10" aria-hidden="' + (!isFirst) + '" style="background-color:#1a214c;color:#f1ca1f">' +
+        '<div class="flex items-center justify-between gap-4">' +
+          '<div class="size-10 rounded-xl bg-[#f1ca1f] flex items-center justify-center shadow-xs" style="background-color:#f1ca1f">' +
+            QUOTE_SVG +
+          '</div>' +
+          '<div class="flex items-center gap-1 text-[#f1ca1f]" style="color:#f1ca1f">' +
+            stars +
+          '</div>' +
+        '</div>' +
+        '<blockquote class="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-[#f1ca1f] sm:text-xl sm:leading-8" style="color:#f1ca1f">' +
+          '“' + escapeHtml(item.quote) + '”' +
+        '</blockquote>' +
+        '<figcaption class="mt-5 text-sm border-t border-[#f1ca1f]/30 pt-4 flex items-center gap-2" style="border-color:rgba(241, 202, 31, 0.3)">' +
+          '<span class="font-extrabold text-[#f1ca1f]" style="color:#f1ca1f">' + escapeHtml(item.name) + '</span>' +
+          '<span class="text-[#f1ca1f]/80 font-medium" style="color:rgba(241, 202, 31, 0.85)">— ' + escapeHtml(item.role || 'Investor') + '</span>' +
+        '</figcaption>' +
+      '</figure>';
+    }).join('');
+
+    frame.innerHTML = slidesHtml;
+    frame.style.transform = 'translateX(0%)';
+    slider._active = 0;
+
     var slides = frame.children;
-    var dots = slider.querySelectorAll('.slider-dot');
     var count = slides.length;
 
+    var dotsContainer = slider.querySelector('.mt-4.flex.gap-2') || slider.querySelector('.slider-dot')?.parentElement;
+    if (dotsContainer) {
+      if (count <= 1) {
+        dotsContainer.style.display = 'none';
+        dotsContainer.innerHTML = '';
+      } else {
+        dotsContainer.style.display = 'flex';
+        var dotsHtml = '';
+        for (var i = 0; i < count; i++) {
+          dotsHtml += '<button type="button" aria-label="Show testimonial ' + (i + 1) + '" ' +
+            (i === 0 ? 'aria-current="true"' : '') +
+            ' class="slider-dot h-2 rounded-full cursor-pointer transition-all ' + (i === 0 ? 'bg-[#1a214c] w-10' : 'bg-slate-300 hover:bg-slate-400 w-7') + '" ' +
+            'style="background-color:' + (i === 0 ? '#1a214c' : '#cbd5e1') + '; width:' + (i === 0 ? '2.5rem' : '1.75rem') + ';"></button>';
+        }
+        dotsContainer.innerHTML = dotsHtml;
+      }
+    }
+
+    var prevBtn = slider.querySelector('button[aria-label="Previous testimonial"]');
+    var nextBtn = slider.querySelector('button[aria-label="Next testimonial"]');
+    var navContainer = prevBtn ? prevBtn.parentElement : null;
+    if (navContainer) {
+      navContainer.style.display = count <= 1 ? 'none' : 'flex';
+    }
+
     function update(idx) {
-      active = (idx + count) % count;
-      frame.style.transform = 'translateX(-' + (active * 100) + '%)';
-      dots.forEach(function(dot, i) {
-        if (i === active) {
+      if (count <= 1) return;
+      slider._active = (idx + count) % count;
+      frame.style.transform = 'translateX(-' + (slider._active * 100) + '%)';
+      var allDots = dotsContainer ? dotsContainer.querySelectorAll('.slider-dot') : [];
+      allDots.forEach(function(dot, i) {
+        if (i === slider._active) {
           dot.style.backgroundColor = '#1a214c';
           dot.style.width = '2.5rem';
           dot.setAttribute('aria-current', 'true');
@@ -2010,20 +2097,111 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       for (var s = 0; s < slides.length; s++) {
-        slides[s].setAttribute('aria-hidden', s !== active);
+        slides[s].setAttribute('aria-hidden', s !== slider._active);
       }
     }
 
-    var prevBtn = slider.querySelector('button[aria-label="Previous testimonial"]');
-    var nextBtn = slider.querySelector('button[aria-label="Next testimonial"]');
-    if (prevBtn) prevBtn.addEventListener('click', function() { update(active - 1); });
-    if (nextBtn) nextBtn.addEventListener('click', function() { update(active + 1); });
-    dots.forEach(function(dot, i) {
-      dot.addEventListener('click', function() { update(i); });
+    if (prevBtn) {
+      prevBtn.onclick = function() { update(slider._active - 1); };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = function() { update(slider._active + 1); };
+    }
+    if (dotsContainer) {
+      var allDots = dotsContainer.querySelectorAll('.slider-dot');
+      allDots.forEach(function(dot, i) {
+        dot.onclick = function() { update(i); };
+      });
+    }
+
+    if (count > 1) {
+      slider._timer = setInterval(function() {
+        update(slider._active + 1);
+      }, 6000);
+    }
+  }
+
+  function renderAllSliders(testimonials) {
+    var activeList = (testimonials || []).filter(function(t) {
+      return !t.status || t.status === 'Active';
     });
-    setInterval(function() { update(active + 1); }, 6000);
+    document.querySelectorAll('.testimonial-slider').forEach(function(slider) {
+      renderSlider(slider, activeList);
+    });
+  }
+
+  function syncTestimonialsFromDbOrStorage(callback) {
+    // 1. Immediately read from localStorage if present
+    try {
+      var cached = localStorage.getItem('fc_admin_testimonials');
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          renderAllSliders(parsed);
+        }
+      }
+    } catch(e) {}
+
+    // 2. Fetch fresh testimonials from DB via API endpoints
+    var endpoints = [
+      '__PREFIX__api/leads.php?action=settings&key=testimonials',
+      '__PREFIX__api/leads.php?action=testimonials',
+      '/api/admin/settings?key=testimonials',
+      '/api/testimonials',
+      '/fc/api/leads.php?action=settings&key=testimonials'
+    ];
+
+    function tryFetchIndex(idx) {
+      if (idx >= endpoints.length) {
+        if (typeof callback === 'function') callback();
+        return;
+      }
+      var url = endpoints[idx];
+      fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var items = json && json.data;
+          if (Array.isArray(items) && items.length > 0) {
+            try {
+              localStorage.setItem('fc_admin_testimonials', JSON.stringify(items));
+            } catch(e) {}
+            renderAllSliders(items);
+            if (typeof callback === 'function') callback(items);
+          } else {
+            tryFetchIndex(idx + 1);
+          }
+        })
+        .catch(function() {
+          tryFetchIndex(idx + 1);
+        });
+    }
+
+    tryFetchIndex(0);
+  }
+
+  // Cross-tab real-time sync with Admin Portal
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'fc_admin_testimonials' && e.newValue) {
+      try {
+        var updated = JSON.parse(e.newValue);
+        if (Array.isArray(updated)) {
+          renderAllSliders(updated);
+        }
+      } catch(err) {}
+    }
   });
-});
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      syncTestimonialsFromDbOrStorage();
+    });
+  } else {
+    syncTestimonialsFromDbOrStorage();
+  }
+})();
 </script>
 `;
 
@@ -2250,6 +2428,8 @@ const optionModalHtmlAndScript = `
     let html = rawHtml;
 
     // Strip existing slider script, quiz modal, and option modal if html already contains them to avoid duplicates
+    html = html.replace(/<!-- Dynamic Testimonials Slider Script -->[\s\S]*?<\/script>/gi, '');
+    html = html.replace(/<script id="fc-testimonial-slider-script">[\s\S]*?<\/script>/gi, '');
     html = html.replace(/<script>\s*document\.addEventListener\('DOMContentLoaded',\s*function\(\)\s*\{[\s\S]*?testimonial-slider[\s\S]*?<\/script>/gi, '');
     const modalMarker = html.indexOf('<!-- Standalone Interactive Quiz Modal');
     if (modalMarker !== -1) {
@@ -2337,8 +2517,9 @@ ${compiledCssContent}
     html = html.replace(/href="\/admin"/g, `href="${prefix}admin"`);
 
     // Insert interactive slider script, Quiz Modal, and Investment Option Modal
+    const sliderFormatted = sliderScript.replace(/__PREFIX__/g, prefix);
     const modalFormatted = quizModalHtmlAndScript.replace(/__PREFIX__/g, prefix);
-    html = html.replace('</body>', `${sliderScript}\n${modalFormatted}\n${optionModalHtmlAndScript}\n</body>`);
+    html = html.replace('</body>', `${sliderFormatted}\n${modalFormatted}\n${optionModalHtmlAndScript}\n</body>`);
 
     return html;
   }

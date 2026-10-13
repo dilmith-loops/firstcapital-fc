@@ -82,11 +82,12 @@ export default {
         }
       }
 
-      if (url.pathname === "/api/admin/settings" || url.pathname === "/api/questions") {
+      if (url.pathname === "/api/admin/settings" || url.pathname === "/api/questions" || url.pathname === "/api/testimonials") {
         try {
           const { handleGetAppSetting, handleSaveAppSetting } = await import("./server/api-handlers");
           if (request.method === "GET") {
-            const key = url.searchParams.get("key") || "quiz_questions";
+            const defaultKey = url.pathname === "/api/testimonials" ? "testimonials" : "quiz_questions";
+            const key = url.searchParams.get("key") || defaultKey;
             const data = await handleGetAppSetting(key);
             return new Response(JSON.stringify({ success: true, data }), {
               status: 200,
@@ -94,7 +95,8 @@ export default {
             });
           } else if (request.method === "POST") {
             const body = (await request.json()) as any;
-            const key = body?.key || "quiz_questions";
+            const defaultKey = url.pathname === "/api/testimonials" ? "testimonials" : "quiz_questions";
+            const key = body?.key || defaultKey;
             const value = body?.value;
             await handleSaveAppSetting(key, value);
             return new Response(JSON.stringify({ success: true }), {

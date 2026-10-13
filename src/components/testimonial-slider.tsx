@@ -6,31 +6,46 @@ export function TestimonialSlider() {
   const [items, setItems] = useState<TestimonialItem[]>(() => {
     const list = AdminStore.getTestimonials();
     const active = list.filter((t) => t.status === "Active");
-    return active.length > 0 ? active : DEFAULT_TESTIMONIALS;
+    return active;
   });
   const [active, setActive] = useState(0);
 
   useEffect(() => {
     // Initial fetch from DB
     AdminStore.fetchTestimonialsFromDb().then((list) => {
-      const activeList = list.filter((t) => t.status === "Active");
-      if (activeList.length > 0) {
-        setItems(activeList);
-      }
+      const activeList = (list || []).filter((t) => t.status === "Active");
+      setItems(activeList);
     });
 
     const unsubscribe = AdminStore.subscribe(() => {
       const list = AdminStore.getTestimonials();
-      const activeList = list.filter((t) => t.status === "Active");
-      setItems(activeList.length > 0 ? activeList : DEFAULT_TESTIMONIALS);
+      const activeList = (list || []).filter((t) => t.status === "Active");
+      setItems(activeList);
     });
 
-    return unsubscribe;
+    // Cross-tab real-time storage listener
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "fc_admin_testimonials" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            const activeList = parsed.filter((t: any) => t.status === "Active");
+            setItems(activeList);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   // Safe active index check
   useEffect(() => {
-    if (active >= items.length) {
+    if (items.length > 0 && active >= items.length) {
       setActive(0);
     }
   }, [items.length, active]);
@@ -48,7 +63,10 @@ export function TestimonialSlider() {
     setActive((i) => (i + step + items.length) % items.length);
   };
 
-  const currentTestimonials = items.length > 0 ? items : DEFAULT_TESTIMONIALS;
+  const currentTestimonials = items;
+  if (currentTestimonials.length === 0) {
+    return null;
+  }
 
   return (
     <section aria-label="What our customers say" className="testimonial-slider px-5 py-16 sm:px-8 lg:px-12 bg-white">

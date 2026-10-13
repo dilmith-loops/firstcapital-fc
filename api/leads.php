@@ -124,6 +124,47 @@ function getDefaultQuizQuestions() {
     ];
 }
 
+function getDefaultTestimonials() {
+    return [
+        [
+            'id' => 'test-1',
+            'quote' => 'I started with just LKR 1,000, mostly to see what would happen. A year later, investing is simply part of my monthly routine.',
+            'name' => 'Dinuka P.',
+            'role' => 'First-time investor',
+            'rating' => 5,
+            'status' => 'Active',
+            'createdAt' => date('c')
+        ],
+        [
+            'id' => 'test-2',
+            'quote' => 'Everything was explained in plain language. I never felt like I needed a finance degree to take the first step.',
+            'name' => 'Shanika F.',
+            'role' => 'Young professional',
+            'rating' => 5,
+            'status' => 'Active',
+            'createdAt' => date('c')
+        ],
+        [
+            'id' => 'test-3',
+            'quote' => 'Knowing I can get to my money when I need it made starting far less intimidating. That flexibility is why I began at all.',
+            'name' => 'Aravinda P.',
+            'role' => 'Saver turned investor',
+            'rating' => 5,
+            'status' => 'Active',
+            'createdAt' => date('c')
+        ],
+        [
+            'id' => 'test-4',
+            'quote' => 'It helps knowing the people managing your money have been doing this for over forty years. I just stay consistent and let it grow.',
+            'name' => 'Malsha S.',
+            'role' => 'Long-term investor',
+            'rating' => 5,
+            'status' => 'Active',
+            'createdAt' => date('c')
+        ]
+    ];
+}
+
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
     try {
@@ -207,9 +248,12 @@ if ($action === 'status') {
 // ----------------------------------------------------
 // 2. APP SETTINGS (Questions, Products, Testimonials, Admins)
 // ----------------------------------------------------
-if ($action === 'questions' || $action === 'settings') {
+if ($action === 'questions' || $action === 'testimonials' || $action === 'settings') {
     if ($action === 'questions') {
         $_GET['key'] = 'quiz_questions';
+    }
+    if ($action === 'testimonials') {
+        $_GET['key'] = 'testimonials';
     }
     if ($method === 'GET') {
         $key = cleanString($_GET['key'] ?? 'quiz_questions', 100);
@@ -243,6 +287,21 @@ if ($action === 'questions' || $action === 'settings') {
             }
             http_response_code(200);
             echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultQuestions]);
+            exit;
+        }
+
+        // If requesting testimonials and not found in DB: return default testimonials and seed to DB
+        if ($key === 'testimonials') {
+            $defaultTestimonials = getDefaultTestimonials();
+            if ($pdo) {
+                try {
+                    $valJson = json_encode($defaultTestimonials, JSON_UNESCAPED_UNICODE);
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('testimonials', :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                    $ins->execute([':v' => $valJson]);
+                } catch (Throwable $e) {}
+            }
+            http_response_code(200);
+            echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultTestimonials]);
             exit;
         }
 
