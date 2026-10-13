@@ -281,8 +281,8 @@ function DesignOptionTwo() {
                 src={FCmainImage}
                 alt="First Capital Investor Personas"
                 className="relative z-10 h-auto w-full max-w-2xl lg:max-w-none lg:scale-105 object-contain mx-auto transition-transform"
-                width={1408}
-                height={1056}
+                width={1024}
+                height={576}
               />
               <div style={{ display: "none" }} className="hidden relative z-20 mt-4 sm:mt-5 grid grid-cols-2 border border-border bg-background sm:grid-cols-4">
                 {[

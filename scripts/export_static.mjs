@@ -1954,8 +1954,8 @@ async function exportStatic() {
   };
 
   copyDual('public/__l5e/assets-v1/4127bce6-999f-469c-8a68-01a4dc912fc9/first-capital-logo.png', 'first-capital-logo.png');
-  copyDual('src/assets/investors.png', 'investors.png');
-  copyDual('src/assets/investors.png', 'FCmain.png');
+  copyDual('src/assets/FCmain.png', 'investors.png');
+  copyDual('src/assets/FCmain.png', 'FCmain.png');
   copyDual('src/assets/investor-personalities.jpg', 'investor-personalities.jpg');
   copyDual('src/assets/image.png', 'image.png');
   copyDual('public/og-image.jpg', 'og-image.jpg');
@@ -2725,12 +2725,12 @@ ${compiledCssContent}
     // Fix image paths robustly (use direct prefix paths matching uploaded files with cache busting)
     html = html.replace(/src="[^"]*first-capital-logo\.png[^"]*"/gi, `src="${prefix}first-capital-logo.png?v=1"`);
     html = html.replace(/href="[^"]*first-capital-logo\.png[^"]*"/gi, `href="${prefix}first-capital-logo.png?v=1"`);
-    html = html.replace(/src="[^"]*FCmain\.png[^"]*"/gi, `src="${prefix}FCmain.png?v=2"`);
-    html = html.replace(/href="[^"]*FCmain\.png[^"]*"/gi, `href="${prefix}FCmain.png?v=2"`);
-    html = html.replace(/src="[^"]*investors\.png[^"]*"/gi, `src="${prefix}FCmain.png?v=2"`);
-    html = html.replace(/href="[^"]*investors\.png[^"]*"/gi, `href="${prefix}FCmain.png?v=2"`);
-    html = html.replace(/src="[^"]*investor-personalities\.jpg[^"]*"/gi, `src="${prefix}FCmain.png?v=2"`);
-    html = html.replace(/href="[^"]*investor-personalities\.jpg[^"]*"/gi, `href="${prefix}FCmain.png?v=2"`);
+    html = html.replace(/src="[^"]*FCmain\.png[^"]*"/gi, `src="${prefix}FCmain.png?v=3"`);
+    html = html.replace(/href="[^"]*FCmain\.png[^"]*"/gi, `href="${prefix}FCmain.png?v=3"`);
+    html = html.replace(/src="[^"]*investors\.png[^"]*"/gi, `src="${prefix}FCmain.png?v=3"`);
+    html = html.replace(/href="[^"]*investors\.png[^"]*"/gi, `href="${prefix}FCmain.png?v=3"`);
+    html = html.replace(/src="[^"]*investor-personalities\.jpg[^"]*"/gi, `src="${prefix}FCmain.png?v=3"`);
+    html = html.replace(/href="[^"]*investor-personalities\.jpg[^"]*"/gi, `href="${prefix}FCmain.png?v=3"`);
     html = html.replace(/src="[^"]*\/assets\/image\.png[^"]*"/gi, `src="${prefix}image.png?v=1"`);
     html = html.replace(/href="[^"]*\/assets\/image\.png[^"]*"/gi, `href="${prefix}image.png?v=1"`);
     html = html.replace(/src="\/favicon\.png[^"]*"/gi, `src="${prefix}favicon.png?v=1"`);
@@ -2746,9 +2746,10 @@ ${compiledCssContent}
 
     // Clean preload links that pointed to old dev paths or unused hidden elements
     html = html.replace(/<link rel="preload" as="image"[^>]*investor-type-[^>]*\/?>/gi, '');
-    html = html.replace(/<link rel="preload" as="image"[^>]*FCmain[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=2" />`);
+    html = html.replace(/<link rel="preload" as="image"[^>]*FCmain[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=3" />`);
     html = html.replace(/<link rel="preload" as="image"[^>]*first-capital-logo[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}first-capital-logo.png?v=1" />`);
-    html = html.replace(/<link rel="preload" as="image"[^>]*investors[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=2" />`);
+    html = html.replace(/<link rel="preload" as="image"[^>]*investors[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=3" />`);
+    html = html.replace(/width="1408"\s*height="1056"/gi, 'width="1024" height="576"');
 
     // Fix Admin link in footer if present
     html = html.replace(/href="\/admin"/g, `href="${prefix}admin"`);
