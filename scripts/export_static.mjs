@@ -719,8 +719,8 @@ const quizModalHtmlAndScript = `
         {
           icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
           title: 'First Capital Fixed Income Fund',
-          tags: ['Medium to long term', 'Relatively stable returns', 'Access anytime', 'Start with LKR 1,000'],
-          copy: 'For investors looking for relatively stable returns while keeping access to their money.'
+          tags: ['Medium to long term', 'Access anytime', 'Start with LKR 1,000'],
+          copy: 'For investors looking for investment return while keeping access to their money.'
         },
         {
           icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
@@ -741,7 +741,7 @@ const quizModalHtmlAndScript = `
     'gov-securities': {
       number: '02',
       title: 'Government Securities',
-      simplyPut: 'You invest money → The government uses your money → You receive regular interest → Your investment is repaid at maturity.',
+      simplyPut: 'You invest → The government uses your money → You receive regular interest → Your investment is repaid at maturity.',
       keyBenefits: ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
       video: {
         title: 'Government Securities explained',
@@ -2238,8 +2238,8 @@ const optionModalHtmlAndScript = `
         {
           icon: iconShield,
           title: 'First Capital Fixed Income Fund',
-          copy: 'For investors looking for relatively stable returns while keeping access to their money.',
-          tags: ['Medium to long term', 'Relatively stable returns', 'Access anytime', 'Start with LKR 1,000']
+          copy: 'For investors looking for investment return while keeping access to their money.',
+          tags: ['Medium to long term', 'Access anytime', 'Start with LKR 1,000']
         },
         {
           icon: iconChart,
@@ -2261,7 +2261,7 @@ const optionModalHtmlAndScript = `
       number: '02',
       title: 'Government Securities',
       fullCopy: '',
-      simplyPut: 'You invest → The government uses your money → You receive interest → Your investment is repaid at maturity.',
+      simplyPut: 'You invest → The government uses your money → You receive regular interest → Your investment is repaid at maturity.',
       keyBenefits: ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
       video: {
         title: 'Government Securities explained',

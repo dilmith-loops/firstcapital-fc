@@ -210,7 +210,7 @@ const OPTION_DETAILS: Record<string, {
   "gov-securities": {
     number: "02",
     title: "Government Securities",
-    simplyPut: "You invest money → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
+    simplyPut: "You invest → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
     keyBenefits: ["Government-issued", "Regular interest", "Defined maturity", "Risk-free instrument"],
     video: {
       title: "Government Securities explained",

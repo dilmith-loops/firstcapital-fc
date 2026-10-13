@@ -105,8 +105,8 @@ const investmentOptions: InvestmentOptionItem[] = [
       {
         icon: ShieldCheck,
         title: "First Capital Fixed Income Fund",
-        tags: ["Medium to long term", "Relatively stable returns", "Access anytime", "Start with LKR 1,000"],
-        copy: "For investors looking for relatively stable returns while keeping access to their money.",
+        tags: ["Medium to long term", "Access anytime", "Start with LKR 1,000"],
+        copy: "For investors looking for investment return while keeping access to their money.",
       },
       {
         icon: LineChart,
@@ -130,7 +130,7 @@ const investmentOptions: InvestmentOptionItem[] = [
     title: "Government Securities",
     icon: Landmark,
     shortCopy: "Government securities are instrument issued by the Government of Sri Lanka to raise money. When you invest, you lend your money to the government for a defined period. In return, you receive interest periodically, with the original investment paid back at maturity.",
-    simplyPut: "You invest money → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
+    simplyPut: "You invest → The government uses your money → You receive regular interest → Your investment is repaid at maturity.",
     keyBenefits: ["Government-issued", "Regular interest", "Defined maturity", "Risk-free instrument"],
     video: {
       title: "Government Securities explained",
