@@ -533,10 +533,7 @@ const quizModalHtmlAndScript = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center pt-2">
           <!-- Left Column: Share Card Preview -->
           <div class="bg-slate-50/80 rounded-2xl p-3.5 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                Share Card Preview
-              </span>
+            <div class="flex items-center justify-end">
               <a
                 id="fck-share-save-img"
                 href="#"

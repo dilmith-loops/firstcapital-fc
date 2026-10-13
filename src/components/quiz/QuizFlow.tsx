@@ -1426,10 +1426,7 @@ export function QuizFlow({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center pt-2">
               {/* Left Column: Share Card Preview */}
               <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                    Share Card Preview
-                  </span>
+                <div className="flex items-center justify-end">
                   <a
                     href={shareCardImage}
                     download={`first-capital-${personalitySlug}-${shareGender}.jpg`}
