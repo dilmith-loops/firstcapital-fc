@@ -532,7 +532,7 @@ const quizModalHtmlAndScript = `
         <!-- 2-Column Responsive Layout -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center pt-2">
           <!-- Left Column: Share Card Preview -->
-          <div class="bg-slate-50/80 rounded-2xl p-3.5 space-y-2.5">
+          <div class="bg-[#1a214c] rounded-2xl p-3.5 sm:p-4 space-y-2.5 shadow-md border border-[#1a214c]" style="background-color:#1a214c">
             <div class="flex items-center justify-end">
               <a
                 id="fck-share-save-img"
@@ -540,14 +540,15 @@ const quizModalHtmlAndScript = `
                 download=""
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 text-xs font-bold text-[#1a214c] hover:text-[#e0b815] underline"
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-[#f1ca1f] hover:text-white underline underline-offset-2 transition-colors"
+                style="color:#f1ca1f"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:#f1ca1f"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                 <span>Save Image</span>
               </a>
             </div>
 
-            <div class="rounded-xl overflow-hidden shadow-xs bg-white">
+            <div class="rounded-xl overflow-hidden shadow-md bg-white">
               <img
                 id="fck-share-card-img"
                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"

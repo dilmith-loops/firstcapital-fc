@@ -1425,21 +1425,25 @@ export function QuizFlow({
             {/* 2-Column Responsive Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center pt-2">
               {/* Left Column: Share Card Preview */}
-              <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2.5">
+              <div
+                className="bg-[#1a214c] rounded-2xl p-3.5 sm:p-4 space-y-2.5 shadow-md border border-[#1a214c]"
+                style={{ backgroundColor: "#1a214c" }}
+              >
                 <div className="flex items-center justify-end">
                   <a
                     href={shareCardImage}
                     download={`first-capital-${personalitySlug}-${shareGender}.jpg`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#1a214c] hover:text-[#e0b815] underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#f1ca1f] hover:text-white underline underline-offset-2 transition-colors"
+                    style={{ color: "#f1ca1f" }}
                   >
                     <Download className="size-3.5" />
                     <span>Save Image</span>
                   </a>
                 </div>
 
-                <div className="rounded-xl overflow-hidden shadow-xs bg-white">
+                <div className="rounded-xl overflow-hidden shadow-md bg-white">
                   <img
                     src={shareCardImage}
                     alt={`${resultProfile?.name || "Investor"} Share Card`}
