@@ -16,7 +16,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AdminStore, type WhyReasonItem } from "@/lib/admin-store";
 import FCmainImage from "@/assets/FCmain.png";
 import investorType01 from "@/assets/investor-type-01.png";
 import investorType02 from "@/assets/investor-type-02.png";
@@ -161,22 +162,39 @@ const investmentOptions: InvestmentOptionItem[] = [
   },
 ];
 
-const reasons = [
-  { icon: Users, title: "Professional Management", copy: "With the premier Unit Trust company in Sri Lanka, there’s no need to pick assets; specialists track the market for you." },
-  { icon: BarChart3, title: "Diversification", copy: "Your risk spreads across multiple investments, not one big bet." },
-  { icon: Sparkles, title: "Start Small", copy: "Begin with only LKR 1,000." },
-  { icon: RefreshCw, title: "Easy Entry and Exit", copy: "Buy or sell units with flexibility, because you deserve the power to control your assets." },
-  { icon: Landmark, title: "40+ Years of Investment Expertise", copy: "Over four decades of experience in Sri Lanka’s capital markets." },
-  { icon: CircleDollarSign, title: "Investment Options for Different Goals", copy: "Investments in different asset classes to suit different goals and time horizons." },
-  { icon: Building2, title: "Backed by Janashakthi Group", copy: "Part of one of Sri Lanka’s established financial conglomerates." },
-  { icon: BookOpen, title: "Gain Research Insights and Education", copy: "Access market insights, research and educational content to invest with confidence." },
-];
+const REASON_ICONS: Record<string, any> = {
+  Users,
+  BarChart3,
+  ChartColumn: BarChart3,
+  Sparkles,
+  RefreshCw,
+  Landmark,
+  CircleDollarSign,
+  Building2,
+  BookOpen,
+  ShieldCheck,
+  TrendingUp,
+  LineChart,
+};
 
 function SectionLabel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <p className={`mb-4 text-xs font-extrabold uppercase ${className || "text-muted-foreground"}`}>{children}</p>;
 }
 
 function DesignOptionTwo() {
+  const [reasonsList, setReasonsList] = useState<WhyReasonItem[]>(() => AdminStore.getWhyReasons());
+
+  useEffect(() => {
+    AdminStore.fetchWhyReasonsFromDb().then((data) => {
+      if (data && data.length > 0) setReasonsList(data);
+    });
+    return AdminStore.subscribe(() => {
+      setReasonsList(AdminStore.getWhyReasons());
+    });
+  }, []);
+
+  const visibleReasons = reasonsList.filter((r) => r.visible !== false);
+
   const [isQuizOpen, setIsQuizOpen] = useState(() => {
     if (typeof window !== "undefined") {
       return window.location.search.includes("quiz=open") || window.location.hash === "#quiz";
@@ -472,11 +490,19 @@ function DesignOptionTwo() {
         <section className="comic-reasons bg-secondary px-5 py-14 sm:py-20 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <h2 className="text-4xl font-extrabold leading-tight sm:text-5xl">Why First Capital?</h2>
-            <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">
-              {reasons.map((reason) => {
-                const Icon = reason.icon;
+            <div
+              id="fc-reasons-grid"
+              data-fc-reasons-grid="true"
+              className="fc-reasons-grid mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4"
+            >
+              {visibleReasons.map((reason) => {
+                const Icon = REASON_ICONS[reason.icon] || Sparkles;
                 return (
-                  <article key={reason.title} className="bg-background p-4 sm:p-6 min-h-[140px] sm:min-h-64 flex flex-col justify-start">
+                  <article
+                    key={reason.id || reason.title}
+                    data-reason-id={reason.id}
+                    className="fc-reason-card bg-background p-4 sm:p-6 min-h-[140px] sm:min-h-64 flex flex-col justify-start"
+                  >
                     <Icon className="size-6 sm:size-7 text-accent" />
                     <h3 className="mt-3 sm:mt-8 text-sm sm:text-lg font-extrabold leading-snug">{reason.title}</h3>
                     <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed sm:leading-6 text-muted-foreground">{reason.copy}</p>

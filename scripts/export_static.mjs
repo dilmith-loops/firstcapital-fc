@@ -2501,14 +2501,126 @@ const optionModalHtmlAndScript = `
 </script>
 `;
 
+  // Dynamic Why First Capital Reasons interactive script
+  const whyReasonsScript = `
+<!-- Dynamic Why First Capital Sync Script -->
+<script id="fc-why-reasons-script">
+(function() {
+  var ICON_SVGS = {
+    Users: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    BarChart3: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+    ChartColumn: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+    Sparkles: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>',
+    RefreshCw: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
+    Landmark: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+    CircleDollarSign: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
+    Building2: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
+    BookOpen: '<svg xmlns="http://www.w3.org/2000/svg" class="size-6 sm:size-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'
+  };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderReasonsGrid(reasons) {
+    if (!Array.isArray(reasons) || reasons.length === 0) return;
+    var grids = document.querySelectorAll('#fc-reasons-grid, [data-fc-reasons-grid="true"], .fc-reasons-grid');
+    if (!grids.length) return;
+
+    var visibleList = reasons.filter(function(r) {
+      return r.visible !== false;
+    });
+
+    grids.forEach(function(grid) {
+      var html = '';
+      visibleList.forEach(function(reason) {
+        var iconSvg = ICON_SVGS[reason.icon] || ICON_SVGS.Sparkles;
+        html += '<article data-reason-id="' + escapeHtml(reason.id) + '" class="fc-reason-card bg-background p-4 sm:p-6 min-h-[140px] sm:min-h-64 flex flex-col justify-start">' +
+          iconSvg +
+          '<h3 class="mt-3 sm:mt-8 text-sm sm:text-lg font-extrabold leading-snug">' + escapeHtml(reason.title) + '</h3>' +
+          '<p class="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed sm:leading-6 text-muted-foreground">' + escapeHtml(reason.copy) + '</p>' +
+          '</article>';
+      });
+      grid.innerHTML = html;
+    });
+  }
+
+  function syncReasonsFromDbOrStorage() {
+    try {
+      var cached = localStorage.getItem('fc_admin_why_reasons');
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          renderReasonsGrid(parsed);
+        }
+      }
+    } catch(e) {}
+
+    var endpoints = [
+      '__PREFIX__api/leads.php?action=settings&key=why_first_capital',
+      '__PREFIX__api/leads.php?action=reasons',
+      '/api/admin/settings?key=why_first_capital',
+      '/fc/api/leads.php?action=settings&key=why_first_capital'
+    ];
+
+    function tryFetch(idx) {
+      if (idx >= endpoints.length) return;
+      var url = endpoints[idx];
+      fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var items = json && json.data;
+          if (Array.isArray(items) && items.length > 0) {
+            try {
+              localStorage.setItem('fc_admin_why_reasons', JSON.stringify(items));
+            } catch(e) {}
+            renderReasonsGrid(items);
+          } else {
+            tryFetch(idx + 1);
+          }
+        })
+        .catch(function() {
+          tryFetch(idx + 1);
+        });
+    }
+
+    tryFetch(0);
+  }
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'fc_admin_why_reasons' && e.newValue) {
+      try {
+        var updated = JSON.parse(e.newValue);
+        if (Array.isArray(updated)) {
+          renderReasonsGrid(updated);
+        }
+      } catch(err) {}
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncReasonsFromDbOrStorage);
+  } else {
+    syncReasonsFromDbOrStorage();
+  }
+})();
+</script>
+`;
+
   function cleanHtml(rawHtml, depth = 0) {
     const prefix = depth === 0 ? './' : '../';
 
     let html = rawHtml;
 
-    // Strip existing slider script, quiz modal, and option modal if html already contains them to avoid duplicates
+    // Strip existing slider script, quiz modal, option modal, and reasons script if html already contains them to avoid duplicates
     html = html.replace(/<!-- Dynamic Testimonials Slider Script -->[\s\S]*?<\/script>/gi, '');
     html = html.replace(/<script id="fc-testimonial-slider-script">[\s\S]*?<\/script>/gi, '');
+    html = html.replace(/<script id="fc-why-reasons-script">[\s\S]*?<\/script>/gi, '');
+    html = html.replace(/<!-- Dynamic Why First Capital Sync Script -->[\s\S]*?<\/script>/gi, '');
     html = html.replace(/<script>\s*document\.addEventListener\('DOMContentLoaded',\s*function\(\)\s*\{[\s\S]*?testimonial-slider[\s\S]*?<\/script>/gi, '');
     const modalMarker = html.indexOf('<!-- Standalone Interactive Quiz Modal');
     if (modalMarker !== -1) {
@@ -2595,10 +2707,11 @@ ${compiledCssContent}
     // Fix Admin link in footer if present
     html = html.replace(/href="\/admin"/g, `href="${prefix}admin"`);
 
-    // Insert interactive slider script, Quiz Modal, and Investment Option Modal
+    // Insert interactive slider script, Quiz Modal, Investment Option Modal, and Why Reasons sync
     const sliderFormatted = sliderScript.replace(/__PREFIX__/g, prefix);
     const modalFormatted = quizModalHtmlAndScript.replace(/__PREFIX__/g, prefix);
-    html = html.replace('</body>', `${sliderFormatted}\n${modalFormatted}\n${optionModalHtmlAndScript}\n</body>`);
+    const reasonsFormatted = whyReasonsScript.replace(/__PREFIX__/g, prefix);
+    html = html.replace('</body>', `${sliderFormatted}\n${modalFormatted}\n${optionModalHtmlAndScript}\n${reasonsFormatted}\n</body>`);
 
     return html;
   }

@@ -11,6 +11,7 @@ import {
   DbStatusInfo,
   TestimonialItem,
   AdminUser,
+  WhyReasonItem,
 } from "@/lib/admin-store";
 import { PROFILES, ProfileKey, ProfileInfo } from "@/components/quiz/QuizFlow";
 import logoImg from "@/assets/first-capital-logo.png";
@@ -57,13 +58,50 @@ import {
   UserPlus,
   ShieldCheck,
   UserCheck,
+  BarChart3,
+  Building2,
+  Landmark,
+  CircleDollarSign,
+  BookOpen,
 } from "lucide-react";
+
+const WHY_REASON_ICONS: Record<string, any> = {
+  Users,
+  BarChart3,
+  ChartColumn: BarChart3,
+  Sparkles,
+  RefreshCw,
+  Landmark,
+  CircleDollarSign,
+  Building2,
+  BookOpen,
+  ShieldCheck,
+  TrendingUp,
+  Award,
+  HelpCircle,
+  Briefcase,
+  Layers,
+};
+
+const AVAILABLE_REASON_ICONS = [
+  { name: "Users", label: "Users (Management)" },
+  { name: "BarChart3", label: "Bar Chart (Diversification)" },
+  { name: "Sparkles", label: "Sparkles (Start Small)" },
+  { name: "RefreshCw", label: "Refresh (Easy Entry & Exit)" },
+  { name: "Landmark", label: "Landmark (Expertise)" },
+  { name: "CircleDollarSign", label: "Dollar (Investment Options)" },
+  { name: "Building2", label: "Building (Janashakthi Group)" },
+  { name: "BookOpen", label: "Book (Research & Insights)" },
+  { name: "ShieldCheck", label: "Shield (Security)" },
+  { name: "TrendingUp", label: "Trending Up (Growth)" },
+  { name: "Award", label: "Award (Trust)" },
+];
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type TabType = "leads" | "products" | "quiz" | "testimonials" | "settings";
+type TabType = "leads" | "products" | "quiz" | "testimonials" | "reasons" | "settings";
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("leads");
@@ -73,6 +111,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [settings, setSettings] = useState<AdminSettings>(AdminStore.getSettings());
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
+  const [reasons, setReasons] = useState<WhyReasonItem[]>(() => AdminStore.getWhyReasons());
+  const [editingReason, setEditingReason] = useState<WhyReasonItem | null>(null);
+  const [isAddReasonOpen, setIsAddReasonOpen] = useState(false);
+  const [filterReasonSearch, setFilterReasonSearch] = useState("");
+  const [filterReasonStatus, setFilterReasonStatus] = useState<"ALL" | "VISIBLE" | "HIDDEN">("ALL");
+  const [newReason, setNewReason] = useState({
+    title: "",
+    copy: "",
+    icon: "Sparkles",
+    visible: true,
+  });
   const [quizResults, setQuizResults] = useState<Record<ProfileKey, ProfileInfo>>(() => AdminStore.getQuizResults());
   const [quizSubTab, setQuizSubTab] = useState<"questions" | "results">("questions");
   const [editingResult, setEditingResult] = useState<ProfileInfo | null>(null);
@@ -175,6 +224,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setQuestions(AdminStore.getQuestions());
     setTestimonials(AdminStore.getTestimonials());
     setQuizResults(AdminStore.getQuizResults());
+    setReasons(AdminStore.getWhyReasons());
     setAdminUsers(AdminStore.getAdminUsers());
   };
 
@@ -189,6 +239,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         await AdminStore.fetchQuizResultsFromDb();
         await AdminStore.fetchProductsFromDb();
         await AdminStore.fetchTestimonialsFromDb();
+        await AdminStore.fetchWhyReasonsFromDb();
         await AdminStore.fetchAdminUsersFromDb();
         if (manual) {
           showToast(`MySQL DB Connected: ${status.database} @ ${status.host} (${status.totalLeads} leads loaded)`);
@@ -531,6 +582,55 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   };
 
+  const handleToggleReasonVisibility = async (reason: WhyReasonItem) => {
+    const nextVisible = reason.visible === false;
+    await AdminStore.toggleWhyReasonVisibility(reason.id);
+    setReasons(AdminStore.getWhyReasons());
+    showToast(`"${reason.title}" is now ${nextVisible ? "VISIBLE" : "HIDDEN"} on website & saved to DB!`);
+  };
+
+  const handleSaveEditReason = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReason || !editingReason.title.trim() || !editingReason.copy.trim()) {
+      showToast("Please provide both a Title and Description for the card.");
+      return;
+    }
+    await AdminStore.saveWhyReason(editingReason);
+    setReasons(AdminStore.getWhyReasons());
+    setEditingReason(null);
+    showToast(`"${editingReason.title}" saved to DB & live website!`);
+  };
+
+  const handleAddReason = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReason.title.trim() || !newReason.copy.trim()) {
+      showToast("Please provide both a Title and Description.");
+      return;
+    }
+    const created = await AdminStore.addWhyReason(newReason);
+    setReasons(AdminStore.getWhyReasons());
+    setIsAddReasonOpen(false);
+    setNewReason({ title: "", copy: "", icon: "Sparkles", visible: true });
+    showToast(`New card "${created.title}" added and saved to DB!`);
+  };
+
+  const handleDeleteReason = async (id: string) => {
+    const target = reasons.find((r) => r.id === id);
+    if (window.confirm(`Delete "${target ? target.title : "this card"}"?`)) {
+      await AdminStore.deleteWhyReason(id);
+      setReasons(AdminStore.getWhyReasons());
+      showToast("Card removed from database.");
+    }
+  };
+
+  const handleResetReasons = async () => {
+    if (window.confirm("Reset Why First Capital cards back to the default 8 items?")) {
+      await AdminStore.resetDefaultWhyReasons();
+      setReasons(AdminStore.getWhyReasons());
+      showToast("Default 8 Why First Capital cards restored and saved to database!");
+    }
+  };
+
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     AdminStore.updateSettings(settings);
@@ -795,6 +895,30 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <span>Testimonials</span>
                 </div>
                 <span className="text-xs text-slate-400 font-semibold">{testimonials.length}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("reasons")}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                  activeTab === "reasons"
+                    ? "bg-[#142d27] text-[#f1c91e] shadow-sm"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="size-4" />
+                  <span>Why First Capital</span>
+                </div>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-extrabold ${
+                    activeTab === "reasons"
+                      ? "bg-[#f1c91e] text-[#142d27]"
+                      : "bg-emerald-50 text-emerald-800"
+                  }`}
+                >
+                  {reasons.filter((r) => r.visible !== false).length}/{reasons.length}
+                </span>
               </button>
 
               <button
@@ -1757,6 +1881,308 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 onClick={() => handleDeleteTestimonial(t.id)}
                                 className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                                 title="Delete testimonial"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* TAB: WHY FIRST CAPITAL (VALUE PROPOSITION CARDS) */}
+          {activeTab === "reasons" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Header + Action Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-black text-[#142d27]">Why First Capital — Key Reasons & Benefits</h1>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    Manage the value proposition cards displayed on the landing page ({reasons.length} total, {reasons.filter((r) => r.visible !== false).length} visible).
+                    Toggle show/hide for each item to control public visibility instantly.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetReasons}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 transition-colors shadow-2xs cursor-pointer"
+                    title="Reset to default 8 cards"
+                  >
+                    <RotateCcw className="size-3.5" /> Reset Defaults
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAddReasonOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#142d27] bg-[#f1c91e] hover:bg-[#e0b815] px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+                  >
+                    <Plus className="size-4" /> Add Card
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Overview */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Cards</p>
+                    <span className="p-2 rounded-xl bg-amber-50 text-[#142d27]">
+                      <Sparkles className="size-4" />
+                    </span>
+                  </div>
+                  <p className="text-2xl sm:text-3xl font-black text-[#142d27] mt-2">{reasons.length}</p>
+                  <p className="text-[11px] font-semibold text-slate-500 mt-1">Configured reasons</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Live on Website</p>
+                    <span className="p-2 rounded-xl bg-emerald-100 text-emerald-800">
+                      <CheckCircle2 className="size-4" />
+                    </span>
+                  </div>
+                  <p className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2">
+                    {reasons.filter((r) => r.visible !== false).length}
+                  </p>
+                  <p className="text-[11px] font-semibold text-slate-500 mt-1">Visible to all visitors</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Hidden from Site</p>
+                    <span className="p-2 rounded-xl bg-slate-100 text-slate-600">
+                      <EyeOff className="size-4" />
+                    </span>
+                  </div>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-600 mt-2">
+                    {reasons.filter((r) => r.visible === false).length}
+                  </p>
+                  <p className="text-[11px] font-semibold text-slate-500 mt-1">Toggled hidden</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">MySQL Database</p>
+                    <span className="p-2 rounded-xl bg-blue-50 text-blue-700">
+                      <Database className="size-4" />
+                    </span>
+                  </div>
+                  <p className="text-sm font-extrabold text-[#142d27] mt-2 truncate">
+                    app_settings.why_first_capital
+                  </p>
+                  <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-emerald-500 inline-block"></span> Live Database Sync
+                  </p>
+                </div>
+              </div>
+
+              {/* Filter & Search Bar */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                <div className="relative flex-1">
+                  <Search className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search cards by title or description..."
+                    value={filterReasonSearch}
+                    onChange={(e) => setFilterReasonSearch(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                  {filterReasonSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setFilterReasonSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-400 shrink-0">Filter Status:</span>
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setFilterReasonStatus("ALL")}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                        filterReasonStatus === "ALL"
+                          ? "bg-white text-[#142d27] shadow-2xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      All ({reasons.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilterReasonStatus("VISIBLE")}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                        filterReasonStatus === "VISIBLE"
+                          ? "bg-white text-emerald-800 shadow-2xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      Visible ({reasons.filter((r) => r.visible !== false).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilterReasonStatus("HIDDEN")}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                        filterReasonStatus === "HIDDEN"
+                          ? "bg-white text-rose-800 shadow-2xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      Hidden ({reasons.filter((r) => r.visible === false).length})
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reasons Grid */}
+              {(() => {
+                const filteredReasons = reasons.filter((r) => {
+                  const matchesSearch =
+                    filterReasonSearch === "" ||
+                    r.title.toLowerCase().includes(filterReasonSearch.toLowerCase()) ||
+                    r.copy.toLowerCase().includes(filterReasonSearch.toLowerCase());
+                  const isVis = r.visible !== false;
+                  const matchesStatus =
+                    filterReasonStatus === "ALL" ||
+                    (filterReasonStatus === "VISIBLE" && isVis) ||
+                    (filterReasonStatus === "HIDDEN" && !isVis);
+                  return matchesSearch && matchesStatus;
+                });
+
+                if (filteredReasons.length === 0) {
+                  return (
+                    <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+                      <div className="size-12 rounded-2xl bg-amber-50 text-[#142d27] mx-auto flex items-center justify-center mb-3">
+                        <Sparkles className="size-6" />
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-800">No matching reasons found</h3>
+                      <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        Try modifying your search or status filter to see other cards.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilterReasonSearch("");
+                          setFilterReasonStatus("ALL");
+                        }}
+                        className="mt-4 text-xs font-bold text-[#142d27] underline cursor-pointer"
+                      >
+                        Reset filters
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {filteredReasons.map((r, idx) => {
+                      const IconComponent = WHY_REASON_ICONS[r.icon] || Sparkles;
+                      const isVisible = r.visible !== false;
+
+                      return (
+                        <div
+                          key={r.id || idx}
+                          className={`bg-white rounded-2xl border transition-all p-5 flex flex-col justify-between relative group ${
+                            isVisible
+                              ? "border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300"
+                              : "border-slate-200/60 bg-slate-50/50 opacity-80"
+                          }`}
+                        >
+                          <div>
+                            {/* Card Header: Icon, Order Badge & Visibility Toggle */}
+                            <div className="flex items-start justify-between gap-2 mb-4">
+                              <div className="flex items-center gap-2.5">
+                                <span className="size-10 rounded-xl bg-amber-50 text-[#142d27] flex items-center justify-center shrink-0 border border-amber-200/60 shadow-2xs">
+                                  <IconComponent className="size-5" />
+                                </span>
+                                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                                  Card #{idx + 1}
+                                </span>
+                              </div>
+
+                              {/* Interactive Show / Hide Toggle Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleReasonVisibility(r)}
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                                  isVisible
+                                    ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                                    : "bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300"
+                                }`}
+                                title={isVisible ? "Currently VISIBLE on website. Click to Hide." : "Currently HIDDEN from website. Click to Show."}
+                              >
+                                {isVisible ? (
+                                  <>
+                                    <span className="size-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                                    <span>Visible</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="size-2 rounded-full bg-slate-500"></span>
+                                    <span>Hidden</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Title & Copy */}
+                            <h3 className="text-base font-extrabold text-[#142d27] leading-snug mb-2">
+                              {r.title}
+                            </h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                              {r.copy}
+                            </p>
+                          </div>
+
+                          {/* Card Footer: Quick Show/Hide button & Edit Button */}
+                          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleReasonVisibility(r)}
+                              className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
+                                isVisible
+                                  ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                  : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+                              }`}
+                            >
+                              {isVisible ? (
+                                <>
+                                  <EyeOff className="size-3.5" />
+                                  <span>Hide</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="size-3.5" />
+                                  <span>Show</span>
+                                </>
+                              )}
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditingReason(r)}
+                                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-[#142d27] transition-colors cursor-pointer"
+                                title="Edit Title, Description & Icon"
+                              >
+                                <Edit className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteReason(r.id)}
+                                className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                                title="Delete reason card"
                               >
                                 <Trash2 className="size-3.5" />
                               </button>
@@ -3371,6 +3797,221 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     Save Changes
                   </button>
                 </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT REASON MODAL */}
+      {editingReason && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-extrabold text-[#142d27]">Edit Why First Capital Card</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Update title, copy, icon, and visibility on the live website
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingReason(null)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditReason} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Card Title</label>
+                <input
+                  type="text"
+                  required
+                  value={editingReason.title}
+                  onChange={(e) => setEditingReason({ ...editingReason, title: e.target.value })}
+                  placeholder="e.g. Professional Management"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27] font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Icon</label>
+                <select
+                  value={editingReason.icon}
+                  onChange={(e) => setEditingReason({ ...editingReason, icon: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                >
+                  {AVAILABLE_REASON_ICONS.map((opt) => (
+                    <option key={opt.name} value={opt.name}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description / Copy</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={editingReason.copy}
+                  onChange={(e) => setEditingReason({ ...editingReason, copy: e.target.value })}
+                  placeholder="Enter detailed description..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-[#142d27] leading-relaxed resize-none"
+                />
+              </div>
+
+              {/* Show / Hide Toggle in Modal */}
+              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-[#142d27]">Show on Public Website</p>
+                  <p className="text-[11px] text-slate-500">
+                    {editingReason.visible !== false
+                      ? "Card is currently visible on landing page"
+                      : "Card is hidden from landing page"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingReason({ ...editingReason, visible: editingReason.visible === false })
+                  }
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    editingReason.visible !== false
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                      : "bg-slate-200 text-slate-700 border-slate-300"
+                  }`}
+                >
+                  {editingReason.visible !== false ? "● Visible" : "○ Hidden"}
+                </button>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteReason(editingReason.id)}
+                  className="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="size-3.5" /> Delete
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingReason(null)}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD REASON MODAL */}
+      {isAddReasonOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-extrabold text-[#142d27]">Add New Why First Capital Card</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Create a new value proposition card for the landing page
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddReasonOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddReason} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Card Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newReason.title}
+                  onChange={(e) => setNewReason({ ...newReason, title: e.target.value })}
+                  placeholder="e.g. Tax-Efficient Investing"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#142d27] font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Icon</label>
+                <select
+                  value={newReason.icon}
+                  onChange={(e) => setNewReason({ ...newReason, icon: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer"
+                >
+                  {AVAILABLE_REASON_ICONS.map((opt) => (
+                    <option key={opt.name} value={opt.name}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description / Copy</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={newReason.copy}
+                  onChange={(e) => setNewReason({ ...newReason, copy: e.target.value })}
+                  placeholder="Explain why this benefits investors..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-[#142d27] leading-relaxed resize-none"
+                />
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-[#142d27]">Show on Public Website</p>
+                  <p className="text-[11px] text-slate-500">
+                    {newReason.visible ? "Card will be visible immediately" : "Card will be saved as hidden"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewReason({ ...newReason, visible: !newReason.visible })}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    newReason.visible
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                      : "bg-slate-200 text-slate-700 border-slate-300"
+                  }`}
+                >
+                  {newReason.visible ? "● Visible" : "○ Hidden"}
+                </button>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddReasonOpen(false)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#142d27] hover:bg-[#1f423a] text-[#f1c91e] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer"
+                >
+                  Add Card
+                </button>
               </div>
             </form>
           </div>

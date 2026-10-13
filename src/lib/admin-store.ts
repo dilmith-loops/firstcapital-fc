@@ -85,6 +85,15 @@ export interface TestimonialItem {
   createdAt?: string;
 }
 
+export interface WhyReasonItem {
+  id: string;
+  icon: string;
+  title: string;
+  copy: string;
+  visible: boolean;
+  order: number;
+}
+
 export interface AdminUser {
   id: string;
   name: string;
@@ -106,6 +115,7 @@ const STORAGE_KEY_LOGS = "fc_admin_logs";
 const STORAGE_KEY_QUESTIONS = "fc_admin_questions";
 const STORAGE_KEY_TESTIMONIALS = "fc_admin_testimonials";
 const STORAGE_KEY_QUIZ_RESULTS = "fc_admin_quiz_results";
+const STORAGE_KEY_WHY_REASONS = "fc_admin_why_reasons";
 
 export function mergeWithDefaultProfiles(
   customProfiles?: Record<string, Partial<ProfileInfo>> | null
@@ -178,6 +188,73 @@ export const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
     rating: 5,
     status: "Active",
     createdAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_WHY_REASONS: WhyReasonItem[] = [
+  {
+    id: "reason-1",
+    icon: "Users",
+    title: "Professional Management",
+    copy: "With the premier Unit Trust company in Sri Lanka, there’s no need to pick assets; specialists track the market for you.",
+    visible: true,
+    order: 1,
+  },
+  {
+    id: "reason-2",
+    icon: "BarChart3",
+    title: "Diversification",
+    copy: "Your risk spreads across multiple investments, not one big bet.",
+    visible: true,
+    order: 2,
+  },
+  {
+    id: "reason-3",
+    icon: "Sparkles",
+    title: "Start Small",
+    copy: "Begin with only LKR 1,000.",
+    visible: true,
+    order: 3,
+  },
+  {
+    id: "reason-4",
+    icon: "RefreshCw",
+    title: "Easy Entry and Exit",
+    copy: "Buy or sell units with flexibility, because you deserve the power to control your assets.",
+    visible: true,
+    order: 4,
+  },
+  {
+    id: "reason-5",
+    icon: "Landmark",
+    title: "40+ Years of Investment Expertise",
+    copy: "Over four decades of experience in Sri Lanka’s capital markets.",
+    visible: true,
+    order: 5,
+  },
+  {
+    id: "reason-6",
+    icon: "CircleDollarSign",
+    title: "Investment Options for Different Goals",
+    copy: "Investments in different asset classes to suit different goals and time horizons.",
+    visible: true,
+    order: 6,
+  },
+  {
+    id: "reason-7",
+    icon: "Building2",
+    title: "Backed by Janashakthi Group",
+    copy: "Part of one of Sri Lanka’s established financial conglomerates.",
+    visible: true,
+    order: 7,
+  },
+  {
+    id: "reason-8",
+    icon: "BookOpen",
+    title: "Gain Research Insights and Education",
+    copy: "Access market insights, research and educational content to invest with confidence.",
+    visible: true,
+    order: 8,
   },
 ];
 
@@ -1227,5 +1304,134 @@ export const AdminStore = {
     this.addLog("QUIZ_RESULTS_RESET", "Quiz personality results reset to default standard profiles");
     notify();
     return await this.persistQuizResultsToDb(PROFILES);
+  },
+
+  // Why First Capital Reasons Operations (Live DB Sync + Local Fallback)
+  getWhyReasons(): WhyReasonItem[] {
+    if (typeof window === "undefined") return DEFAULT_WHY_REASONS;
+    const data = localStorage.getItem(STORAGE_KEY_WHY_REASONS);
+    if (!data) {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(DEFAULT_WHY_REASONS));
+      return DEFAULT_WHY_REASONS;
+    }
+    try {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item, index) => ({
+          ...item,
+          visible: item.visible !== false,
+          order: typeof item.order === "number" ? item.order : index + 1,
+        }));
+      }
+      return DEFAULT_WHY_REASONS;
+    } catch {
+      return DEFAULT_WHY_REASONS;
+    }
+  },
+
+  async fetchWhyReasonsFromDb(): Promise<WhyReasonItem[]> {
+    try {
+      const res = await fetch(getApiUrl("api/admin/settings?key=why_first_capital"), { method: "GET" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const normalized = json.data.map((item: any, index: number) => ({
+            ...item,
+            visible: item.visible !== false,
+            order: typeof item.order === "number" ? item.order : index + 1,
+          }));
+          if (typeof window !== "undefined") {
+            localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(normalized));
+          }
+          notify();
+          return normalized;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch why reasons from DB:", err);
+    }
+    return this.getWhyReasons();
+  },
+
+  async persistWhyReasonsToDb(reasons: WhyReasonItem[]): Promise<boolean> {
+    try {
+      const res = await fetch(getApiUrl("api/admin/settings"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "why_first_capital", value: reasons }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return !!json.success;
+      }
+    } catch (err) {
+      console.warn("Could not persist why reasons to DB:", err);
+    }
+    return false;
+  },
+
+  async saveWhyReason(reason: WhyReasonItem): Promise<boolean> {
+    const list = this.getWhyReasons();
+    const exists = list.some((r) => r.id === reason.id);
+    const updated = exists ? list.map((r) => (r.id === reason.id ? reason : r)) : [...list, reason];
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));
+    }
+    this.addLog("REASON_UPDATED", `Updated Why First Capital card: "${reason.title}" (Visible: ${reason.visible !== false ? "Yes" : "No"})`);
+    notify();
+    return await this.persistWhyReasonsToDb(updated);
+  },
+
+  async toggleWhyReasonVisibility(id: string): Promise<boolean> {
+    const list = this.getWhyReasons();
+    const target = list.find((r) => r.id === id);
+    if (!target) return false;
+    const newVisible = target.visible === false;
+    const updated = list.map((r) => (r.id === id ? { ...r, visible: newVisible } : r));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));
+    }
+    this.addLog("REASON_VISIBILITY", `${newVisible ? "Showed" : "Hid"} Why First Capital card: "${target.title}"`);
+    notify();
+    return await this.persistWhyReasonsToDb(updated);
+  },
+
+  async addWhyReason(data: Omit<WhyReasonItem, "id" | "order">): Promise<WhyReasonItem> {
+    const list = this.getWhyReasons();
+    const newReason: WhyReasonItem = {
+      id: `reason-${Date.now()}`,
+      order: list.length + 1,
+      ...data,
+      visible: data.visible !== false,
+    };
+    const updated = [...list, newReason];
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));
+    }
+    this.addLog("REASON_CREATED", `Added new Why First Capital card: "${newReason.title}"`);
+    notify();
+    await this.persistWhyReasonsToDb(updated);
+    return newReason;
+  },
+
+  async deleteWhyReason(id: string): Promise<boolean> {
+    const list = this.getWhyReasons();
+    const target = list.find((r) => r.id === id);
+    const updated = list.filter((r) => r.id !== id);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(updated));
+    }
+    this.addLog("REASON_DELETED", `Removed Why First Capital card: "${target ? target.title : id}"`);
+    notify();
+    return await this.persistWhyReasonsToDb(updated);
+  },
+
+  async resetDefaultWhyReasons(): Promise<boolean> {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_WHY_REASONS, JSON.stringify(DEFAULT_WHY_REASONS));
+    }
+    this.addLog("REASONS_RESET", "Why First Capital reasons reset to default 8 cards");
+    notify();
+    return await this.persistWhyReasonsToDb(DEFAULT_WHY_REASONS);
   },
 };

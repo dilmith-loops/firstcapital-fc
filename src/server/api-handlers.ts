@@ -410,6 +410,15 @@ export async function handleGetAppSetting(key: string): Promise<any> {
     return DEFAULT_TESTIMONIALS;
   }
 
+  // Fallback for why_first_capital
+  if (key === "why_first_capital" || key === "reasons") {
+    const { DEFAULT_WHY_REASONS } = await import("../lib/admin-store");
+    try {
+      await handleSaveAppSetting("why_first_capital", DEFAULT_WHY_REASONS);
+    } catch {}
+    return DEFAULT_WHY_REASONS;
+  }
+
   return null;
 }
 

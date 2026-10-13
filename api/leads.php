@@ -238,6 +238,75 @@ function getDefaultQuizResults() {
     ];
 }
 
+function getDefaultWhyReasons() {
+    return [
+        [
+            'id' => 'reason-1',
+            'icon' => 'Users',
+            'title' => 'Professional Management',
+            'copy' => "With the premier Unit Trust company in Sri Lanka, there’s no need to pick assets; specialists track the market for you.",
+            'visible' => true,
+            'order' => 1
+        ],
+        [
+            'id' => 'reason-2',
+            'icon' => 'BarChart3',
+            'title' => 'Diversification',
+            'copy' => "Your risk spreads across multiple investments, not one big bet.",
+            'visible' => true,
+            'order' => 2
+        ],
+        [
+            'id' => 'reason-3',
+            'icon' => 'Sparkles',
+            'title' => 'Start Small',
+            'copy' => "Begin with only LKR 1,000.",
+            'visible' => true,
+            'order' => 3
+        ],
+        [
+            'id' => 'reason-4',
+            'icon' => 'RefreshCw',
+            'title' => 'Easy Entry and Exit',
+            'copy' => "Buy or sell units with flexibility, because you deserve the power to control your assets.",
+            'visible' => true,
+            'order' => 4
+        ],
+        [
+            'id' => 'reason-5',
+            'icon' => 'Landmark',
+            'title' => '40+ Years of Investment Expertise',
+            'copy' => "Over four decades of experience in Sri Lanka’s capital markets.",
+            'visible' => true,
+            'order' => 5
+        ],
+        [
+            'id' => 'reason-6',
+            'icon' => 'CircleDollarSign',
+            'title' => 'Investment Options for Different Goals',
+            'copy' => "Investments in different asset classes to suit different goals and time horizons.",
+            'visible' => true,
+            'order' => 6
+        ],
+        [
+            'id' => 'reason-7',
+            'icon' => 'Building2',
+            'title' => 'Backed by Janashakthi Group',
+            'copy' => "Part of one of Sri Lanka’s established financial conglomerates.",
+            'visible' => true,
+            'order' => 7
+        ],
+        [
+            'id' => 'reason-8',
+            'icon' => 'BookOpen',
+            'title' => 'Gain Research Insights and Education',
+            'copy' => "Access market insights, research and educational content to invest with confidence.",
+            'visible' => true,
+            'order' => 8
+        ]
+    ];
+}
+
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
     try {
@@ -321,7 +390,7 @@ if ($action === 'status') {
 // ----------------------------------------------------
 // 2. APP SETTINGS (Questions, Products, Testimonials, Admins)
 // ----------------------------------------------------
-if ($action === 'questions' || $action === 'testimonials' || $action === 'results' || $action === 'quiz_results' || $action === 'settings') {
+if ($action === 'questions' || $action === 'testimonials' || $action === 'results' || $action === 'quiz_results' || $action === 'reasons' || $action === 'why_first_capital' || $action === 'settings') {
     if ($action === 'questions') {
         $_GET['key'] = 'quiz_questions';
     }
@@ -330,6 +399,9 @@ if ($action === 'questions' || $action === 'testimonials' || $action === 'result
     }
     if ($action === 'results' || $action === 'quiz_results') {
         $_GET['key'] = 'quiz_results';
+    }
+    if ($action === 'reasons' || $action === 'why_first_capital') {
+        $_GET['key'] = 'why_first_capital';
     }
     if ($method === 'GET') {
         $key = cleanString($_GET['key'] ?? 'quiz_questions', 100);
@@ -396,14 +468,34 @@ if ($action === 'questions' || $action === 'testimonials' || $action === 'result
             exit;
         }
 
+        // If requesting why_first_capital and not found in DB: return default reasons and seed to DB
+        if ($key === 'why_first_capital' || $key === 'reasons') {
+            $defaultReasons = getDefaultWhyReasons();
+            if ($pdo) {
+                try {
+                    $valJson = json_encode($defaultReasons, JSON_UNESCAPED_UNICODE);
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('why_first_capital', :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                    $ins->execute([':v' => $valJson]);
+                } catch (Throwable $e) {}
+            }
+            http_response_code(200);
+            echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultReasons]);
+            exit;
+        }
+
         http_response_code(200);
         echo json_encode(['success' => true, 'data' => null]);
         exit;
     } elseif ($method === 'POST') {
         $raw = file_get_contents('php://input');
         $body = json_decode($raw, true);
-        $key = cleanString($body['key'] ?? '', 100);
-        $val = isset($body['value']) ? (is_string($body['value']) ? $body['value'] : json_encode($body['value'], JSON_UNESCAPED_UNICODE)) : '';
+        $key = cleanString($body['key'] ?? ($_GET['key'] ?? ''), 100);
+        $val = '';
+        if (isset($body['value'])) {
+            $val = is_string($body['value']) ? $body['value'] : json_encode($body['value'], JSON_UNESCAPED_UNICODE);
+        } elseif ($body !== null && !isset($body['key'])) {
+            $val = json_encode($body, JSON_UNESCAPED_UNICODE);
+        }
         if ($pdo && $key) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
