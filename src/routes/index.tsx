@@ -18,7 +18,6 @@ import {
 
 import { useState, useEffect } from "react";
 import { AdminStore, type WhyReasonItem } from "@/lib/admin-store";
-import FCmainImage from "@/assets/FCmain.png";
 import investorType01 from "@/assets/investor-type-01.png";
 import investorType02 from "@/assets/investor-type-02.png";
 import investorType03 from "@/assets/investor-type-03.png";
@@ -288,17 +287,6 @@ function Index() {
                   <span>DISCOVER MY INVESTOR PERSONALITY</span>
                   <ArrowRight className="size-5 stroke-[2.5]" />
                 </Button>
-              </div>
-
-              {/* Mobile & Tablet illustration below copy */}
-              <div className="block lg:hidden relative mt-6 sm:mt-8 w-full">
-                <img
-                  src={FCmainImage}
-                  alt="First Capital Investor Personas"
-                  className="relative z-10 h-auto w-full max-w-lg object-contain mx-auto"
-                  width={1024}
-                  height={576}
-                />
               </div>
 
               <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-slate-700 font-medium">

@@ -453,9 +453,16 @@
 
 @media (max-width: 1023px) {
   .hero-full-bg {
-    background-image: none !important;
+    --hero-bg-h: clamp(340px, 60vw, 520px);
     background-color: #ffffff !important;
+    background-image:
+      linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 38%),
+      url('./FCmain.png?v=4') !important;
+    background-repeat: no-repeat !important;
+    background-position: center bottom, 72% bottom !important;
+    background-size: 100% var(--hero-bg-h), auto var(--hero-bg-h) !important;
     min-height: auto !important;
+    padding-bottom: calc(var(--hero-bg-h) - 40px) !important;
   }
 }
 
