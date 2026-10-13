@@ -259,14 +259,6 @@ function Index() {
                 "linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 32%, rgba(255, 255, 255, 0.38) 48%, rgba(255, 255, 255, 0) 66%)",
             }}
           />
-          {/* Mobile soft overlay for crisp typography legibility while showcasing the background */}
-          <div
-            className="absolute inset-0 block lg:hidden pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 42%, rgba(255, 255, 255, 0.82) 65%, rgba(255, 255, 255, 0.35) 85%, rgba(255, 255, 255, 0) 100%)",
-            }}
-          />
 
           <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
             <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
@@ -298,12 +290,12 @@ function Index() {
                 </Button>
               </div>
 
-              {/* Mobile & Tablet illustration (hidden because it is now the full background) */}
-              <div className="hidden relative mt-8 mb-2">
+              {/* Mobile & Tablet illustration below copy */}
+              <div className="block lg:hidden relative mt-6 sm:mt-8 w-full">
                 <img
                   src={FCmainImage}
                   alt="First Capital Investor Personas"
-                  className="relative z-10 h-auto w-full max-w-lg object-contain mx-auto rounded-2xl shadow-md border border-slate-100"
+                  className="relative z-10 h-auto w-full max-w-lg object-contain mx-auto"
                   width={1024}
                   height={576}
                 />

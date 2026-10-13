@@ -453,11 +453,9 @@
 
 @media (max-width: 1023px) {
   .hero-full-bg {
-    background-image: url('./FCmain.png?v=4') !important;
-    background-repeat: no-repeat !important;
-    background-position: center bottom !important;
-    background-size: cover !important;
-    min-height: 100vh !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    min-height: auto !important;
   }
 }
 
