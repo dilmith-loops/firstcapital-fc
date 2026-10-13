@@ -902,7 +902,7 @@ const quizModalHtmlAndScript = `
   // Preload questions on page load
   syncQuestionsFromDbOrStorage();
 
-  // Multi-tab real-time sync with Admin Portal
+  // Multi-tab real-time sync with Admin Portal for questions
   window.addEventListener('storage', function(e) {
     if (e.key === 'fc_admin_questions' && e.newValue) {
       try {
@@ -911,6 +911,85 @@ const quizModalHtmlAndScript = `
           QUESTIONS = updated;
           if (modal && modal.style.display === 'flex' && stepQuestion && stepQuestion.style.display === 'block') {
             showQuestionScreen(Math.min(currentStep, QUESTIONS.length - 1));
+          }
+        }
+      } catch(err) {}
+    }
+  });
+
+  // Real-time synchronization of Quiz Result Profiles from DB & Admin
+  function syncResultsFromDbOrStorage() {
+    try {
+      var cached = localStorage.getItem('fc_admin_quiz_results');
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          for (var k in parsed) {
+            if (PROFILES[k]) {
+              PROFILES[k] = Object.assign({}, PROFILES[k], parsed[k]);
+            }
+          }
+        }
+      }
+    } catch(e) {}
+
+    var endpoints = [
+      '__PREFIX__api/leads.php?action=settings&key=quiz_results',
+      '__PREFIX__api/leads.php?action=results',
+      '/api/admin/settings?key=quiz_results',
+      '/fc/api/leads.php?action=settings&key=quiz_results'
+    ];
+
+    function tryFetchResults(idx) {
+      if (idx >= endpoints.length) return;
+      var url = endpoints[idx];
+      fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var items = json && json.data;
+          if (items && typeof items === 'object') {
+            for (var k in items) {
+              if (PROFILES[k]) {
+                PROFILES[k] = Object.assign({}, PROFILES[k], items[k]);
+              }
+            }
+            try {
+              localStorage.setItem('fc_admin_quiz_results', JSON.stringify(PROFILES));
+            } catch(e) {}
+            if (modal && modal.style.display === 'flex' && stepResult && stepResult.style.display === 'block') {
+              showResultScreen(currentResultKey);
+            }
+          } else {
+            tryFetchResults(idx + 1);
+          }
+        })
+        .catch(function() {
+          tryFetchResults(idx + 1);
+        });
+    }
+
+    tryFetchResults(0);
+  }
+
+  // Preload quiz results on page load
+  syncResultsFromDbOrStorage();
+
+  // Multi-tab real-time sync with Admin Portal for quiz results
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'fc_admin_quiz_results' && e.newValue) {
+      try {
+        var updated = JSON.parse(e.newValue);
+        if (updated && typeof updated === 'object') {
+          for (var k in updated) {
+            if (PROFILES[k]) {
+              PROFILES[k] = Object.assign({}, PROFILES[k], updated[k]);
+            }
+          }
+          if (modal && modal.style.display === 'flex' && stepResult && stepResult.style.display === 'block') {
+            showResultScreen(currentResultKey);
           }
         }
       } catch(err) {}

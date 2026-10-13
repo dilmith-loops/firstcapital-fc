@@ -22,6 +22,10 @@ if (strpos($uri, '/api/admin/status') !== false) {
     $action = 'settings';
 } elseif (strpos($uri, '/api/questions') !== false || strpos($uri, '/api/quiz/questions') !== false) {
     $action = 'questions';
+} elseif (strpos($uri, '/api/testimonials') !== false) {
+    $action = 'testimonials';
+} elseif (strpos($uri, '/api/results') !== false || strpos($uri, '/api/quiz/results') !== false || strpos($uri, '/api/profiles') !== false) {
+    $action = 'results';
 } elseif (strpos($uri, '/api/admin/leads/update') !== false) {
     $action = 'update';
 } elseif (strpos($uri, '/api/admin/leads/delete') !== false) {
@@ -165,6 +169,75 @@ function getDefaultTestimonials() {
     ];
 }
 
+function getDefaultQuizResults() {
+    return [
+        'A' => [
+            'key' => 'A',
+            'number' => '01',
+            'name' => 'The Keep-It-Cool Investor',
+            'style' => 'Flexible & Agile',
+            'product' => 'First Capital Money Market Fund (FCMMF)*',
+            'productShort' => 'First Capital Money Market Fund (FCMMF)*',
+            'productOptionId' => 'unit-trust',
+            'description' => 'You like keeping things simple, flexible and within your comfort zone. You want your money to work, but you also like knowing you can access it when you need it.',
+            'vibe' => 'Keep calm. Keep flexible.',
+            'productDisclaimer' => '* Disclaimers: Past performance is not an indicator of future performance | Investors are advised to read and understand the contents of Key Investor Information Document (KIID) | The fund is approved by the Securities and Exchange Commission of Sri Lanka (SEC) | Please refer to the Procedure Guide related to Unit Trust to understand our internal procedures related to products and transactions: ',
+            'procedureGuide' => [
+                'label' => 'firstcapital.lk/wp-content/uploads/2026/02/FCAM-UT-Procedure-Guide-to-Investors.pdf',
+                'url' => 'https://firstcapital.lk/wp-content/uploads/2026/02/FCAM-UT-Procedure-Guide-to-Investors.pdf'
+            ]
+        ],
+        'B' => [
+            'key' => 'B',
+            'number' => '02',
+            'name' => 'The Smooth Operator',
+            'style' => 'Income-Focused & Flexible',
+            'product' => 'First Capital Fixed Income Fund (FCFIF)*',
+            'productShort' => 'First Capital Fixed Income Fund (FCFIF)*',
+            'productOptionId' => 'unit-trust',
+            'description' => 'You’re looking for the sweet spot between earning a return and keeping your money accessible. You’re not chasing every opportunity - you prefer a more measured approach.',
+            'vibe' => 'Thoughtful choices. Smarter Investing.',
+            'productDisclaimer' => '* Disclaimers: Past performance is not an indicator of future performance | Investors are advised to read and understand the contents of Key Investor Information Document (KIID) | The fund is approved by the Securities and Exchange Commission of Sri Lanka (SEC) | Please refer to the Procedure Guide related to Unit Trust to understand our internal procedures related to products and transactions: ',
+            'procedureGuide' => [
+                'label' => 'firstcapital.lk/wp-content/uploads/2026/02/FCAM-UT-Procedure-Guide-to-Investors.pdf',
+                'url' => 'https://firstcapital.lk/wp-content/uploads/2026/02/FCAM-UT-Procedure-Guide-to-Investors.pdf'
+            ]
+        ],
+        'C' => [
+            'key' => 'C',
+            'number' => '03',
+            'name' => 'The Patient Player',
+            'style' => 'Long-term & income-focused',
+            'product' => 'Treasury Bonds*',
+            'productShort' => 'Treasury Bonds*',
+            'productOptionId' => 'gov-securities',
+            'description' => 'You’re comfortable giving your money time to work. You prefer a defined investment period and regular return as you build towards your bigger financial goals.',
+            'vibe' => 'Play the long game.',
+            'productDisclaimer' => '*Disclaimer: Terms & Conditions apply | Please refer to the Procedure Guide related Treasuries/Government Securities to understand our internal procedures related to products and transactions: ',
+            'procedureGuide' => [
+                'label' => 'firstcapital.lk/wp-content/uploads/2026/07/Information-Memorandum-FCT.pdf',
+                'url' => 'https://firstcapital.lk/wp-content/uploads/2026/07/Information-Memorandum-FCT.pdf'
+            ]
+        ],
+        'D' => [
+            'key' => 'D',
+            'number' => '04',
+            'name' => 'The Opportunity Hunter',
+            'style' => 'Growth-focused',
+            'product' => 'Equities*',
+            'productShort' => 'Equities*',
+            'productOptionId' => 'equities',
+            'description' => 'You’re thinking beyond the short term. You’re comfortable with market ups and downs and are focused on growing your wealth over the long run.',
+            'vibe' => 'Spot the opportunity. Think long term.',
+            'productDisclaimer' => '*Disclaimer: Investments are subject to market risks | Please refer to the Procedure Guide related to Stockbrokering/Equities to understand our internal procedures related to products and transactions: ',
+            'procedureGuide' => [
+                'label' => 'firstcapital.lk/wp-content/uploads/2026/09/FCE-procedure-guide_.pdf',
+                'url' => 'https://firstcapital.lk/wp-content/uploads/2026/09/FCE-procedure-guide_.pdf'
+            ]
+        ]
+    ];
+}
+
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
     try {
@@ -248,12 +321,15 @@ if ($action === 'status') {
 // ----------------------------------------------------
 // 2. APP SETTINGS (Questions, Products, Testimonials, Admins)
 // ----------------------------------------------------
-if ($action === 'questions' || $action === 'testimonials' || $action === 'settings') {
+if ($action === 'questions' || $action === 'testimonials' || $action === 'results' || $action === 'quiz_results' || $action === 'settings') {
     if ($action === 'questions') {
         $_GET['key'] = 'quiz_questions';
     }
     if ($action === 'testimonials') {
         $_GET['key'] = 'testimonials';
+    }
+    if ($action === 'results' || $action === 'quiz_results') {
+        $_GET['key'] = 'quiz_results';
     }
     if ($method === 'GET') {
         $key = cleanString($_GET['key'] ?? 'quiz_questions', 100);
@@ -302,6 +378,21 @@ if ($action === 'questions' || $action === 'testimonials' || $action === 'settin
             }
             http_response_code(200);
             echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultTestimonials]);
+            exit;
+        }
+
+        // If requesting quiz_results and not found in DB: return default quiz results and seed to DB
+        if ($key === 'quiz_results') {
+            $defaultResults = getDefaultQuizResults();
+            if ($pdo) {
+                try {
+                    $valJson = json_encode($defaultResults, JSON_UNESCAPED_UNICODE);
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_results', :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                    $ins->execute([':v' => $valJson]);
+                } catch (Throwable $e) {}
+            }
+            http_response_code(200);
+            echo json_encode(['success' => true, 'source' => 'default_seeded', 'data' => $defaultResults]);
             exit;
         }
 

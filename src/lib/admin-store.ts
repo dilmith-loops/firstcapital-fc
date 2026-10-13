@@ -1,4 +1,4 @@
-import { ProfileKey, PROFILES } from "@/components/quiz/QuizFlow";
+import { ProfileKey, PROFILES, ProfileInfo } from "@/components/quiz/QuizFlow";
 import { getApiUrl } from "./api-url";
 
 export type LeadStatus = "NEW" | "CONTACTED" | "IN_PROGRESS" | "CONVERTED" | "CLOSED";
@@ -105,6 +105,30 @@ const STORAGE_KEY_SETTINGS = "fc_admin_settings";
 const STORAGE_KEY_LOGS = "fc_admin_logs";
 const STORAGE_KEY_QUESTIONS = "fc_admin_questions";
 const STORAGE_KEY_TESTIMONIALS = "fc_admin_testimonials";
+const STORAGE_KEY_QUIZ_RESULTS = "fc_admin_quiz_results";
+
+export function mergeWithDefaultProfiles(
+  customProfiles?: Record<string, Partial<ProfileInfo>> | null
+): Record<ProfileKey, ProfileInfo> {
+  const result: Record<ProfileKey, ProfileInfo> = { ...PROFILES };
+  if (!customProfiles || typeof customProfiles !== "object") return result;
+
+  (["A", "B", "C", "D"] as ProfileKey[]).forEach((key) => {
+    if (customProfiles[key]) {
+      result[key] = {
+        ...PROFILES[key],
+        ...customProfiles[key],
+        key,
+        procedureGuide: customProfiles[key].procedureGuide || PROFILES[key].procedureGuide,
+        image: PROFILES[key].image,
+        maleImage: PROFILES[key].maleImage,
+        femaleImage: PROFILES[key].femaleImage,
+      };
+    }
+  });
+
+  return result;
+}
 
 export const DEFAULT_ADMIN_USERS: AdminUser[] = [
   {
@@ -1127,5 +1151,81 @@ export const AdminStore = {
     this.addLog("TESTIMONIALS_RESET", "Testimonials reset to default client quotes");
     notify();
     return await this.persistTestimonialsToDb(DEFAULT_TESTIMONIALS);
+  },
+
+  // Quiz Results / Personalities Operations (Live DB Sync + Local Fallback)
+  getQuizResults(): Record<ProfileKey, ProfileInfo> {
+    if (typeof window === "undefined") return PROFILES;
+    const data = localStorage.getItem(STORAGE_KEY_QUIZ_RESULTS);
+    if (!data) return PROFILES;
+    try {
+      const parsed = JSON.parse(data);
+      return mergeWithDefaultProfiles(parsed);
+    } catch {
+      return PROFILES;
+    }
+  },
+
+  async fetchQuizResultsFromDb(): Promise<Record<ProfileKey, ProfileInfo>> {
+    try {
+      const res = await fetch(getApiUrl("api/admin/settings?key=quiz_results"), { method: "GET" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data && typeof json.data === "object") {
+          const merged = mergeWithDefaultProfiles(json.data);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(STORAGE_KEY_QUIZ_RESULTS, JSON.stringify(merged));
+          }
+          notify();
+          return merged;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch quiz results from DB:", err);
+    }
+    return this.getQuizResults();
+  },
+
+  async persistQuizResultsToDb(results: Record<ProfileKey, ProfileInfo>): Promise<boolean> {
+    try {
+      const res = await fetch(getApiUrl("api/admin/settings"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "quiz_results", value: results }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return !!json.success;
+      }
+    } catch (err) {
+      console.warn("Could not persist quiz results to DB:", err);
+    }
+    return false;
+  },
+
+  async updateQuizResult(key: ProfileKey, updates: Partial<ProfileInfo>): Promise<boolean> {
+    const current = this.getQuizResults();
+    const updated: Record<ProfileKey, ProfileInfo> = {
+      ...current,
+      [key]: {
+        ...current[key],
+        ...updates,
+      },
+    };
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_QUIZ_RESULTS, JSON.stringify(updated));
+    }
+    this.addLog("QUIZ_RESULT_UPDATED", `Updated Quiz Result profile [${key}]: ${updates.name || current[key].name}`);
+    notify();
+    return await this.persistQuizResultsToDb(updated);
+  },
+
+  async resetDefaultQuizResults(): Promise<boolean> {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY_QUIZ_RESULTS, JSON.stringify(PROFILES));
+    }
+    this.addLog("QUIZ_RESULTS_RESET", "Quiz personality results reset to default standard profiles");
+    notify();
+    return await this.persistQuizResultsToDb(PROFILES);
   },
 };

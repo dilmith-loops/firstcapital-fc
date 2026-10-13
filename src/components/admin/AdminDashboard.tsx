@@ -12,7 +12,7 @@ import {
   TestimonialItem,
   AdminUser,
 } from "@/lib/admin-store";
-import { PROFILES, ProfileKey } from "@/components/quiz/QuizFlow";
+import { PROFILES, ProfileKey, ProfileInfo } from "@/components/quiz/QuizFlow";
 import logoImg from "@/assets/first-capital-logo.png";
 import {
   LayoutDashboard,
@@ -73,6 +73,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [settings, setSettings] = useState<AdminSettings>(AdminStore.getSettings());
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
+  const [quizResults, setQuizResults] = useState<Record<ProfileKey, ProfileInfo>>(() => AdminStore.getQuizResults());
+  const [quizSubTab, setQuizSubTab] = useState<"questions" | "results">("questions");
+  const [editingResult, setEditingResult] = useState<ProfileInfo | null>(null);
 
   // Filters for Leads view
   const [searchTerm, setSearchTerm] = useState("");
@@ -171,6 +174,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setSettings(AdminStore.getSettings());
     setQuestions(AdminStore.getQuestions());
     setTestimonials(AdminStore.getTestimonials());
+    setQuizResults(AdminStore.getQuizResults());
     setAdminUsers(AdminStore.getAdminUsers());
   };
 
@@ -182,6 +186,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       if (status.connected) {
         await AdminStore.fetchLeadsFromDb();
         await AdminStore.fetchQuestionsFromDb();
+        await AdminStore.fetchQuizResultsFromDb();
         await AdminStore.fetchProductsFromDb();
         await AdminStore.fetchTestimonialsFromDb();
         await AdminStore.fetchAdminUsersFromDb();
@@ -431,6 +436,24 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (window.confirm("Reset all quiz questions back to the standard 7 campaign questions?")) {
       await AdminStore.resetDefaultQuestions();
       showToast("Default quiz questions restored in DB & live quiz!");
+    }
+  };
+
+  // Quiz Result Profiles Handlers
+  const handleSaveQuizResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingResult) return;
+    await AdminStore.updateQuizResult(editingResult.key, editingResult);
+    setQuizResults(AdminStore.getQuizResults());
+    setEditingResult(null);
+    showToast(`Investor profile "${editingResult.name}" updated successfully!`);
+  };
+
+  const handleResetQuizResults = async () => {
+    if (window.confirm("Reset all 4 investor personality result profiles back to standard First Capital defaults?")) {
+      await AdminStore.resetDefaultQuizResults();
+      setQuizResults(AdminStore.getQuizResults());
+      showToast("Default investor personality results restored in DB & live quiz!");
     }
   };
 
@@ -1199,102 +1222,260 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           {/* TAB 4: QUIZ CONFIGURATION */}
           {activeTab === "quiz" && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-black text-[#142d27]">Investor Persona Scoring & Questions</h1>
-                  <p className="text-xs sm:text-sm text-slate-500">
-                    Add, edit, and configure investor profiling questions and answer mappings ({questions.length} active questions)
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
+              {/* Sub-navigation tabs */}
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleResetQuestions}
-                    className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-                    title="Restore standard 7 questions"
+                    onClick={() => setQuizSubTab("questions")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+                      quizSubTab === "questions"
+                        ? "bg-[#142d27] text-[#f1c91e] shadow-sm"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                    }`}
                   >
-                    <RotateCcw className="size-3.5" /> Restore Defaults
+                    <HelpCircle className="size-3.5" />
+                    <span>Questions & Scoring ({questions.length})</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      setNewQuestionText("");
-                      setNewQuestionOptions([
-                        { key: "A", label: "A", text: "" },
-                        { key: "B", label: "B", text: "" },
-                        { key: "C", label: "C", text: "" },
-                        { key: "D", label: "D", text: "" },
-                      ]);
-                      setIsAddQuestionOpen(true);
-                    }}
-                    className="bg-[#f1c91e] hover:bg-[#e0b815] text-[#142d27] font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => setQuizSubTab("results")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+                      quizSubTab === "results"
+                        ? "bg-[#142d27] text-[#f1c91e] shadow-sm"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                    }`}
                   >
-                    <Plus className="size-4" /> Add New Question
+                    <Award className="size-3.5" />
+                    <span>Quiz Result Profiles ({Object.keys(quizResults).length})</span>
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {questions.map((q, idx) => (
-                  <div key={q.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs hover:border-slate-300 transition-all">
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="flex items-start gap-3">
-                        <span className="size-7 rounded-full bg-[#142d27] text-[#f1c91e] text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
-                          {idx + 1}
-                        </span>
-                        <div>
-                          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                            Question #{q.id}
-                          </span>
-                          <h2 className="font-extrabold text-base text-[#142d27] leading-snug">{q.question}</h2>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setEditingQuestion(JSON.parse(JSON.stringify(q)))}
-                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                          title="Edit Question & Options"
-                        >
-                          <Edit className="size-3.5 text-slate-700" />
-                          <span className="hidden sm:inline">Edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteQuestion(q.id)}
-                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                          title="Delete Question"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
+              {quizSubTab === "questions" ? (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h1 className="text-2xl font-black text-[#142d27]">Investor Persona Scoring & Questions</h1>
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        Add, edit, and configure investor profiling questions and answer mappings ({questions.length} active questions)
+                      </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-                      {q.options.map((opt) => (
-                        <div
-                          key={opt.key + opt.label}
-                          className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 flex items-start gap-3 transition-colors"
-                        >
-                          <span className="size-6 rounded-lg bg-white border border-slate-300 flex items-center justify-center text-xs font-black shrink-0 text-slate-800 shadow-2xs">
-                            {opt.label}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-slate-800 leading-snug">{opt.text}</p>
-                            <div className="mt-2 flex items-center gap-1.5">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${PROFILES[opt.key]?.badgeBg || "bg-emerald-50 text-emerald-800"}`}>
-                                Weights: {PROFILES[opt.key]?.name || opt.key} ({opt.key})
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetQuestions}
+                        className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                        title="Restore standard 7 questions"
+                      >
+                        <RotateCcw className="size-3.5" /> Restore Defaults
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewQuestionText("");
+                          setNewQuestionOptions([
+                            { key: "A", label: "A", text: "" },
+                            { key: "B", label: "B", text: "" },
+                            { key: "C", label: "C", text: "" },
+                            { key: "D", label: "D", text: "" },
+                          ]);
+                          setIsAddQuestionOpen(true);
+                        }}
+                        className="bg-[#f1c91e] hover:bg-[#e0b815] text-[#142d27] font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="size-4" /> Add New Question
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <div className="space-y-4">
+                    {questions.map((q, idx) => (
+                      <div key={q.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs hover:border-slate-300 transition-all">
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                          <div className="flex items-start gap-3">
+                            <span className="size-7 rounded-full bg-[#142d27] text-[#f1c91e] text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <div>
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                                Question #{q.id}
+                              </span>
+                              <h2 className="font-extrabold text-base text-[#142d27] leading-snug">{q.question}</h2>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setEditingQuestion(JSON.parse(JSON.stringify(q)))}
+                              className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                              title="Edit Question & Options"
+                            >
+                              <Edit className="size-3.5 text-slate-700" />
+                              <span className="hidden sm:inline">Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteQuestion(q.id)}
+                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                              title="Delete Question"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                          {q.options.map((opt) => (
+                            <div
+                              key={opt.key + opt.label}
+                              className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 flex items-start gap-3 transition-colors"
+                            >
+                              <span className="size-6 rounded-lg bg-white border border-slate-300 flex items-center justify-center text-xs font-black shrink-0 text-slate-800 shadow-2xs">
+                                {opt.label}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-slate-800 leading-snug">{opt.text}</p>
+                                <div className="mt-2 flex items-center gap-1.5">
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${PROFILES[opt.key]?.badgeBg || "bg-emerald-50 text-emerald-800"}`}>
+                                    Weights: {quizResults[opt.key]?.name || PROFILES[opt.key]?.name || opt.key} ({opt.key})
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                /* QUIZ RESULT PROFILES SUB-TAB */
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h1 className="text-2xl font-black text-[#142d27]">Investor Personality Results & Matches</h1>
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        Manage titles, descriptions, quotes, and suggested investment products shown on the quiz completion screen (Synced to MySQL DB)
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetQuizResults}
+                        className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                        title="Restore original 4 First Capital profiles"
+                      >
+                        <RotateCcw className="size-3.5" /> Restore Defaults
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {(["A", "B", "C", "D"] as ProfileKey[]).map((key) => {
+                      const prof = quizResults[key] || PROFILES[key];
+                      return (
+                        <div
+                          key={key}
+                          className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
+                        >
+                          <div>
+                            {/* Card Top: Avatar, Number & Name */}
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="size-12 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-50 shrink-0 shadow-2xs">
+                                  <img
+                                    src={prof.maleImage || prof.image}
+                                    alt={prof.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+                                      Profile {prof.number} • Key {prof.key}
+                                    </span>
+                                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                      {prof.style}
+                                    </span>
+                                  </div>
+                                  <h2 className="text-lg font-black text-[#142d27] leading-tight mt-0.5">
+                                    {prof.name}
+                                  </h2>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => setEditingResult(JSON.parse(JSON.stringify(prof)))}
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                                title="Edit Result Profile"
+                              >
+                                <Edit className="size-3.5 text-slate-700" />
+                                <span className="hidden sm:inline">Edit</span>
+                              </button>
+                            </div>
+
+                            {/* Tagline / Vibe quote box */}
+                            <div className="bg-[#f1c91e]/20 border border-[#f1c91e]/50 rounded-xl px-3.5 py-2 mb-3">
+                              <p className="text-xs font-black italic text-[#142d27]">
+                                “{prof.vibe}”
+                              </p>
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                              {prof.description}
+                            </p>
+
+                            {/* Suggested Investment Match */}
+                            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 mb-3 space-y-1.5">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                  <TrendingUp className="size-3 text-[#142d27]" /> Suggested Investment Match:
+                                </span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-600">
+                                  {prof.productOptionId}
+                                </span>
+                              </div>
+                              <p className="text-sm font-extrabold text-[#142d27]">
+                                {prof.product}
+                              </p>
+                            </div>
+
+                            {/* Procedure Guide */}
+                            {prof.procedureGuide && (
+                              <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-2 truncate">
+                                <FileText className="size-3 text-slate-400 shrink-0" />
+                                <span className="font-semibold text-slate-600 truncate">
+                                  {prof.procedureGuide.label}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              Live on Quiz Results Modal
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setEditingResult(JSON.parse(JSON.stringify(prof)))}
+                              className="text-xs font-bold text-[#142d27] hover:underline cursor-pointer flex items-center gap-1"
+                            >
+                              <span>Edit Configuration</span>
+                              <ArrowUpRight className="size-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2544,6 +2725,202 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   className="bg-[#f1c91e] hover:bg-[#e0b815] text-[#142d27] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer"
                 >
                   Add Question
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT QUIZ RESULT PROFILE MODAL */}
+      {editingResult && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative my-8 max-h-[90vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setEditingResult(null)}
+              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="size-5" />
+            </button>
+
+            <div className="flex items-center gap-2 mb-1">
+              <div className="size-6 rounded-full bg-[#f1c91e] text-[#142d27] text-xs font-black flex items-center justify-center">
+                {editingResult.key}
+              </div>
+              <h2 className="text-xl font-black text-[#142d27]">
+                Edit Quiz Result Profile ({editingResult.number} - Key {editingResult.key})
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mb-6">
+              Update persona name, quote, description, and suggested investment match. Changes save to DB and sync instantly with public landing page quiz.
+            </p>
+
+            <form onSubmit={handleSaveQuizResult} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Persona Title / Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingResult.name}
+                    onChange={(e) => setEditingResult({ ...editingResult, name: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Persona Style / Badge *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingResult.style}
+                    onChange={(e) => setEditingResult({ ...editingResult, style: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Persona Quote / Tagline (“Vibe”) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingResult.vibe}
+                  onChange={(e) => setEditingResult({ ...editingResult, vibe: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  placeholder="e.g. Keep calm. Keep flexible."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Persona Description *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={editingResult.description}
+                  onChange={(e) => setEditingResult({ ...editingResult, description: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-semibold focus:outline-none focus:border-[#142d27] focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Suggested Investment Product *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingResult.product}
+                    onChange={(e) =>
+                      setEditingResult({
+                        ...editingResult,
+                        product: e.target.value,
+                        productShort: editingResult.productShort || e.target.value,
+                      })
+                    }
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Product Option Category *
+                  </label>
+                  <select
+                    value={editingResult.productOptionId}
+                    onChange={(e) =>
+                      setEditingResult({
+                        ...editingResult,
+                        productOptionId: e.target.value as "unit-trust" | "gov-securities" | "equities",
+                      })
+                    }
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white cursor-pointer"
+                  >
+                    <option value="unit-trust">Unit Trust Funds (unit-trust)</option>
+                    <option value="gov-securities">Government Securities (gov-securities)</option>
+                    <option value="equities">Equities / Stockbroking (equities)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Regulatory Disclaimers *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={editingResult.productDisclaimer}
+                  onChange={(e) => setEditingResult({ ...editingResult, productDisclaimer: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-semibold focus:outline-none focus:border-[#142d27] focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Procedure Guide Label
+                  </label>
+                  <input
+                    type="text"
+                    value={editingResult.procedureGuide?.label || ""}
+                    onChange={(e) =>
+                      setEditingResult({
+                        ...editingResult,
+                        procedureGuide: {
+                          label: e.target.value,
+                          url: editingResult.procedureGuide?.url || "",
+                        },
+                      })
+                    }
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Procedure Guide URL
+                  </label>
+                  <input
+                    type="url"
+                    value={editingResult.procedureGuide?.url || ""}
+                    onChange={(e) =>
+                      setEditingResult({
+                        ...editingResult,
+                        procedureGuide: {
+                          label: editingResult.procedureGuide?.label || "",
+                          url: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#142d27] focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingResult(null)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-4 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#f1c91e] hover:bg-[#e0b815] text-[#142d27] font-extrabold text-xs py-2.5 px-5 rounded-xl cursor-pointer shadow-xs"
+                >
+                  Save Profile Configuration
                 </button>
               </div>
             </form>

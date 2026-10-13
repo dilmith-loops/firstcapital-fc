@@ -443,21 +443,29 @@ export function QuizFlow({
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [selectedProductModal, setSelectedProductModal] = useState<string | null>(null);
   const [questions, setQuestions] = useState<QuestionItem[]>(() => AdminStore.getQuestions());
+  const [quizResults, setQuizResults] = useState<Record<ProfileKey, ProfileInfo>>(() => AdminStore.getQuizResults());
 
   useEffect(() => {
-    // 1. Initial local/cached questions
+    // 1. Initial local/cached questions and quiz results
     setQuestions(AdminStore.getQuestions());
+    setQuizResults(AdminStore.getQuizResults());
 
-    // 2. Fetch live questions from Database
+    // 2. Fetch live questions & quiz results from Database
     AdminStore.fetchQuestionsFromDb().then((dbQuestions) => {
       if (Array.isArray(dbQuestions) && dbQuestions.length > 0) {
         setQuestions(dbQuestions);
+      }
+    });
+    AdminStore.fetchQuizResultsFromDb().then((dbResults) => {
+      if (dbResults && typeof dbResults === "object") {
+        setQuizResults(dbResults);
       }
     });
 
     // 3. Subscribe to local AdminStore updates
     const unsub = AdminStore.subscribe(() => {
       setQuestions(AdminStore.getQuestions());
+      setQuizResults(AdminStore.getQuizResults());
     });
 
     // 4. Multi-tab sync: if admin edits in another tab, update immediately
@@ -467,6 +475,14 @@ export function QuizFlow({
           const parsed = JSON.parse(e.newValue);
           if (Array.isArray(parsed) && parsed.length > 0) {
             setQuestions(parsed);
+          }
+        } catch {}
+      }
+      if (e.key === "fc_admin_quiz_results" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && typeof parsed === "object") {
+            setQuizResults(AdminStore.getQuizResults());
           }
         } catch {}
       }
@@ -548,7 +564,7 @@ export function QuizFlow({
     setDetailsErrors({});
 
     const winnerKey = calculateResult(answers);
-    const winnerProfile = PROFILES[winnerKey];
+    const winnerProfile = quizResults[winnerKey] || PROFILES[winnerKey];
 
     try {
       const id = await submitLeadDetails({
@@ -679,7 +695,7 @@ export function QuizFlow({
 
   // Result calculation
   const winnerKey = calculateResult(answers);
-  const resultProfile = PROFILES[winnerKey];
+  const resultProfile = quizResults[winnerKey] || PROFILES[winnerKey];
 
   const personalitySlug = PROFILE_SLUGS[winnerKey] || "keep-it-cool";
   const shareGender = leadDetails.gender || "male";
