@@ -261,35 +261,37 @@ function Index() {
 
           <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
             <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
-              <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
-                You Already<br />
-                Save, Plan and<br />
-                Prepare for<br />
-                the Future.
-              </h1>
-              <div className="w-full max-w-[280px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
-              <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
-                But Do You Know<br />
-                Your Investor<br />
-                Personality?
-              </h2>
-              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-700 font-normal leading-snug sm:leading-relaxed">
-                Answer 7 simple questions<br />
-                and discover your investor<br />
-                personality.
-              </p>
-              <div className="mt-5 sm:mt-6">
-                <Button
-                  id="btn-find-investor-type"
-                  onClick={() => setIsQuizOpen(true)}
-                  className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
-                >
-                  <span>DISCOVER MY INVESTOR PERSONALITY</span>
-                  <ArrowRight className="size-5 stroke-[2.5]" />
-                </Button>
+              <div className="hero-mobile-bg">
+                <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                  You Already<br />
+                  Save, Plan and<br />
+                  Prepare for<br />
+                  the Future.
+                </h1>
+                <div className="w-full max-w-[280px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+                <h2 className="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
+                  But Do You Know<br />
+                  Your Investor<br />
+                  Personality?
+                </h2>
+                <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-700 font-normal leading-snug sm:leading-relaxed">
+                  Answer 7 simple questions<br />
+                  and discover your investor<br />
+                  personality.
+                </p>
+                <div className="mt-5 sm:mt-6">
+                  <Button
+                    id="btn-find-investor-type"
+                    onClick={() => setIsQuizOpen(true)}
+                    className="min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
+                  >
+                    <span>DISCOVER MY INVESTOR PERSONALITY</span>
+                    <ArrowRight className="size-5 stroke-[2.5]" />
+                  </Button>
+                </div>
               </div>
 
-              <p className="mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-slate-700 font-medium">
+              <p className="mt-8 lg:mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-slate-700 font-medium">
                 <span className="font-bold text-[#1a214c]">Disclaimer: </span>{disclaimer}
               </p>
             </div>

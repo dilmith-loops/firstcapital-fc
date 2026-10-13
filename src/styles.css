@@ -453,14 +453,40 @@
 
 @media (max-width: 1023px) {
   .hero-full-bg {
+    background-image: none !important;
     background-color: #ffffff !important;
-    background-image:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 55%, rgba(255, 255, 255, 0.6) 100%),
-      url('./FCmain.png?v=4') !important;
-    background-repeat: no-repeat !important;
-    background-position: center, 70% center !important;
-    background-size: cover, cover !important;
     min-height: auto !important;
+  }
+
+  /* Image runs from the top of the hero down to just below the CTA, right-aligned,
+     with a white fade on the left so the headline sits on clean space */
+  .hero-mobile-bg {
+    position: relative;
+  }
+  .hero-mobile-bg::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -2.5rem;
+    bottom: -1.25rem;
+    left: -1.25rem;
+    width: 100vw;
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0) 88%, #ffffff 100%),
+      linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 30%, rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0) 80%),
+      url('./FCmain.png?v=4');
+    background-repeat: no-repeat;
+    background-position: center, center, 80% center;
+    background-size: cover, cover, cover;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-mobile-bg::before {
+    top: -3.5rem;
+    left: -2rem;
   }
 }
 
