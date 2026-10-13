@@ -1,5 +1,6 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDbPool } from "../lib/db.server";
+import { sendNodeSmtpNotification } from "./smtp.server";
 
 export interface CreateLeadPayload {
   name: string;
@@ -157,6 +158,20 @@ export async function handleCreateLead(payload: CreateLeadPayload): Promise<{ su
       ]
     );
 
+    // Fire SMTP email notification to admin using .env configuration
+    sendNodeSmtpNotification({
+      id: `FC-${result.insertId}`,
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      gender: cleanGender,
+      profileKey: resultCode,
+      resultProfile,
+      matchedProduct,
+      answers: cleanAnswers || undefined,
+      source: payload.source,
+    }).catch(() => {});
+
     return {
       success: true,
       leadId: result.insertId,
@@ -177,6 +192,18 @@ export async function handleCreateLead(payload: CreateLeadPayload): Promise<{ su
         notes || null,
       ]
     );
+
+    // Fire SMTP email notification to admin using .env configuration
+    sendNodeSmtpNotification({
+      id: `FC-${fallbackResult.insertId}`,
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      profileKey: resultCode,
+      resultProfile,
+      answers: cleanAnswers || undefined,
+      source: payload.source,
+    }).catch(() => {});
 
     return {
       success: true,
