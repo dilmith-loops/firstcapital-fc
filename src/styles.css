@@ -446,7 +446,10 @@
     background-image: url('./FCmain.png?v=5') !important;
     background-repeat: no-repeat !important;
     background-position: right center !important;
-    background-size: cover !important;
+    /* Scale to the hero's height (not width) so wide screens show the whole image
+       anchored right; the image's white left edge blends into the white background */
+    background-size: auto 100% !important;
+    background-color: #ffffff !important;
     min-height: 100vh !important;
   }
 }
