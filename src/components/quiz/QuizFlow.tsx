@@ -438,6 +438,8 @@ export function QuizFlow({
   const [stage, setStage] = useState<"quiz" | "details" | "results">("quiz");
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, ProfileKey>>({});
+  // Tracks which option was picked per question by index, since several options can map to the same profile key
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
   const [copied, setCopied] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -647,11 +649,15 @@ export function QuizFlow({
     await processLeadSubmission(leadDetails);
   };
 
-  const handleSelectOption = (key: ProfileKey) => {
+  const handleSelectOption = (key: ProfileKey, index: number) => {
     if (!currentQuestion) return;
     setAnswers((prev) => ({
       ...prev,
       [currentQuestion.id]: key,
+    }));
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [currentQuestion.id]: index,
     }));
   };
 
@@ -680,6 +686,7 @@ export function QuizFlow({
 
   const handleRetake = () => {
     setAnswers({});
+    setSelectedOptions({});
     setCurrentStep(0);
     setStage("quiz");
     setIsAnalyzing(false);
@@ -923,13 +930,13 @@ export function QuizFlow({
 
             {/* 4 Options Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 mb-8">
-              {currentQuestion.options.map((opt) => {
-                const isSelected = answers[currentQuestion.id] === opt.key;
+              {currentQuestion.options.map((opt, idx) => {
+                const isSelected = selectedOptions[currentQuestion.id] === idx;
                 return (
                   <button
-                    key={opt.key}
+                    key={idx}
                     type="button"
-                    onClick={() => handleSelectOption(opt.key)}
+                    onClick={() => handleSelectOption(opt.key, idx)}
                     className={`group relative w-full py-4 px-5 sm:px-6 rounded-2xl text-left transition-all duration-200 flex items-center justify-between cursor-pointer ${
                       isSelected
                         ? "border-2 border-[#f1c91e] bg-amber-50/40 text-[#142d27] font-semibold shadow-sm ring-2 ring-[#f1c91e]/20"

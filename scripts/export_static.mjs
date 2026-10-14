@@ -1040,12 +1040,15 @@ const quizModalHtmlAndScript = `
   var currentLead = { name: '', email: '', phone: '' };
   var currentStep = 0;
   var userAnswers = {};
+  // Selected option index per question; several options can share the same profile key
+  var selectedOptionIdx = {};
 
   function openModal() {
     if (!modal) return;
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     userAnswers = {};
+    selectedOptionIdx = {};
     if (stepProductDetail) stepProductDetail.style.display = 'none';
     // Sync latest questions from localStorage and DB whenever modal is opened
     syncQuestionsFromDbOrStorage();
@@ -1068,10 +1071,10 @@ const quizModalHtmlAndScript = `
 
   function renderOptions(q) {
     qOptions.innerHTML = '';
-    var selectedKey = userAnswers[q.id];
+    var selectedIdx = selectedOptionIdx[q.id];
 
-    q.options.forEach(function(opt) {
-      var isSelected = selectedKey === opt.key;
+    q.options.forEach(function(opt, idx) {
+      var isSelected = selectedIdx === idx;
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'group relative w-full py-4 px-5 sm:px-6 rounded-2xl text-left transition-all duration-200 flex items-center justify-between cursor-pointer ' +
@@ -1111,6 +1114,7 @@ const quizModalHtmlAndScript = `
 
       btn.addEventListener('click', function() {
         userAnswers[q.id] = opt.key;
+        selectedOptionIdx[q.id] = idx;
         renderOptions(q);
         qNextBtn.disabled = false;
       });
@@ -1516,6 +1520,7 @@ const quizModalHtmlAndScript = `
   if (btnRetake) {
     btnRetake.addEventListener('click', function() {
       userAnswers = {};
+      selectedOptionIdx = {};
       if (stepProductDetail) stepProductDetail.style.display = 'none';
       showQuestionScreen(0);
     });
