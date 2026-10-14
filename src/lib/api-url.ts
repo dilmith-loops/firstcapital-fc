@@ -15,8 +15,8 @@ export function getApiUrl(endpoint: string): string {
       base = pathname.substring(0, fcIdx + "/firstcapitalpages".length) + "/";
     } else {
       const parts = pathname.split("/").filter(Boolean);
-      if (parts.length > 0 && parts[0] === "fc") {
-        base = "/fc/";
+      if (parts.length > 0 && (parts[0] === "fc" || parts[0] === "begininvesting")) {
+        base = `/${parts[0]}/`;
       }
     }
   }

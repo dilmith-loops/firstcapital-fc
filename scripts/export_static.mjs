@@ -6,6 +6,10 @@ import reactPlugin from '@vitejs/plugin-react';
 import tailwindcssPlugin from '@tailwindcss/vite';
 import tsconfigPathsPlugin from 'vite-tsconfig-paths';
 
+// Public URL the build is deployed to (no trailing slash)
+const SITE_URL = 'https://firstcapital.lk/begininvesting';
+const SITE_BASE_PATH = new URL(SITE_URL).pathname.replace(/\/?$/, '/');
+
 function fetchHtml(url) {
   return new Promise((resolve, reject) => {
     const req = http.get(url, (res) => {
@@ -723,8 +727,8 @@ const quizModalHtmlAndScript = `
         {
           icon: '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#1a214c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
           title: 'First Capital Equity Fund',
-          tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000'],
-          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).'
+          tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000', 'Access your funds anytime (Withdrawals done within one year are subject to an exit fee)'],
+          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.'
         }
       ],
       video: {
@@ -858,6 +862,7 @@ const quizModalHtmlAndScript = `
       '__PREFIX__api/leads.php?action=settings&key=quiz_questions',
       '__PREFIX__api/leads.php?action=questions',
       '/api/admin/settings?key=quiz_questions',
+      '${SITE_BASE_PATH}api/leads.php?action=settings&key=quiz_questions',
       '/fc/api/leads.php?action=settings&key=quiz_questions'
     ];
 
@@ -935,6 +940,7 @@ const quizModalHtmlAndScript = `
       '__PREFIX__api/leads.php?action=settings&key=quiz_results',
       '__PREFIX__api/leads.php?action=results',
       '/api/admin/settings?key=quiz_results',
+      '${SITE_BASE_PATH}api/leads.php?action=settings&key=quiz_results',
       '/fc/api/leads.php?action=settings&key=quiz_results'
     ];
 
@@ -1584,9 +1590,9 @@ const quizModalHtmlAndScript = `
 
   function getShareUrl(slug, gender) {
     var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
-    var origin = (!isLocal && window.location.origin) ? window.location.origin : 'https://investor.firstcapital.lk';
+    var origin = (!isLocal && window.location.origin) ? window.location.origin : '${SITE_URL}';
     var pathname = window.location.pathname || '/';
-    var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/';
+    var basePath = (pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/').replace(/\/(admin|design-option-2)\/$/, '/');
     return origin + (basePath === '/' ? '/' : basePath) + slug + '-' + gender + '.html';
   }
 
@@ -2009,12 +2015,12 @@ async function exportStatic() {
   <!-- Open Graph / WhatsApp / Facebook -->
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://investor.firstcapital.lk/${pageFile}" />
-  <link rel="canonical" href="https://investor.firstcapital.lk/${pageFile}" />
+  <meta property="og:url" content="${SITE_URL}/${pageFile}" />
+  <link rel="canonical" href="${SITE_URL}/${pageFile}" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality with First Capital: ${p.name} - &quot;${p.vibe}&quot;. Find your investor type here!" />
-  <meta property="og:image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
-  <meta property="og:image:secure_url" content="https://investor.firstcapital.lk/assets/${cardFile}" />
+  <meta property="og:image" content="${SITE_URL}/assets/${cardFile}" />
+  <meta property="og:image:secure_url" content="${SITE_URL}/assets/${cardFile}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2023,15 +2029,15 @@ async function exportStatic() {
   <!-- Schema.org / WhatsApp fallback -->
   <meta itemprop="name" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta itemprop="description" content="I just discovered my investor personality with First Capital: ${p.name}. Find your investor type here!" />
-  <meta itemprop="image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
-  <link rel="image_src" href="https://investor.firstcapital.lk/assets/${cardFile}" />
+  <meta itemprop="image" content="${SITE_URL}/assets/${cardFile}" />
+  <link rel="image_src" href="${SITE_URL}/assets/${cardFile}" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://investor.firstcapital.lk/${pageFile}" />
+  <meta name="twitter:url" content="${SITE_URL}/${pageFile}" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${p.name}. What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://investor.firstcapital.lk/assets/${cardFile}" />
+  <meta name="twitter:image" content="${SITE_URL}/assets/${cardFile}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./assets/${cardFile}" />
@@ -2232,6 +2238,7 @@ async function exportStatic() {
       '__PREFIX__api/leads.php?action=testimonials',
       '/api/admin/settings?key=testimonials',
       '/api/testimonials',
+      '${SITE_BASE_PATH}api/leads.php?action=settings&key=testimonials',
       '/fc/api/leads.php?action=settings&key=testimonials'
     ];
 
@@ -2328,8 +2335,8 @@ const optionModalHtmlAndScript = `
         {
           icon: iconChart,
           title: 'First Capital Equity Fund',
-          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).',
-          tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000']
+          copy: 'For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.',
+          tags: ['Long-term', 'Growth', 'Market exposure', 'Start with LKR 1,000', 'Access your funds anytime (Withdrawals done within one year are subject to an exit fee)']
         }
       ],
       video: {
@@ -2601,6 +2608,7 @@ const optionModalHtmlAndScript = `
       '__PREFIX__api/leads.php?action=reasons',
       '/api/admin/settings?key=why_first_capital',
       '/api/leads.php?action=settings&key=why_first_capital',
+      '${SITE_BASE_PATH}api/leads.php?action=settings&key=why_first_capital',
       '/fc/api/leads.php?action=settings&key=why_first_capital'
     ];
 
@@ -2702,7 +2710,7 @@ ${compiledCssContent}
   </style>
   <link rel="stylesheet" href="${prefix}assets/styles.css" />
   <link rel="stylesheet" href="${prefix}styles.css" />
-  <link rel="image_src" href="https://ai.loopsintegrated.co/fc/assets/og-image.jpg" />
+  <link rel="image_src" href="${SITE_URL}/assets/og-image.jpg" />
   <script>
     // Universal image recovery: seamlessly switches between ./assets/ and ./ if hosting folder is flattened
     document.addEventListener('error', function(e) {
@@ -2725,7 +2733,7 @@ ${compiledCssContent}
     }, true);
   </script>`;
     html = html.replace('</head>', `${cssTag}\n</head>`);
-    html = html.replace(/https:\/\/(?:ai\.loopsintegrated\.co(?:\/fc|\/firstcapitalpages)?|investor\.firstcapital\.lk)\/assets\/og-image\.jpg/g, 'https://investor.firstcapital.lk/assets/og-image.jpg');
+    html = html.replace(/https:\/\/(?:ai\.loopsintegrated\.co(?:\/fc|\/firstcapitalpages)?|investor\.firstcapital\.lk|firstcapital\.lk\/begininvesting)\/assets\/og-image\.jpg/g, SITE_URL + '/assets/og-image.jpg');
 
     // Fix image paths robustly (use direct prefix paths matching uploaded files with cache busting)
     html = html.replace(/src="[^"]*first-capital-logo\.png[^"]*"/gi, `src="${prefix}first-capital-logo.png?v=1"`);
@@ -2830,13 +2838,13 @@ ${compiledCssContent}
   <meta property="og:site_name" content="First Capital" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://investor.firstcapital.lk/${v.urlSlug}.html" />
-  <link rel="canonical" href="https://investor.firstcapital.lk/${v.urlSlug}.html" />
+  <meta property="og:url" content="${SITE_URL}/${v.urlSlug}.html" />
+  <link rel="canonical" href="${SITE_URL}/${v.urlSlug}.html" />
   <meta property="og:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta property="og:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}) • “${sp.vibe}”. Take the 1-minute quiz to find out yours!" />
-  <meta property="og:image" content="https://investor.firstcapital.lk/${v.card}" />
-  <meta property="og:image:url" content="https://investor.firstcapital.lk/${v.card}" />
-  <meta property="og:image:secure_url" content="https://investor.firstcapital.lk/${v.card}" />
+  <meta property="og:image" content="${SITE_URL}/${v.card}" />
+  <meta property="og:image:url" content="${SITE_URL}/${v.card}" />
+  <meta property="og:image:secure_url" content="${SITE_URL}/${v.card}" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -2844,11 +2852,11 @@ ${compiledCssContent}
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://investor.firstcapital.lk/${v.urlSlug}.html" />
+  <meta name="twitter:url" content="${SITE_URL}/${v.urlSlug}.html" />
   <meta name="twitter:title" content="I'm a ${cleanName}! What's Your Investor Type?" />
   <meta name="twitter:description" content="I just discovered my investor personality: ${sp.name} (${sp.style}). What's yours? Take the 1-minute quiz!" />
-  <meta name="twitter:image" content="https://investor.firstcapital.lk/${v.card}" />
-  <link rel="image_src" href="https://investor.firstcapital.lk/${v.card}" />
+  <meta name="twitter:image" content="${SITE_URL}/${v.card}" />
+  <link rel="image_src" href="${SITE_URL}/${v.card}" />
 
   <!-- Preload share card -->
   <link rel="preload" as="image" href="./${v.card}?v=fc8" />
@@ -2948,8 +2956,8 @@ ${compiledCssContent}
     console.log('Copied admin bundle assets into main assets/ directory for dual-path resolution.');
   }
 
-  // Create .htaccess for Apache / LiteSpeed (Root domain: https://investor.firstcapital.lk/)
-  const htaccess = `# Apache / LiteSpeed configuration for https://investor.firstcapital.lk/
+  // Create .htaccess for Apache / LiteSpeed (Root domain: ${SITE_URL}/)
+  const htaccess = `# Apache / LiteSpeed configuration for ${SITE_URL}/
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
@@ -2961,7 +2969,7 @@ DirectoryIndex index.html index.php
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
+  RewriteBase ${SITE_BASE_PATH}
 
   # 0. Serve robots.txt directly
   RewriteRule ^robots\\.txt$ robots.txt [L]
@@ -3129,14 +3137,14 @@ DirectoryIndex index.html index.php
   fs.mkdirSync(investorDlDir, { recursive: true });
 
   const deploymentGuide = `# First Capital Investor Week - Deployment Guide
-Target URL: https://investor.firstcapital.lk/
+Target URL: ${SITE_URL}/
 
 ================================================================================
 1. UPLOAD FILES
 ================================================================================
 Upload all files from the 'firstcapitalpages' folder (or extract 'firstcapital-production.zip')
-directly into the web root (e.g., public_html or document root) of:
-https://investor.firstcapital.lk/
+into the '${SITE_BASE_PATH.replace(/^\/|\/$/g, '')}' folder inside the web root (e.g., public_html${SITE_BASE_PATH}) so it is served at:
+${SITE_URL}/
 
 Make sure hidden files (.env and .htaccess) and SQL schema (schema.sql) are uploaded!
 
@@ -3179,8 +3187,8 @@ DB_PASSWORD=your_database_password
 4. VERIFICATION
 ================================================================================
 Once uploaded, verify by visiting:
-- https://investor.firstcapital.lk/
-- https://investor.firstcapital.lk/admin/
+- ${SITE_URL}/
+- ${SITE_URL}/admin/
 - Test the quiz: your lead will appear immediately in the Admin Portal!
 `;
 

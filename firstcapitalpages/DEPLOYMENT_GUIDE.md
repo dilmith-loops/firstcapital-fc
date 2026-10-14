@@ -1,12 +1,12 @@
 # First Capital Investor Week - Deployment Guide
-Target URL: https://investor.firstcapital.lk/
+Target URL: https://firstcapital.lk/begininvesting/
 
 ================================================================================
 1. UPLOAD FILES
 ================================================================================
 Upload all files from the 'firstcapitalpages' folder (or extract 'firstcapital-production.zip')
-directly into the web root (e.g., public_html or document root) of:
-https://investor.firstcapital.lk/
+into the 'begininvesting' folder inside the web root (e.g., public_html/begininvesting/) so it is served at:
+https://firstcapital.lk/begininvesting/
 
 Make sure hidden files (.env and .htaccess) and SQL schema (schema.sql) are uploaded!
 
@@ -49,6 +49,6 @@ DB_PASSWORD=your_database_password
 4. VERIFICATION
 ================================================================================
 Once uploaded, verify by visiting:
-- https://investor.firstcapital.lk/
-- https://investor.firstcapital.lk/admin/
+- https://firstcapital.lk/begininvesting/
+- https://firstcapital.lk/begininvesting/admin/
 - Test the quiz: your lead will appear immediately in the Admin Portal!

@@ -46,8 +46,8 @@ export const Route = createFileRoute("/design-option-2")({
       { property: "og:title", content: "Investor Week: Comic Design | First Capital" },
       { property: "og:description", content: "A bold second design option for discovering your investor personality and investment match." },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://investor.firstcapital.lk/assets/og-image.jpg" },
-      { property: "og:image:secure_url", content: "https://investor.firstcapital.lk/assets/og-image.jpg" },
+      { property: "og:image", content: "https://firstcapital.lk/begininvesting/assets/og-image.jpg" },
+      { property: "og:image:secure_url", content: "https://firstcapital.lk/begininvesting/assets/og-image.jpg" },
       { property: "og:image:type", content: "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/design-option-2")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Investor Week: Comic Design | First Capital" },
       { name: "twitter:description", content: "Explore First Capital Investor Week through a bold, comic-inspired second design direction." },
-      { name: "twitter:image", content: "https://investor.firstcapital.lk/assets/og-image.jpg" },
+      { name: "twitter:image", content: "https://firstcapital.lk/begininvesting/assets/og-image.jpg" },
     ],
   }),
   component: DesignOptionTwo,
@@ -112,8 +112,8 @@ const investmentOptions: InvestmentOptionItem[] = [
       {
         icon: LineChart,
         title: "First Capital Equity Fund",
-        tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000"],
-        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations. Key benefits: Start from LKR 1,000 | Withdraw anytime (Withdrawals made within one year are subject to an exit fee).",
+        tags: ["Long-term", "Growth", "Market exposure", "Start with LKR 1,000", "Access your funds anytime (Withdrawals done within one year are subject to an exit fee)"],
+        copy: "For investors looking to grow their wealth over the long term through the stock market and who are comfortable with market fluctuations.",
       },
     ],
     video: {
@@ -284,7 +284,7 @@ function DesignOptionTwo() {
                   <Button
                     id="btn-find-investor-type"
                     onClick={() => setIsQuizOpen(true)}
-                    className="comic-btn min-h-13 px-8 sm:px-10 py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all uppercase"
+                    className="comic-btn min-h-13 w-full sm:w-auto px-5 sm:px-10 max-sm:whitespace-normal max-sm:text-center max-sm:leading-tight py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:scale-[1.02] active:scale-[0.99] transition-all uppercase"
                   >
                     <span>DISCOVER MY INVESTOR PERSONALITY</span>
                     <ArrowRight className="size-5 stroke-[2.5]" />

@@ -1,4 +1,4 @@
-# Apache / LiteSpeed configuration for https://investor.firstcapital.lk/
+# Apache / LiteSpeed configuration for https://firstcapital.lk/begininvesting/
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
@@ -10,7 +10,7 @@ DirectoryIndex index.html index.php
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
+  RewriteBase /begininvesting/
 
   # 0. Serve robots.txt directly
   RewriteRule ^robots\.txt$ robots.txt [L]
