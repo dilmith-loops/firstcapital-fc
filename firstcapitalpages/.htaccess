@@ -18,7 +18,6 @@ ErrorDocument 403 /begininvesting/404.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /begininvesting/
 
   # 0. Serve robots.txt directly
   RewriteRule ^robots\.txt$ robots.txt [L]

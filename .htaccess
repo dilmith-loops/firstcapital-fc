@@ -15,7 +15,9 @@ DirectoryIndex index.html index.php
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /begininvesting/
+
+  ErrorDocument 404 /fc/404.html
+  ErrorDocument 403 /fc/404.html
 
   # 0. Direct route for root to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
   RewriteRule ^$ index.html [L]
