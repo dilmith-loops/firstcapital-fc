@@ -23,8 +23,22 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
 $pdo = getDbConnection();
+if (isset($_GET['debug'])) {
+    jsonResponse(200, [
+        'debug' => true,
+        'php' => PHP_VERSION,
+        'pdo_connected' => ($pdo !== null),
+        'driver' => $pdo ? $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) : null,
+        'pdo_drivers' => PDO::getAvailableDrivers(),
+        'db_error' => $GLOBALS['FC_DB_ERROR'] ?? null,
+    ]);
+}
 if (!$pdo) {
-    jsonResponse(503, ['success' => false, 'error' => 'Service temporarily unavailable.']);
+    jsonResponse(503, [
+        'success' => false,
+        'error' => 'Service temporarily unavailable.',
+        'detail' => $GLOBALS['FC_DB_ERROR'] ?? null
+    ]);
 }
 ensureSecurityTables($pdo);
 

@@ -94,6 +94,7 @@ function getDbConnection() {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
             return $pdo;
         } catch (Throwable $e) {
+            $GLOBALS['FC_DB_ERROR'] = "MySQL: " . $e->getMessage();
             error_log("MySQL connection failed: " . $e->getMessage() . " - switching to high-availability SQLite fallback.");
             $pdo = null;
         }
@@ -116,6 +117,7 @@ function getDbConnection() {
         $pdo->exec('PRAGMA journal_mode = WAL;');
         return $pdo;
     } catch (Throwable $e) {
+        $GLOBALS['FC_DB_ERROR'] = ($GLOBALS['FC_DB_ERROR'] ?? '') . " | SQLite: " . $e->getMessage();
         error_log("SQLite database fallback failed: " . $e->getMessage());
         $pdo = null;
     }
