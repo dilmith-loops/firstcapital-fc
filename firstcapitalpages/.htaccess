@@ -2,9 +2,6 @@
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
-ErrorDocument 404 /begininvesting/404.html
-ErrorDocument 403 /begininvesting/404.html
-
 # Security: block dotfiles (.env, .git, .htaccess), SQL dumps, docs, JSON data files and logs
 <FilesMatch "(^\.|\.(sql|md|json|log|zip|bak)$)">
   <IfModule mod_authz_core.c>
@@ -18,6 +15,7 @@ ErrorDocument 403 /begininvesting/404.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteBase /begininvesting/
 
   # 0. Serve robots.txt directly
   RewriteRule ^robots\.txt$ robots.txt [L]

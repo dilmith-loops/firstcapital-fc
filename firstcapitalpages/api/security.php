@@ -11,6 +11,8 @@ const MAX_SETTING_BYTES = 1048576;
 const ADMIN_SESSION_IDLE_SECONDS = 7200;
 
 function sendSecurityHeaders() {
+    @header_remove('X-Powered-By');
+    @ini_set('expose_php', 'off');
     header('Content-Type: application/json; charset=utf-8');
     header('X-Content-Type-Options: nosniff');
     header('Cache-Control: no-store');
@@ -30,27 +32,39 @@ function readJsonBody() {
 }
 
 function clientIp() {
-    // 1. Imperva Incapsula edge IP (firstcapital.lk WAF provider)
-    if (!empty($_SERVER['HTTP_INCAP_CLIENT_IP']) && filter_var($_SERVER['HTTP_INCAP_CLIENT_IP'], FILTER_VALIDATE_IP)) {
-        return $_SERVER['HTTP_INCAP_CLIENT_IP'];
-    }
+    $remote = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 
-    // 2. Cloudflare Connecting IP
-    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
-        return $_SERVER['HTTP_CF_CONNECTING_IP'];
-    }
+    // Check if REMOTE_ADDR is a private / loopback IP (traffic arrived via internal reverse-proxy or load balancer)
+    $isInternalProxy = !filter_var(
+        $remote,
+        FILTER_VALIDATE_IP,
+        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+    );
 
-    // 3. Standard Forwarded For (First IP in chain)
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        $firstIp = trim($ips[0]);
-        if (filter_var($firstIp, FILTER_VALIDATE_IP)) {
-            return $firstIp;
+    // Only inspect forwarded headers if the immediate connection is from an internal proxy
+    if ($isInternalProxy) {
+        // 1. Imperva Incapsula edge IP (firstcapital.lk WAF provider)
+        if (!empty($_SERVER['HTTP_INCAP_CLIENT_IP']) && filter_var($_SERVER['HTTP_INCAP_CLIENT_IP'], FILTER_VALIDATE_IP)) {
+            return $_SERVER['HTTP_INCAP_CLIENT_IP'];
+        }
+
+        // 2. Cloudflare Connecting IP
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
+            return $_SERVER['HTTP_CF_CONNECTING_IP'];
+        }
+
+        // 3. Standard Forwarded For (First IP in chain)
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $firstIp = trim($ips[0]);
+            if (filter_var($firstIp, FILTER_VALIDATE_IP)) {
+                return $firstIp;
+            }
         }
     }
 
-    // 4. Direct Remote Address
-    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    // Direct connection without proxy: use REMOTE_ADDR directly to prevent spoofing
+    return $remote;
 }
 
 function isHttps() {
@@ -243,17 +257,8 @@ function ensureSecurityTables($pdo) {
             $pdo->exec("DELETE FROM app_settings WHERE setting_key = 'admin_users'");
         } catch (Throwable $e) {}
 
-        // Pre-seed initial Super Admin if database has 0 admins
-        $count = (int)$pdo->query("SELECT COUNT(*) FROM admin_accounts")->fetchColumn();
-        if ($count === 0) {
-            $stmt = $pdo->prepare("INSERT INTO admin_accounts (name, email, password_hash, role, status, created_at) VALUES (:n, :e, :h, 'Super Admin', 'Active', :now)");
-            $stmt->execute([
-                ':n' => 'First Capital Administrator',
-                ':e' => 'admin@firstcapital.lk',
-                ':h' => password_hash('admin123', PASSWORD_DEFAULT),
-                ':now' => date('Y-m-d H:i:s'),
-            ]);
-        }
+        // Security Hardening: Never auto-seed default passwords (SEC-AUD-02).
+        // First-time setup is executed securely via /admin/ with ADMIN_SETUP_TOKEN.
     } catch (Throwable $e) {
         error_log("ensureSecurityTables error: " . $e->getMessage());
     }

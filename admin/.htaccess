@@ -41,27 +41,21 @@ ErrorDocument 403 403.html
   # --- WHITELIST RULESET ---
   # Flag authorized client IPs via Direct REMOTE_ADDR or Proxy Headers
 
-  # A. Developer / Current Verification IP:
+  # A. Developer / Authorized Administrator IP (IPv4 & IPv6):
   RewriteCond %{REMOTE_ADDR} ^112\.134\.215\.162$ [OR]
   RewriteCond %{HTTP:Incap-Client-IP} ^112\.134\.215\.162$ [OR]
   RewriteCond %{HTTP:X-Forwarded-For} (^|,)\s*112\.134\.215\.162 [OR]
   RewriteCond %{HTTP:CF-Connecting-IP} ^112\.134\.215\.162$ [OR]
+  RewriteCond %{REMOTE_ADDR} ^2402:d000:8134: [OR]
+  RewriteCond %{HTTP:X-Forwarded-For} (^|,)\s*2402:d000:8134: [OR]
 
   # B. Localhost & Loopback:
   RewriteCond %{REMOTE_ADDR} ^127\.0\.0\.1$ [OR]
   RewriteCond %{REMOTE_ADDR} ^::1$ [OR]
 
-  # C. Private Subnets (Internal Corporate LAN / Staging VPN):
-  RewriteCond %{REMOTE_ADDR} ^10\. [OR]
-  RewriteCond %{REMOTE_ADDR} ^172\.(1[6-9]|2[0-9]|3[0-1])\. [OR]
-  RewriteCond %{REMOTE_ADDR} ^192\.168\. [OR]
-  RewriteCond %{HTTP:Incap-Client-IP} ^10\. [OR]
-  RewriteCond %{HTTP:Incap-Client-IP} ^172\.(1[6-9]|2[0-9]|3[0-1])\. [OR]
-  RewriteCond %{HTTP:Incap-Client-IP} ^192\.168\. [OR]
-
-  # D. --- FIRST CAPITAL CORPORATE HQ & OFFICE STATIC IPS (ADD HERE) ---
-  # Uncomment the lines below and insert your corporate public IP(s):
+  # C. First Capital Corporate HQ & Office Static IPs (Uncomment & add office IPs):
   # RewriteCond %{REMOTE_ADDR} ^203\.0\.113\.50$ [OR]
+  # RewriteCond %{HTTP:X-Forwarded-For} (^|,)\s*203\.0\.113\.50 [OR]
   # RewriteCond %{HTTP:Incap-Client-IP} ^203\.0\.113\.50$ [OR]
 
   # Terminator condition (guarantees clean [OR] closure)
@@ -78,22 +72,18 @@ ErrorDocument 403 403.html
 # ------------------------------------------------------------------------------
 <IfModule mod_authz_core.c>
   <RequireAny>
-    # Direct Developer IP
+    # Authorized Developer / Administrator IP
     Require ip 112.134.215.162
+    Require ip 2402:d000:8134::/48
 
     # Localhost
     Require ip 127.0.0.1
     Require ip ::1
 
-    # Corporate LAN / VPN Subnets
-    Require ip 10.0.0.0/8
-    Require ip 172.16.0.0/12
-    Require ip 192.168.0.0/16
-
-    # First Capital Corporate HQ Static IP (Add here)
+    # First Capital Corporate HQ Static IP (Uncomment & configure)
     # Require ip 203.0.113.50
 
-    # Whitelisted via Imperva / Proxy Header Rewrite
+    # Whitelisted via Reverse-Proxy Header Rewrite
     Require env FC_ADMIN_ALLOWED
   </RequireAny>
 </IfModule>
@@ -107,8 +97,5 @@ ErrorDocument 403 403.html
   Allow from 112.134.215.162
   Allow from 127.0.0.1
   Allow from ::1
-  Allow from 10.0.0.0/8
-  Allow from 172.16.0.0/12
-  Allow from 192.168.0.0/16
   Allow from env=FC_ADMIN_ALLOWED
 </IfModule>

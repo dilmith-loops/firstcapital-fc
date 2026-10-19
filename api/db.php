@@ -104,17 +104,19 @@ function getDbConnection() {
     try {
         $dataDir = __DIR__ . '/data';
         if (!is_dir($dataDir)) {
-            @mkdir($dataDir, 0777, true);
+            @mkdir($dataDir, 0750, true);
             $ht = $dataDir . '/.htaccess';
             if (!file_exists($ht)) {
                 @file_put_contents($ht, "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n  Order deny,allow\n  Deny from all\n</IfModule>\n");
             }
         }
+        @chmod($dataDir, 0750);
 
         $sqliteFile = $dataDir . '/database.sqlite';
         $pdo = new PDO('sqlite:' . $sqliteFile, null, null, $options);
         $pdo->exec('PRAGMA foreign_keys = ON;');
         $pdo->exec('PRAGMA journal_mode = WAL;');
+        @chmod($sqliteFile, 0640);
         return $pdo;
     } catch (Throwable $e) {
         $GLOBALS['FC_DB_ERROR'] = ($GLOBALS['FC_DB_ERROR'] ?? '') . " | SQLite: " . $e->getMessage();
