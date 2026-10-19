@@ -310,29 +310,56 @@ function getDefaultWhyReasons() {
 
 function ensureTablesExist($pdo) {
     if (!$pdo) return;
+    $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `app_settings` (
-            `setting_key` VARCHAR(100) PRIMARY KEY,
-            `setting_value` LONGTEXT NOT NULL,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        if ($driver === 'sqlite') {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS app_settings (
+                setting_key TEXT PRIMARY KEY,
+                setting_value TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );");
 
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `quiz_leads` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `name` VARCHAR(100) NOT NULL,
-            `email` VARCHAR(150) NOT NULL,
-            `phone` VARCHAR(50) NOT NULL,
-            `gender` VARCHAR(20) DEFAULT 'male',
-            `result_code` CHAR(2) DEFAULT 'A',
-            `result_profile` VARCHAR(100) DEFAULT NULL,
-            `matched_product` VARCHAR(255) DEFAULT NULL,
-            `answers_json` LONGTEXT DEFAULT NULL,
-            `status` VARCHAR(20) DEFAULT 'NEW',
-            `notes` TEXT DEFAULT NULL,
-            `source` VARCHAR(100) DEFAULT 'Landing Page Quiz'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-    } catch (Throwable $e) {}
+            $pdo->exec("CREATE TABLE IF NOT EXISTS quiz_leads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                phone TEXT NOT NULL,
+                gender TEXT DEFAULT 'male',
+                result_code TEXT DEFAULT 'A',
+                result_profile TEXT DEFAULT NULL,
+                matched_product TEXT DEFAULT NULL,
+                answers_json TEXT DEFAULT NULL,
+                status TEXT DEFAULT 'NEW',
+                notes TEXT DEFAULT NULL,
+                source TEXT DEFAULT 'Landing Page Quiz'
+            );");
+        } else {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `app_settings` (
+                `setting_key` VARCHAR(100) PRIMARY KEY,
+                `setting_value` LONGTEXT NOT NULL,
+                `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `quiz_leads` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `name` VARCHAR(100) NOT NULL,
+                `email` VARCHAR(150) NOT NULL,
+                `phone` VARCHAR(50) NOT NULL,
+                `gender` VARCHAR(20) DEFAULT 'male',
+                `result_code` CHAR(2) DEFAULT 'A',
+                `result_profile` VARCHAR(100) DEFAULT NULL,
+                `matched_product` VARCHAR(255) DEFAULT NULL,
+                `answers_json` LONGTEXT DEFAULT NULL,
+                `status` VARCHAR(20) DEFAULT 'NEW',
+                `notes` TEXT DEFAULT NULL,
+                `source` VARCHAR(100) DEFAULT 'Landing Page Quiz'
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        }
+    } catch (Throwable $e) {
+        error_log("ensureTablesExist error: " . $e->getMessage());
+    }
 }
 
 $pdo = getDbConnection();
@@ -353,11 +380,13 @@ if ($action === 'status') {
     requireAdmin($pdo);
     try {
         $totalLeads = (int)$pdo->query("SELECT COUNT(*) FROM quiz_leads")->fetchColumn();
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         jsonResponse(200, [
             'success' => true,
             'connected' => true,
-            'host' => DB_HOST,
-            'database' => DB_NAME,
+            'driver' => $driver,
+            'host' => $driver === 'sqlite' ? 'local-sqlite' : (defined('DB_HOST') ? DB_HOST : 'localhost'),
+            'database' => $driver === 'sqlite' ? 'database.sqlite' : (defined('DB_NAME') ? DB_NAME : 'firstcapital_investor'),
             'totalLeads' => $totalLeads,
             'timestamp' => date('c'),
         ]);
@@ -409,8 +438,13 @@ if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', '
         // Not stored yet: return the built-in defaults and seed them
         if (isset($defaults[$key])) {
             $defaultData = call_user_func($defaults[$key]);
+            $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
             try {
-                $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = setting_value");
+                if ($driver === 'sqlite') {
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON CONFLICT(setting_key) DO NOTHING");
+                } else {
+                    $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = setting_value");
+                }
                 $ins->execute([':k' => $key, ':v' => json_encode($defaultData, JSON_UNESCAPED_UNICODE)]);
             } catch (Throwable $e) {}
             jsonResponse(200, ['success' => true, 'source' => 'default_seeded', 'data' => $defaultData]);
@@ -432,8 +466,13 @@ if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', '
         if (strlen($val) > MAX_SETTING_BYTES) {
             jsonResponse(413, ['success' => false, 'error' => 'Setting is too large.']);
         }
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         try {
-            $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            if ($driver === 'sqlite') {
+                $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            }
             $stmt->execute([':k' => $key, ':v' => $val]);
             jsonResponse(200, ['success' => true]);
         } catch (Throwable $e) {
@@ -575,7 +614,7 @@ if ($isAdminEntry) {
 try {
     $stmt = $pdo->prepare("
         INSERT INTO quiz_leads (name, email, phone, gender, result_code, result_profile, matched_product, answers_json, status, notes, source, created_at)
-        VALUES (:name, :email, :phone, :gender, :code, :resultProfile, :product, :answers, :status, :notes, :source, NOW())
+        VALUES (:name, :email, :phone, :gender, :code, :resultProfile, :product, :answers, :status, :notes, :source, :now)
     ");
     $stmt->execute([
         ':name' => $name,
@@ -588,7 +627,8 @@ try {
         ':answers' => $answers,
         ':status' => $status,
         ':notes' => $notes,
-        ':source' => $source
+        ':source' => $source,
+        ':now' => date('Y-m-d H:i:s'),
     ]);
     $id = (int)$pdo->lastInsertId();
     jsonResponse(200, ['success' => true, 'leadId' => $id, 'id' => 'FC-' . $id, 'storage' => 'database']);

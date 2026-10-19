@@ -2,8 +2,8 @@
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
-# Security: block dotfiles (.env, .git), SQL dumps, docs, JSON data files and logs
-<FilesMatch "(^\.|\.(sql|md|json|log|zip|bak)$)">
+# Security: block dotfiles (.env, .git), SQL dumps, SQLite databases, docs, JSON data files and logs
+<FilesMatch "(^\.|\.(sql|sqlite|db|md|json|log|zip|bak)$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>

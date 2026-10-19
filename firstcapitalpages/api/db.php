@@ -70,21 +70,55 @@ if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: (getenv('DB_PASS
 
 function getDbConnection() {
     static $pdo = null;
-    if ($pdo === null) {
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
+    if ($pdo !== null) {
+        return $pdo;
+    }
+
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+
+    // 1. Attempt MySQL connection if real credentials are provided
+    $dbPass = defined('DB_PASS') ? DB_PASS : '';
+    $dbUser = defined('DB_USER') ? DB_USER : '';
+    $dbName = defined('DB_NAME') ? DB_NAME : '';
+    $dbHost = defined('DB_HOST') ? DB_HOST : 'localhost';
+    $isPlaceholderPass = in_array($dbPass, ['', 'your_db_password_here', 'your_password_here'], true);
+
+    if ($dbName !== '' && !$isPlaceholderPass) {
         try {
             $port = (defined('DB_PORT') && DB_PORT) ? ';port=' . DB_PORT : '';
-            $dsn = "mysql:host=" . DB_HOST . $port . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            $dsn = "mysql:host=" . $dbHost . $port . ";dbname=" . $dbName . ";charset=utf8mb4";
+            $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
+            return $pdo;
         } catch (Throwable $e) {
-            // Log securely without leaking credentials into user HTTP responses
-            error_log("Database connection failed: " . $e->getMessage());
+            error_log("MySQL connection failed: " . $e->getMessage() . " - switching to high-availability SQLite fallback.");
             $pdo = null;
         }
     }
+
+    // 2. High-availability SQLite fallback (ensures zero downtime on Hostinger / shared hosting)
+    try {
+        $dataDir = __DIR__ . '/data';
+        if (!is_dir($dataDir)) {
+            @mkdir($dataDir, 0777, true);
+            $ht = $dataDir . '/.htaccess';
+            if (!file_exists($ht)) {
+                @file_put_contents($ht, "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n  Order deny,allow\n  Deny from all\n</IfModule>\n");
+            }
+        }
+
+        $sqliteFile = $dataDir . '/database.sqlite';
+        $pdo = new PDO('sqlite:' . $sqliteFile, null, null, $options);
+        $pdo->exec('PRAGMA foreign_keys = ON;');
+        $pdo->exec('PRAGMA journal_mode = WAL;');
+        return $pdo;
+    } catch (Throwable $e) {
+        error_log("SQLite database fallback failed: " . $e->getMessage());
+        $pdo = null;
+    }
+
     return $pdo;
 }

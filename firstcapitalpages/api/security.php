@@ -152,12 +152,17 @@ function rateLimit($pdo, $bucket, $max, $windowSeconds) {
     if (!$pdo) return true;
     $key = substr($bucket . ':' . hash('sha256', clientIp()), 0, 191);
     $now = time();
+    $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     try {
         $stmt = $pdo->prepare("SELECT hits, window_start FROM rate_limits WHERE k = :k");
         $stmt->execute([':k' => $key]);
         $row = $stmt->fetch();
         if (!$row || ($now - (int)$row['window_start']) >= $windowSeconds) {
-            $up = $pdo->prepare("INSERT INTO rate_limits (k, hits, window_start) VALUES (:k, 1, :t) ON DUPLICATE KEY UPDATE hits = 1, window_start = VALUES(window_start)");
+            if ($driver === 'sqlite') {
+                $up = $pdo->prepare("INSERT INTO rate_limits (k, hits, window_start) VALUES (:k, 1, :t) ON CONFLICT(k) DO UPDATE SET hits = 1, window_start = excluded.window_start");
+            } else {
+                $up = $pdo->prepare("INSERT INTO rate_limits (k, hits, window_start) VALUES (:k, 1, :t) ON DUPLICATE KEY UPDATE hits = 1, window_start = VALUES(window_start)");
+            }
             $up->execute([':k' => $key, ':t' => $now]);
             return true;
         }
@@ -195,25 +200,61 @@ function settingsUrlsAreSafe($value, $parentKey = '') {
 
 function ensureSecurityTables($pdo) {
     if (!$pdo) return;
+    $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `admin_accounts` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `name` VARCHAR(100) NOT NULL,
-            `email` VARCHAR(150) NOT NULL UNIQUE,
-            `password_hash` VARCHAR(255) NOT NULL,
-            `role` VARCHAR(30) NOT NULL DEFAULT 'Manager',
-            `status` VARCHAR(20) NOT NULL DEFAULT 'Active',
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `last_login` TIMESTAMP NULL DEFAULT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        if ($driver === 'sqlite') {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS admin_accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'Manager',
+                status TEXT NOT NULL DEFAULT 'Active',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_login DATETIME NULL DEFAULT NULL
+            );");
 
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `rate_limits` (
-            `k` VARCHAR(191) PRIMARY KEY,
-            `hits` INT NOT NULL DEFAULT 0,
-            `window_start` INT NOT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS rate_limits (
+                k TEXT PRIMARY KEY,
+                hits INTEGER NOT NULL DEFAULT 0,
+                window_start INTEGER NOT NULL
+            );");
+        } else {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `admin_accounts` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(100) NOT NULL,
+                `email` VARCHAR(150) NOT NULL UNIQUE,
+                `password_hash` VARCHAR(255) NOT NULL,
+                `role` VARCHAR(30) NOT NULL DEFAULT 'Manager',
+                `status` VARCHAR(20) NOT NULL DEFAULT 'Active',
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `last_login` TIMESTAMP NULL DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `rate_limits` (
+                `k` VARCHAR(191) PRIMARY KEY,
+                `hits` INT NOT NULL DEFAULT 0,
+                `window_start` INT NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        }
 
         // The old client-side admin list (with plain-text passwords) was stored here; remove it.
-        $pdo->exec("DELETE FROM app_settings WHERE setting_key = 'admin_users'");
-    } catch (Throwable $e) {}
+        try {
+            $pdo->exec("DELETE FROM app_settings WHERE setting_key = 'admin_users'");
+        } catch (Throwable $e) {}
+
+        // Pre-seed initial Super Admin if database has 0 admins
+        $count = (int)$pdo->query("SELECT COUNT(*) FROM admin_accounts")->fetchColumn();
+        if ($count === 0) {
+            $stmt = $pdo->prepare("INSERT INTO admin_accounts (name, email, password_hash, role, status, created_at) VALUES (:n, :e, :h, 'Super Admin', 'Active', :now)");
+            $stmt->execute([
+                ':n' => 'First Capital Administrator',
+                ':e' => 'admin@firstcapital.lk',
+                ':h' => password_hash('admin123', PASSWORD_DEFAULT),
+                ':now' => date('Y-m-d H:i:s'),
+            ]);
+        }
+    } catch (Throwable $e) {
+        error_log("ensureSecurityTables error: " . $e->getMessage());
+    }
 }
