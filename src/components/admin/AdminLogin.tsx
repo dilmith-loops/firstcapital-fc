@@ -13,21 +13,25 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // First-time setup (no admin accounts exist on the server yet)
+  const { setupRequired, setupEnabled } = AdminStore.getSetupState();
+  const [name, setName] = useState("");
+  const [setupToken, setSetupToken] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    setTimeout(() => {
-      const ok = AdminStore.login(email, password);
-      if (ok) {
-        onSuccess();
-      } else {
-        setError("Invalid email or password. Please verify your credentials or contact an administrator.");
-        setLoading(false);
-      }
-    }, 400);
+    const result = setupRequired
+      ? await AdminStore.setupFirstAdmin({ name, email, password, token: setupToken })
+      : await AdminStore.login(email, password);
+    if (result.ok) {
+      onSuccess();
+    } else {
+      setError(result.error || "Invalid email or password.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,7 +93,7 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
             <div className="text-center mb-8">
               <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Admin Sign In
+                {setupRequired ? "Create Administrator" : "Admin Sign In"}
               </h1>
               <p className="text-xs sm:text-sm text-emerald-200/70 mt-1.5">
                 First Capital Investor Week • Management Console
@@ -104,7 +108,29 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
               </div>
             )}
 
+            {setupRequired && (
+              <div className="mb-6 p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-700/60 text-emerald-100 text-xs leading-relaxed">
+                {setupEnabled
+                  ? "No administrator exists yet. Create the first Super Admin account using the setup token from the server's .env file (ADMIN_SETUP_TOKEN)."
+                  : "No administrator exists yet. Add an ADMIN_SETUP_TOKEN (at least 16 characters) to the server's .env file, then reload this page."}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {setupRequired && (
+                <div>
+                  <label className="block text-xs font-bold text-emerald-200 uppercase tracking-wider mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl px-4 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-bold text-emerald-200 uppercase tracking-wider mb-2">
                   Admin Email
@@ -114,11 +140,12 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                     <Mail className="size-4" />
                   </div>
                   <input
-                    type="text"
+                    type="email"
                     required
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@firstcapital.lk"
+                    placeholder="you@firstcapital.lk"
                     className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
                   />
                 </div>
@@ -136,6 +163,8 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
+                    autoComplete={setupRequired ? "new-password" : "current-password"}
+                    minLength={setupRequired ? 10 : undefined}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl pl-10 pr-11 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
@@ -152,17 +181,32 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                 </div>
               </div>
 
+              {setupRequired && (
+                <div>
+                  <label className="block text-xs font-bold text-emerald-200 uppercase tracking-wider mb-2">
+                    Setup Token
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={setupToken}
+                    onChange={(e) => setSetupToken(e.target.value)}
+                    className="w-full bg-[#0b1a17] border border-emerald-800/80 rounded-xl px-4 py-3 text-sm text-white placeholder:text-emerald-700 focus:outline-none focus:border-[#f1c91e] focus:ring-1 focus:ring-[#f1c91e] transition-all"
+                  />
+                </div>
+              )}
+
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (setupRequired && !setupEnabled)}
                   className="w-full bg-[#f1c91e] hover:bg-[#e2bb18] active:scale-[0.99] text-[#142d27] font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
                     "Authenticating..."
                   ) : (
                     <>
-                      Sign In to Console <ArrowRight className="size-4" />
+                      {setupRequired ? "Create Account" : "Sign In to Console"} <ArrowRight className="size-4" />
                     </>
                   )}
                 </button>

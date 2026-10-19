@@ -1,0 +1,114 @@
+# ==============================================================================
+# First Capital Administrative Portal - Security & IP Whitelist Gatekeeper
+# Target Path: https://firstcapital.lk/begininvesting/admin/
+#
+# PURPOSE:
+# Strictly restrict access to the Admin Portal UI and static admin bundles to
+# authorized First Capital corporate office networks and secure VPNs.
+#
+# WAF / REVERSE PROXY SUPPORT:
+# firstcapital.lk is fronted by Imperva Incapsula WAF. This configuration evaluates
+# both direct connections (REMOTE_ADDR) and Imperva proxy headers (Incap-Client-IP,
+# X-Forwarded-For, and CF-Connecting-IP).
+# ==============================================================================
+
+Options -Indexes -MultiViews +FollowSymLinks
+DirectoryIndex index.html index.php
+
+# 1. Custom Branded 403 Forbidden Screen
+ErrorDocument 403 403.html
+
+# 2. Allow 403.html and static error assets to render without triggering denial recursion
+<FilesMatch "^(403\.html|first-capital-logo\.png|favicon\.png)$">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+  </IfModule>
+</FilesMatch>
+
+# ------------------------------------------------------------------------------
+# 3. WAF & Proxy IP Filter (Imperva Incapsula / Cloudflare / Direct)
+# ------------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Pass through custom 403 page and error assets
+  RewriteRule ^(403\.html|first-capital-logo\.png|favicon\.png)$ - [L]
+
+  # --- WHITELIST RULESET ---
+  # Flag authorized client IPs via Direct REMOTE_ADDR or Proxy Headers
+
+  # A. Developer / Current Verification IP:
+  RewriteCond %{REMOTE_ADDR} ^112\.134\.215\.162$ [OR]
+  RewriteCond %{HTTP:Incap-Client-IP} ^112\.134\.215\.162$ [OR]
+  RewriteCond %{HTTP:X-Forwarded-For} (^|,)\s*112\.134\.215\.162 [OR]
+  RewriteCond %{HTTP:CF-Connecting-IP} ^112\.134\.215\.162$ [OR]
+
+  # B. Localhost & Loopback:
+  RewriteCond %{REMOTE_ADDR} ^127\.0\.0\.1$ [OR]
+  RewriteCond %{REMOTE_ADDR} ^::1$ [OR]
+
+  # C. Private Subnets (Internal Corporate LAN / Staging VPN):
+  RewriteCond %{REMOTE_ADDR} ^10\. [OR]
+  RewriteCond %{REMOTE_ADDR} ^172\.(1[6-9]|2[0-9]|3[0-1])\. [OR]
+  RewriteCond %{REMOTE_ADDR} ^192\.168\. [OR]
+  RewriteCond %{HTTP:Incap-Client-IP} ^10\. [OR]
+  RewriteCond %{HTTP:Incap-Client-IP} ^172\.(1[6-9]|2[0-9]|3[0-1])\. [OR]
+  RewriteCond %{HTTP:Incap-Client-IP} ^192\.168\. [OR]
+
+  # D. --- FIRST CAPITAL CORPORATE HQ & OFFICE STATIC IPS (ADD HERE) ---
+  # Uncomment the lines below and insert your corporate public IP(s):
+  # RewriteCond %{REMOTE_ADDR} ^203\.0\.113\.50$ [OR]
+  # RewriteCond %{HTTP:Incap-Client-IP} ^203\.0\.113\.50$ [OR]
+
+  # Terminator condition (guarantees clean [OR] closure)
+  RewriteCond %{REMOTE_ADDR} ^999\.999\.999\.999$
+  RewriteRule ^ - [E=FC_ADMIN_ALLOWED:1]
+
+  # Enforce 403 Forbidden for any connection not matching the whitelist
+  RewriteCond %{ENV:FC_ADMIN_ALLOWED} !^1$
+  RewriteRule ^ - [F,L]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 4. Native Apache 2.4 mod_authz_core Authorization (Defense in Depth)
+# ------------------------------------------------------------------------------
+<IfModule mod_authz_core.c>
+  <RequireAny>
+    # Direct Developer IP
+    Require ip 112.134.215.162
+
+    # Localhost
+    Require ip 127.0.0.1
+    Require ip ::1
+
+    # Corporate LAN / VPN Subnets
+    Require ip 10.0.0.0/8
+    Require ip 172.16.0.0/12
+    Require ip 192.168.0.0/16
+
+    # First Capital Corporate HQ Static IP (Add here)
+    # Require ip 203.0.113.50
+
+    # Whitelisted via Imperva / Proxy Header Rewrite
+    Require env FC_ADMIN_ALLOWED
+  </RequireAny>
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 5. Legacy Apache 2.2 Fallback
+# ------------------------------------------------------------------------------
+<IfModule !mod_authz_core.c>
+  Order Deny,Allow
+  Deny from all
+  Allow from 112.134.215.162
+  Allow from 127.0.0.1
+  Allow from ::1
+  Allow from 10.0.0.0/8
+  Allow from 172.16.0.0/12
+  Allow from 192.168.0.0/16
+  Allow from env=FC_ADMIN_ALLOWED
+</IfModule>

@@ -20,8 +20,11 @@ function AdminPage() {
   const [mounted, setMounted] = useState<boolean>(false);
 
   useEffect(() => {
-    setIsAuthenticated(AdminStore.isAuthenticated());
-    setMounted(true);
+    // The server session decides whether the dashboard is shown
+    AdminStore.refreshSession().then((ok) => {
+      setIsAuthenticated(ok);
+      setMounted(true);
+    });
 
     const unsubscribe = AdminStore.subscribe(() => {
       setIsAuthenticated(AdminStore.isAuthenticated());

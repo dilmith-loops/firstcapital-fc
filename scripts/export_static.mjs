@@ -652,6 +652,9 @@ const quizModalHtmlAndScript = `
 
 <script>
 (function() {
+  // Only absolute http(s) links from settings data may be used as hrefs
+  function isSafeUrl(u) { return typeof u === "string" && new RegExp("^https?://", "i").test(u.trim()); }
+
   var PROFILES = {
     A: {
       number: "01",
@@ -1365,12 +1368,12 @@ const quizModalHtmlAndScript = `
 
     var guideLink = document.getElementById('fck-res-guide-link');
     var guideLabel = document.getElementById('fck-res-guide-label');
-    if (guideLink && prof.guideUrl) guideLink.href = prof.guideUrl;
+    if (guideLink && isSafeUrl(prof.guideUrl)) guideLink.href = prof.guideUrl;
     if (guideLabel && prof.guideLabel) guideLabel.innerText = prof.guideLabel;
 
     var guideLinkMob = document.getElementById('fck-res-guide-link-mob');
     var guideLabelMob = document.getElementById('fck-res-guide-label-mob');
-    if (guideLinkMob && prof.guideUrl) guideLinkMob.href = prof.guideUrl;
+    if (guideLinkMob && isSafeUrl(prof.guideUrl)) guideLinkMob.href = prof.guideUrl;
     if (guideLabelMob && prof.guideLabel) guideLabelMob.innerText = prof.guideLabel;
     if (typeof setDisclaimerOpen === 'function') setDisclaimerOpen(false);
 
@@ -2935,7 +2938,7 @@ ${compiledCssContent}
     fs.copyFileSync('public/favicon.png', path.join(adminOutDir, 'favicon.png'));
   }
 
-  // Copy all assets from admin/assets into main assets/ so ANY relative or root request resolves
+  // Copy shared public images into admin/assets for self-contained operation
   const adminAssetsDir = path.join(adminOutDir, 'assets');
   const mainAssetsDir = path.join(outDir, 'assets');
   if (fs.existsSync(adminAssetsDir)) {
@@ -2945,19 +2948,31 @@ ${compiledCssContent}
     if (fs.existsSync('public/favicon.png')) {
       fs.copyFileSync('public/favicon.png', path.join(adminAssetsDir, 'favicon.png'));
     }
-    // Clean old index-*.js and index-*.css from main assets directory
+    // Clean old index-*.js and index-*.css from main public assets directory (Admin bundle quarantine)
     if (fs.existsSync(mainAssetsDir)) {
       for (const f of fs.readdirSync(mainAssetsDir)) {
-        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css'))) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css') || f.endsWith('.map'))) {
           fs.unlinkSync(path.join(mainAssetsDir, f));
         }
       }
     }
     const adminAssets = fs.readdirSync(adminAssetsDir);
     for (const f of adminAssets) {
+      // Security: Do NOT copy admin JS/CSS bundles to public assets directory
+      if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css') || f.endsWith('.map'))) {
+        continue;
+      }
       fs.copyFileSync(path.join(adminAssetsDir, f), path.join(mainAssetsDir, f));
     }
-    console.log('Copied admin bundle assets into main assets/ directory for dual-path resolution.');
+    console.log('Quarantined admin bundle assets strictly inside admin/assets/ directory.');
+  }
+
+  // Ensure admin .htaccess and branded 403.html are deployed to adminOutDir
+  if (fs.existsSync('admin/.htaccess')) {
+    fs.copyFileSync('admin/.htaccess', path.join(adminOutDir, '.htaccess'));
+  }
+  if (fs.existsSync('admin/403.html')) {
+    fs.copyFileSync('admin/403.html', path.join(adminOutDir, '403.html'));
   }
 
   // Create .htaccess for Apache / LiteSpeed (Root domain: ${SITE_URL}/)
@@ -2965,10 +2980,15 @@ ${compiledCssContent}
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
-# Security: Protect .env and sensitive files from direct web access
-<FilesMatch "^\\.env|\\.git">
-  Order allow,deny
-  Deny from all
+# Security: block dotfiles (.env, .git, .htaccess), SQL dumps, docs, JSON data files and logs
+<FilesMatch "(^\\.|\\.(sql|md|json|log|zip|bak)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
 </FilesMatch>
 
 <IfModule mod_rewrite.c>
@@ -3002,15 +3022,20 @@ DirectoryIndex index.html index.php
   # 5. Route backend API scripts cleanly
   RewriteRule ^api/leads/?$ api/leads.php [L]
   RewriteRule ^api/admin/(.*)$ api/leads.php [L]
-  RewriteRule \\.(php|json)$ - [L]
+  RewriteRule \\.php$ - [L]
 
   # 6. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
 </IfModule>
 
-# Allow crawlers and prevent CORS issues
+# Security headers (no cross-origin API access: the API is same-origin only)
 <IfModule mod_headers.c>
-  Header set Access-Control-Allow-Origin "*"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+  Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
   Header set X-Robots-Tag "all"
   <Files "robots.txt">
     Header set Content-Type "text/plain; charset=utf-8"
@@ -3048,12 +3073,14 @@ DirectoryIndex index.html index.php
     }
   };
 
-  // Copy .env, .env.example, and schema.sql to production outDir
+  // Copy .env.example and schema.sql to production outDir
   if (fs.existsSync('.env.example')) {
     fs.copyFileSync('.env.example', path.join(outDir, '.env.example'));
   }
-  if (fs.existsSync('.env')) {
-    fs.copyFileSync('.env', path.join(outDir, '.env'));
+  // Security: Do NOT export plain text .env file (credentials live in api/db_config.php)
+  const outEnv = path.join(outDir, '.env');
+  if (fs.existsSync(outEnv)) {
+    try { fs.unlinkSync(outEnv); } catch {}
   }
   if (fs.existsSync('schema.sql')) {
     fs.copyFileSync('schema.sql', path.join(outDir, 'schema.sql'));
@@ -3116,15 +3143,18 @@ DirectoryIndex index.html index.php
     }
     copyRecursive(adminOutDir, rootAdminDir);
 
-    // Also sync admin assets into root assets/ and clean stale bundles
+    // Ensure root assets/ has no admin JS/CSS bundles
     const rootAssetsDir = path.resolve('assets');
     if (fs.existsSync(adminAssetsDir) && fs.existsSync(rootAssetsDir)) {
       for (const f of fs.readdirSync(rootAssetsDir)) {
-        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css'))) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css') || f.endsWith('.map'))) {
           try { fs.unlinkSync(path.join(rootAssetsDir, f)); } catch {}
         }
       }
       for (const f of fs.readdirSync(adminAssetsDir)) {
+        if (f.startsWith('index-') && (f.endsWith('.js') || f.endsWith('.css') || f.endsWith('.map'))) {
+          continue;
+        }
         fs.copyFileSync(path.join(adminAssetsDir, f), path.join(rootAssetsDir, f));
       }
     }
@@ -3169,8 +3199,10 @@ Open phpMyAdmin or your MySQL client, select your database, and run 'schema.sql'
 This creates the required tables:
 - 'quiz_leads' (stores quiz submissions, personality profiles, and notes)
 - 'app_settings' (stores dynamic questions and admin portal settings)
+- 'admin_accounts' (admin portal logins, passwords stored as secure hashes)
+- 'rate_limits' (per-IP limits for logins and quiz submissions)
 
-* Automatic table creation in PHP has been disabled per production security guidelines.
+* The API also creates any missing tables automatically on first use.
 
 Step B - Configure MySQL in .env:
 Open the '.env' file in the root directory and enter your MySQL database credentials:
@@ -3180,8 +3212,17 @@ DB_PORT=3306
 DB_NAME=your_database_name
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
+ADMIN_SETUP_TOKEN=a_random_string_of_at_least_16_characters
 
-* .htaccess is pre-configured to block public access to .env for security.
+* .htaccess is pre-configured to block public access to .env, .sql, .md and .json files.
+  After uploading, confirm ${SITE_URL}/.env returns "403 Forbidden".
+* For extra safety, move .env one folder above the site folder; api/db.php also looks there.
+
+Step C - Create the first admin account:
+Open ${SITE_URL}/admin/ - while no admin exists it shows "Create Administrator".
+Enter your name, email, a password (10+ characters) and the ADMIN_SETUP_TOKEN value.
+The token stops working as soon as the first admin exists; further admins are added
+from the portal's admin users screen.
 
 ================================================================================
 3. DIRECTORY STRUCTURE

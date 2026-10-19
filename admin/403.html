@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>403 Forbidden | First Capital Corporate Security</title>
+  <link rel="icon" href="./favicon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1f1b;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(241, 201, 30, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(13, 79, 63, 0.25) 0%, transparent 50%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .security-card {
+      width: 100%;
+      max-width: 540px;
+      background: rgba(18, 38, 33, 0.85);
+      border: 1px solid rgba(241, 201, 30, 0.2);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      text-align: center;
+      animation: cardAppear 0.5s ease-out;
+    }
+    @keyframes cardAppear {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      height: 38px;
+      width: auto;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    }
+    .icon-badge {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      background: rgba(241, 201, 30, 0.1);
+      border: 1px solid rgba(241, 201, 30, 0.3);
+      color: #f1c91e;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    p.desc {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .info-panel {
+      background: rgba(9, 22, 19, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 28px;
+      text-align: left;
+      font-size: 13px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .info-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .info-row:first-child {
+      padding-top: 0;
+    }
+    .info-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+    .info-value {
+      color: #cbd5e1;
+      font-weight: 600;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: #f1c91e;
+      color: #0d1f1b;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(241, 201, 30, 0.25);
+    }
+    .btn:hover {
+      background: #dfb715;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(241, 201, 30, 0.35);
+    }
+    .footer-help {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .footer-help a {
+      color: #f1c91e;
+      text-decoration: none;
+    }
+    .footer-help a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="security-card">
+    <img src="./first-capital-logo.png" alt="First Capital" class="logo" />
+    
+    <div>
+      <div class="icon-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+    </div>
+
+    <div>
+      <span class="status-pill">
+        <span class="status-dot"></span>
+        HTTP 403 Forbidden
+      </span>
+    </div>
+
+    <h1>Corporate Access Restricted</h1>
+    
+    <p class="desc">
+      The First Capital Administrative Management Console is restricted to authorized office networks and corporate VPN connections. Access from your current IP address is not permitted.
+    </p>
+
+    <div class="info-panel">
+      <div class="info-row">
+        <span class="info-label">Security Protocol</span>
+        <span class="info-value">Network IP Whitelist</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Target Zone</span>
+        <span class="info-value">/begininvesting/admin/</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Client IP</span>
+        <span class="info-value" id="client-ip-display">Restricted Connection</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Firewall Status</span>
+        <span class="info-value" style="color: #f87171;">Traffic Filtered</span>
+      </div>
+    </div>
+
+    <a href="../" class="btn">
+      Return to Public Campaign
+    </a>
+
+    <p class="footer-help">
+      Authorized staff should connect to the First Capital Corporate VPN.<br />
+      Need assistance? Contact <a href="mailto:support@firstcapital.lk">First Capital IT Support</a>.
+    </p>
+  </div>
+
+  <script>
+    // Asynchronously display client IP if accessible via public IP reflection
+    (function() {
+      fetch('https://api.ipify.org?format=json')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && data.ip) {
+            var el = document.getElementById('client-ip-display');
+            if (el) el.textContent = data.ip;
+          }
+        })
+        .catch(function() {});
+    })();
+  </script>
+</body>
+</html>

@@ -25,3 +25,26 @@ CREATE TABLE IF NOT EXISTS `app_settings` (
     `setting_value` LONGTEXT NOT NULL,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Admin portal accounts (passwords stored as password_hash() hashes; created via the
+-- one-time setup screen, then managed from the admin portal)
+CREATE TABLE IF NOT EXISTS `admin_accounts` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(150) NOT NULL UNIQUE,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(30) NOT NULL DEFAULT 'Manager',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'Active',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `last_login` TIMESTAMP NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Per-IP rate limiting for logins and quiz submissions
+CREATE TABLE IF NOT EXISTS `rate_limits` (
+    `k` VARCHAR(191) PRIMARY KEY,
+    `hits` INT NOT NULL DEFAULT 0,
+    `window_start` INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- The old browser-side admin list stored plain-text passwords here; remove it.
+DELETE FROM `app_settings` WHERE `setting_key` = 'admin_users';

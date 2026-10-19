@@ -1576,7 +1576,7 @@ export function QuizFlow({
                   <p>
                     <strong className="font-bold text-slate-700">* Disclaimers: </strong>
                     {resultProfile.productDisclaimer.replace(/^\*\s*Disclaimers?:\s*/i, "")}
-                    {resultProfile.procedureGuide && (
+                    {resultProfile.procedureGuide && /^https?:\/\//i.test(resultProfile.procedureGuide.url) && (
                       <a
                         href={resultProfile.procedureGuide.url}
                         target="_blank"
@@ -1690,7 +1690,7 @@ export function QuizFlow({
                   <p>
                     <strong className="font-bold text-slate-700">* Disclaimers: </strong>
                     {resultProfile.productDisclaimer.replace(/^\*\s*Disclaimers?:\s*/i, "")}
-                    {resultProfile.procedureGuide && (
+                    {resultProfile.procedureGuide && /^https?:\/\//i.test(resultProfile.procedureGuide.url) && (
                       <a
                         href={resultProfile.procedureGuide.url}
                         target="_blank"

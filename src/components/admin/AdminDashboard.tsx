@@ -186,6 +186,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Settings form states
   const [newPassword, setNewPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [settingsSuccess, setSettingsSuccess] = useState(false);
@@ -639,40 +640,45 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     showToast("Settings saved successfully!");
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPassword || newPassword.length < 4) {
-      alert("Password must be at least 4 characters.");
+    if (!newPassword || newPassword.length < 10) {
+      alert("Password must be at least 10 characters.");
       return;
     }
-    AdminStore.updatePassword(newPassword);
+    const result = await AdminStore.updatePassword(currentPassword, newPassword);
+    if (!result.ok) {
+      alert(result.error || "Could not change password.");
+      return;
+    }
+    setCurrentPassword("");
     setNewPassword("");
     setPasswordSuccess(true);
     setTimeout(() => setPasswordSuccess(false), 3000);
     showToast("Admin password changed!");
   };
 
-  const handleCreateAdmin = (e: React.FormEvent) => {
+  const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAdminName.trim() || !newAdminEmail.trim() || !newAdminPassword.trim()) {
       alert("Please fill in all required fields.");
       return;
     }
-    const cleanEmail = newAdminEmail.trim().toLowerCase();
-    const existing = AdminStore.getAdminUsers().find(
-      (u) => u.email.toLowerCase() === cleanEmail
-    );
-    if (existing) {
-      alert("An administrator account with this email already exists.");
+    if (newAdminPassword.trim().length < 10) {
+      alert("Password must be at least 10 characters.");
       return;
     }
-    AdminStore.addAdminUser({
+    const result = await AdminStore.addAdminUser({
       name: newAdminName.trim(),
-      email: cleanEmail,
+      email: newAdminEmail.trim().toLowerCase(),
       password: newAdminPassword.trim(),
       role: newAdminRole,
       status: newAdminStatus,
     });
+    if (!result.ok) {
+      alert(result.error || "Could not create administrator.");
+      return;
+    }
     setIsAddAdminOpen(false);
     setNewAdminName("");
     setNewAdminEmail("");
@@ -682,7 +688,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     showToast(`Administrator account for ${newAdminName} created successfully!`);
   };
 
-  const handleUpdateAdmin = (e: React.FormEvent) => {
+  const handleUpdateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAdmin) return;
     const updates: Partial<AdminUser> = {
@@ -690,24 +696,34 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       role: editingAdmin.role,
       status: editingAdmin.status,
     };
-    if (editAdminPassword && editAdminPassword.trim().length >= 4) {
+    if (editAdminPassword.trim()) {
+      if (editAdminPassword.trim().length < 10) {
+        alert("Password must be at least 10 characters.");
+        return;
+      }
       updates.password = editAdminPassword.trim();
     }
-    AdminStore.updateAdminUser(editingAdmin.id, updates);
+    const result = await AdminStore.updateAdminUser(editingAdmin.id, updates);
+    if (!result.ok) {
+      alert(result.error || "Could not update administrator.");
+      return;
+    }
     setEditingAdmin(null);
     setEditAdminPassword("");
     showToast(`Administrator ${editingAdmin.name} updated successfully!`);
   };
 
-  const handleDeleteAdmin = (id: string) => {
+  const handleDeleteAdmin = async (id: string) => {
     const target = adminUsers.find((u) => u.id === id);
     if (!target) return;
     if (window.confirm(`Are you sure you want to remove administrator ${target.name} (${target.email})?`)) {
-      const ok = AdminStore.deleteAdminUser(id);
-      if (ok) {
-        showToast(`Administrator ${target.name} removed.`);
-        if (editingAdmin?.id === id) setEditingAdmin(null);
+      const result = await AdminStore.deleteAdminUser(id);
+      if (!result.ok) {
+        alert(result.error || "Could not remove administrator.");
+        return;
       }
+      showToast(`Administrator ${target.name} removed.`);
+      if (editingAdmin?.id === id) setEditingAdmin(null);
     }
   };
 
@@ -802,8 +818,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
             <button
               type="button"
-              onClick={() => {
-                AdminStore.logout();
+              onClick={async () => {
+                await AdminStore.logout();
                 onLogout();
               }}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors cursor-pointer"
@@ -821,7 +837,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-sm sticky top-24">
             <div className="p-3 border-b border-slate-100 mb-2">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
-              <p className="text-sm font-extrabold text-[#142d27] truncate mt-0.5">{settings.adminEmail}</p>
+              <p className="text-sm font-extrabold text-[#142d27] truncate mt-0.5">{AdminStore.getCurrentAdmin()?.email ?? settings.adminEmail}</p>
             </div>
 
             <nav className="space-y-1">
@@ -2328,6 +2344,18 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        autoComplete="current-password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter your current password"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">New Password</label>
                       <div className="relative">
                         <input
@@ -2335,7 +2363,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           required
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new admin password"
+                          placeholder="At least 10 characters"
+                          autoComplete="new-password"
+                          minLength={10}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#142d27]"
                         />
                         <button

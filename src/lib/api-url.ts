@@ -58,9 +58,11 @@ export function getApiUrl(endpoint: string): string {
     if (clean === "api/admin/leads/delete") {
       return `${base}api/leads.php?action=delete`;
     }
+    if (clean === "api/admin/leads/create") {
+      return `${base}api/leads.php?action=admin_create`;
+    }
     if (
       clean === "api/admin/leads" ||
-      clean === "api/admin/leads/create" ||
       clean === "api/leads" ||
       clean === "api/leads/result"
     ) {

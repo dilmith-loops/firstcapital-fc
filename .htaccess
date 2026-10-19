@@ -1,12 +1,23 @@
-# Apache / LiteSpeed configuration for Hostinger /fc/
+# Apache / LiteSpeed configuration for https://firstcapital.lk/begininvesting/
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
+# Security: block dotfiles (.env, .git), SQL dumps, docs, JSON data files and logs
+<FilesMatch "(^\.|\.(sql|md|json|log|zip|bak)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /fc/
+  RewriteBase /begininvesting/
 
-  # 0. Direct route for root /fc/ to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
+  # 0. Direct route for root to index.html (prevents 403 Forbidden directory listing on LiteSpeed)
   RewriteRule ^$ index.html [L]
 
   # 0b. Serve robots.txt directly with text/plain
@@ -33,7 +44,7 @@ DirectoryIndex index.html index.php
   RewriteRule ^([^/]+\.(png|jpg|jpeg|svg|gif|webp|ico))$ assets/$1 [L]
 
   # 4. Do NOT rewrite backend scripts
-  RewriteRule \.(php|json)$ - [L]
+  RewriteRule \.php$ - [L]
 
   # 5. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
@@ -43,9 +54,14 @@ DirectoryIndex index.html index.php
   RewriteRule ^$ firstcapitalpages/index.html [L]
 </IfModule>
 
-# Allow crawlers, social bots, and prevent CORS/hotlink issues
+# Security headers (API is same-origin only)
 <IfModule mod_headers.c>
-  Header set Access-Control-Allow-Origin "*"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+  Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
   Header set X-Robots-Tag "all"
   <Files "robots.txt">
     Header set Content-Type "text/plain; charset=utf-8"

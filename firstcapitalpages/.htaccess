@@ -2,10 +2,18 @@
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.html index.php
 
-# Security: Protect .env and sensitive files from direct web access
-<FilesMatch "^\.env|\.git">
-  Order allow,deny
-  Deny from all
+ErrorDocument 404 /begininvesting/404.html
+ErrorDocument 403 /begininvesting/404.html
+
+# Security: block dotfiles (.env, .git, .htaccess), SQL dumps, docs, JSON data files and logs
+<FilesMatch "(^\.|\.(sql|md|json|log|zip|bak)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
 </FilesMatch>
 
 <IfModule mod_rewrite.c>
@@ -39,15 +47,20 @@ DirectoryIndex index.html index.php
   # 5. Route backend API scripts cleanly
   RewriteRule ^api/leads/?$ api/leads.php [L]
   RewriteRule ^api/admin/(.*)$ api/leads.php [L]
-  RewriteRule \.(php|json)$ - [L]
+  RewriteRule \.php$ - [L]
 
   # 6. Route personality share links cleanly
   RewriteRule ^(keep-it-cool|smooth-operator|patient-player|opportunity-hunter)(-(?:male|female))?/?$ $1$2.html [L]
 </IfModule>
 
-# Allow crawlers and prevent CORS issues
+# Security headers (no cross-origin API access: the API is same-origin only)
 <IfModule mod_headers.c>
-  Header set Access-Control-Allow-Origin "*"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+  Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
   Header set X-Robots-Tag "all"
   <Files "robots.txt">
     Header set Content-Type "text/plain; charset=utf-8"

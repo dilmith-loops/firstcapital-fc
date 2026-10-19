@@ -105,9 +105,6 @@ export interface AdminUser {
   lastLogin?: string;
 }
 
-const STORAGE_KEY_AUTH = "fc_admin_auth";
-const STORAGE_KEY_CURRENT_ADMIN = "fc_admin_current_user";
-const STORAGE_KEY_ADMIN_USERS = "fc_admin_users";
 const STORAGE_KEY_LEADS = "fc_admin_leads";
 const STORAGE_KEY_PRODUCTS = "fc_admin_products";
 const STORAGE_KEY_SETTINGS = "fc_admin_settings";
@@ -140,17 +137,8 @@ export function mergeWithDefaultProfiles(
   return result;
 }
 
-export const DEFAULT_ADMIN_USERS: AdminUser[] = [
-  {
-    id: "admin-1",
-    name: "Executive Administrator",
-    email: "admin@firstcapital.lk",
-    password: "admin123",
-    role: "Super Admin",
-    status: "Active",
-    createdAt: "2026-01-15T09:00:00.000Z",
-  },
-];
+// Admin accounts live server-side (api/auth.php); the first one is created via the one-time setup screen.
+export const DEFAULT_ADMIN_USERS: AdminUser[] = [];
 
 export const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
   {
@@ -412,6 +400,57 @@ function notify() {
   }
 }
 
+export interface AuthResult {
+  ok: boolean;
+  error?: string;
+  data?: any;
+}
+
+let sessionAdmin: AdminUser | null = null;
+let adminUsersCache: AdminUser[] = [];
+let inMemoryLeads: QuizLead[] = [];
+let setupState = { setupRequired: false, setupEnabled: false };
+
+function authUrl(action: string): string {
+  return getApiUrl(`api/auth.php?action=${action}`);
+}
+
+// Same-origin fetch for admin-only endpoints; a 401 means the server session ended,
+// so drop back to the login screen.
+async function adminFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const res = await fetch(url, { credentials: "same-origin", ...init });
+  if (res.status === 401 && sessionAdmin) {
+    sessionAdmin = null;
+    notify();
+  }
+  return res;
+}
+
+async function authPost(action: string, body: unknown): Promise<AuthResult> {
+  try {
+    const res = await adminFetch(authUrl(action), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) {
+      return { ok: false, error: json.error || "Request failed. Please try again." };
+    }
+    return { ok: true, data: json };
+  } catch {
+    return { ok: false, error: "Could not reach the server. Please try again." };
+  }
+}
+
+// Remove the old browser-only login data and unencrypted lead persistence (SEC-VULN-02).
+function clearLegacyAuthStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    ["fc_admin_auth", "fc_admin_current_user", "fc_admin_users", "fc_admin_pwd", STORAGE_KEY_LEADS].forEach((k) => localStorage.removeItem(k));
+  } catch {}
+}
+
 export const AdminStore = {
   subscribe(listener: Listener) {
     listeners.add(listener);
@@ -420,180 +459,121 @@ export const AdminStore = {
     };
   },
 
-  // Auth Operations
+  // Auth Operations (server-side sessions via api/auth.php)
   isAuthenticated(): boolean {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(STORAGE_KEY_AUTH) === "true";
+    return sessionAdmin !== null;
   },
 
   getCurrentAdmin(): AdminUser | null {
-    if (typeof window === "undefined") return null;
-    const email = localStorage.getItem(STORAGE_KEY_CURRENT_ADMIN);
-    const users = this.getAdminUsers();
-    if (email) {
-      const match = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (match) return match;
-    }
-    return users[0] || null;
+    return sessionAdmin;
   },
 
-  login(email: string, pass: string): boolean {
-    if (typeof window === "undefined") return false;
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPass = pass.trim();
-    const settings = this.getSettings();
-    const storedMasterPass = localStorage.getItem("fc_admin_pwd") || "admin123";
+  getSetupState(): { setupRequired: boolean; setupEnabled: boolean } {
+    return setupState;
+  },
 
-    const users = this.getAdminUsers();
-    const matchedUser = users.find(
-      (u) => u.status === "Active" && u.email.toLowerCase() === cleanEmail && (u.password === cleanPass || (!u.password && cleanPass === storedMasterPass))
-    );
+  // Asks the server who is logged in; call once when the admin page loads.
+  async refreshSession(): Promise<boolean> {
+    clearLegacyAuthStorage();
+    try {
+      const res = await fetch(authUrl("me"), { credentials: "same-origin" });
+      const json = await res.json();
+      sessionAdmin = json.authenticated && json.admin ? json.admin : null;
+      setupState = { setupRequired: !!json.setupRequired, setupEnabled: !!json.setupEnabled };
+    } catch {
+      sessionAdmin = null;
+    }
+    notify();
+    return sessionAdmin !== null;
+  },
 
-    const isMasterFallback =
-      (cleanEmail === settings.adminEmail.toLowerCase() || cleanEmail === "admin@firstcapital.lk" || cleanEmail === "admin") &&
-      (cleanPass === storedMasterPass || cleanPass === "admin123" || cleanPass === "admin");
-
-    if (matchedUser || isMasterFallback) {
-      localStorage.setItem(STORAGE_KEY_AUTH, "true");
-      const loggedEmail = matchedUser ? matchedUser.email : cleanEmail;
-      localStorage.setItem(STORAGE_KEY_CURRENT_ADMIN, loggedEmail);
-
-      if (matchedUser) {
-        this.updateAdminUser(matchedUser.id, { lastLogin: new Date().toISOString() });
-      }
-
-      this.addLog("ADMIN_LOGIN", `Admin user ${loggedEmail} logged in successfully.`);
+  async login(email: string, pass: string): Promise<AuthResult> {
+    const result = await authPost("login", { email: email.trim(), password: pass });
+    if (result.ok) {
+      sessionAdmin = result.data.admin;
+      this.addLog("ADMIN_LOGIN", `Admin user ${sessionAdmin?.email} logged in.`);
       notify();
-      return true;
     }
-    return false;
+    return result;
   },
 
-  logout() {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(STORAGE_KEY_AUTH);
-    localStorage.removeItem(STORAGE_KEY_CURRENT_ADMIN);
+  async setupFirstAdmin(data: { name: string; email: string; password: string; token: string }): Promise<AuthResult> {
+    const result = await authPost("setup", data);
+    if (result.ok) {
+      sessionAdmin = result.data.admin;
+      setupState = { setupRequired: false, setupEnabled: false };
+      notify();
+    }
+    return result;
+  },
+
+  async logout() {
+    await authPost("logout", {});
+    sessionAdmin = null;
+    adminUsersCache = [];
     this.addLog("ADMIN_LOGOUT", "Admin session ended.");
     notify();
   },
 
-  updatePassword(newPass: string, adminId?: string) {
-    if (typeof window === "undefined") return;
-    localStorage.setItem("fc_admin_pwd", newPass);
-    if (adminId) {
-      this.updateAdminUser(adminId, { password: newPass });
-    }
-    this.addLog("SECURITY_UPDATE", "Admin password updated successfully.");
-    notify();
+  async updatePassword(currentPassword: string, newPassword: string): Promise<AuthResult> {
+    const result = await authPost("change_password", { currentPassword, newPassword });
+    if (result.ok) this.addLog("SECURITY_UPDATE", "Admin password updated successfully.");
+    return result;
   },
 
-  // Admin Users Management (Live DB sync + Local Storage)
+  // Admin Users Management (server-side; passwords are never sent back to the browser)
   getAdminUsers(): AdminUser[] {
-    if (typeof window === "undefined") return DEFAULT_ADMIN_USERS;
-    const data = localStorage.getItem(STORAGE_KEY_ADMIN_USERS);
-    if (!data) {
-      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(DEFAULT_ADMIN_USERS));
-      return DEFAULT_ADMIN_USERS;
-    }
-    try {
-      const parsed = JSON.parse(data);
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ADMIN_USERS;
-    } catch {
-      return DEFAULT_ADMIN_USERS;
-    }
+    return adminUsersCache;
   },
 
   async fetchAdminUsersFromDb(): Promise<AdminUser[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=admin_users"), { method: "GET" });
+      const res = await adminFetch(authUrl("users"));
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          if (typeof window !== "undefined") {
-            localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(json.data));
-          }
+        if (json.success && Array.isArray(json.users)) {
+          adminUsersCache = json.users;
           notify();
-          return json.data;
         }
       }
     } catch (err) {
-      console.warn("Could not fetch admin users from DB:", err);
+      console.warn("Could not fetch admin users:", err);
     }
-    return this.getAdminUsers();
+    return adminUsersCache;
   },
 
-  async persistAdminUsersToDb(users: AdminUser[]) {
-    try {
-      await fetch(getApiUrl("api/admin/settings"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "admin_users", value: users }),
-      });
-    } catch (err) {
-      console.warn("Could not persist admin users to DB:", err);
+  async addAdminUser(data: { name: string; email: string; password: string; role: AdminUser["role"]; status?: "Active" | "Inactive" }): Promise<AuthResult> {
+    const result = await authPost("user_create", data);
+    if (result.ok) {
+      this.addLog("ADMIN_CREATED", `Added administrator ${data.name} (${data.email}) with role ${data.role}`);
+      await this.fetchAdminUsersFromDb();
     }
+    return result;
   },
 
-  addAdminUser(data: { name: string; email: string; password?: string; role: AdminUser["role"]; status?: "Active" | "Inactive" }): AdminUser {
-    const list = this.getAdminUsers();
-    const newId = `admin-${Date.now()}`;
-    const newAdmin: AdminUser = {
-      id: newId,
-      name: data.name.trim(),
-      email: data.email.trim().toLowerCase(),
-      password: data.password || "admin123",
-      role: data.role || "Manager",
-      status: data.status || "Active",
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [...list, newAdmin];
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
+  async updateAdminUser(id: string, updates: Partial<AdminUser>): Promise<AuthResult> {
+    const result = await authPost("user_update", { id, ...updates });
+    if (result.ok) {
+      this.addLog("ADMIN_UPDATED", `Updated administrator ${updates.name || id}`);
+      await this.fetchAdminUsersFromDb();
     }
-    this.persistAdminUsersToDb(updated);
-    this.addLog("ADMIN_CREATED", `Added administrator ${newAdmin.name} (${newAdmin.email}) with role ${newAdmin.role}`);
-    notify();
-    return newAdmin;
+    return result;
   },
 
-  updateAdminUser(id: string, updates: Partial<AdminUser>) {
-    const list = this.getAdminUsers();
-    const updated = list.map((u) => (u.id === id ? { ...u, ...updates } : u));
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
+  async deleteAdminUser(id: string): Promise<AuthResult> {
+    const target = adminUsersCache.find((u) => u.id === id);
+    const result = await authPost("user_delete", { id });
+    if (result.ok) {
+      this.addLog("ADMIN_DELETED", `Removed administrator ${target ? `${target.name} (${target.email})` : id}`);
+      await this.fetchAdminUsersFromDb();
     }
-    this.persistAdminUsersToDb(updated);
-    const target = updated.find((u) => u.id === id);
-    this.addLog("ADMIN_UPDATED", `Updated administrator ${target ? target.name : id}`);
-    notify();
-  },
-
-  deleteAdminUser(id: string): boolean {
-    const list = this.getAdminUsers();
-    const target = list.find((u) => u.id === id);
-    if (!target) return false;
-
-    // Check if this is the only active super admin
-    const activeSuperAdmins = list.filter((u) => u.role === "Super Admin" && u.status === "Active" && u.id !== id);
-    if (target.role === "Super Admin" && activeSuperAdmins.length === 0) {
-      alert("Cannot delete the only active Super Admin account.");
-      return false;
-    }
-
-    const updated = list.filter((u) => u.id !== id);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(updated));
-    }
-    this.persistAdminUsersToDb(updated);
-    this.addLog("ADMIN_DELETED", `Removed administrator ${target.name} (${target.email})`);
-    notify();
-    return true;
+    return result;
   },
 
   // Database Status Check
   async checkDbStatus(): Promise<DbStatusInfo> {
     try {
-      const res = await fetch(getApiUrl("api/admin/status"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/status"), { method: "GET" });
       if (res.ok) {
         const data = await res.json();
         return data;
@@ -622,29 +602,24 @@ export const AdminStore = {
     }
   },
 
-  // Leads Operations (Live DB sync + Local Fallback)
+  // Leads Operations (Secure In-Memory State & MySQL Sync - SEC-VULN-02)
   getLeads(): QuizLead[] {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEY_LEADS);
-    if (!data) return [];
-    try {
-      return JSON.parse(data);
-    } catch {
-      return [];
-    }
+    return inMemoryLeads;
   },
 
   async fetchLeadsFromDb(): Promise<QuizLead[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/leads"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/leads"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.leads)) {
+          inMemoryLeads = json.leads;
+          // Ensure no customer PII is cached unencrypted in browser localStorage
           if (typeof window !== "undefined") {
-            localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(json.leads));
+            try { localStorage.removeItem(STORAGE_KEY_LEADS); } catch {}
           }
           notify();
-          return json.leads;
+          return inMemoryLeads;
         }
       }
     } catch (err) {
@@ -675,9 +650,9 @@ export const AdminStore = {
       source: lead.source || "Landing Page Quiz",
     };
 
-    const updated = [newLead, ...leads.filter((l) => l.id !== newLead.id)];
+    inMemoryLeads = [newLead, ...leads.filter((l) => l.id !== newLead.id)];
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
+      try { localStorage.removeItem(STORAGE_KEY_LEADS); } catch {}
     }
     this.addLog("LEAD_CREATED", `New lead received: ${newLead.name} (${newLead.profileName})`);
     notify();
@@ -685,7 +660,7 @@ export const AdminStore = {
     // Persist to MySQL Backend API if not already persisted with dbId
     if (!lead.dbId) {
       try {
-        const res = await fetch(getApiUrl("api/admin/leads/create"), {
+        const res = await adminFetch(getApiUrl("api/admin/leads/create"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -709,11 +684,7 @@ export const AdminStore = {
           if (resJson.leadId) {
             newLead.dbId = resJson.leadId;
             newLead.id = `FC-${resJson.leadId}`;
-            const currentLeads = this.getLeads();
-            const reUpdated = currentLeads.map((l) => (l.id === tempId ? { ...l, id: newLead.id, dbId: resJson.leadId } : l));
-            if (typeof window !== "undefined") {
-              localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(reUpdated));
-            }
+            inMemoryLeads = inMemoryLeads.map((l) => (l.id === tempId ? { ...l, id: newLead.id, dbId: resJson.leadId } : l));
             notify();
           }
         }
@@ -728,7 +699,7 @@ export const AdminStore = {
   async updateLeadStatus(id: string, status: LeadStatus, notes?: string) {
     const leads = this.getLeads();
     const target = leads.find((item) => item.id === id);
-    const updated = leads.map((item) => {
+    inMemoryLeads = leads.map((item) => {
       if (item.id === id) {
         return {
           ...item,
@@ -740,7 +711,7 @@ export const AdminStore = {
     });
 
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
+      try { localStorage.removeItem(STORAGE_KEY_LEADS); } catch {}
     }
     this.addLog("LEAD_UPDATED", `Lead ${id} status set to ${status}`);
     notify();
@@ -748,7 +719,7 @@ export const AdminStore = {
     // Persist to MySQL Backend API
     try {
       const dbId = (target as any)?.dbId;
-      await fetch(getApiUrl("api/admin/leads/update"), {
+      await adminFetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, dbId, status, notes }),
@@ -761,9 +732,9 @@ export const AdminStore = {
   async updateLead(id: string, updates: Partial<QuizLead>) {
     const leads = this.getLeads();
     const target = leads.find((item) => item.id === id);
-    const updated = leads.map((item) => (item.id === id ? { ...item, ...updates } : item));
+    inMemoryLeads = leads.map((item) => (item.id === id ? { ...item, ...updates } : item));
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
+      try { localStorage.removeItem(STORAGE_KEY_LEADS); } catch {}
     }
     this.addLog("LEAD_UPDATED", `Lead ${id} details updated`);
     notify();
@@ -771,7 +742,7 @@ export const AdminStore = {
     // Persist to MySQL Backend API
     try {
       const dbId = (target as any)?.dbId;
-      await fetch(getApiUrl("api/admin/leads/update"), {
+      await adminFetch(getApiUrl("api/admin/leads/update"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, dbId, status: updates.status, notes: updates.notes }),
@@ -784,9 +755,9 @@ export const AdminStore = {
   async deleteLead(id: string) {
     const leads = this.getLeads();
     const target = leads.find((item) => item.id === id);
-    const updated = leads.filter((item) => item.id !== id);
+    inMemoryLeads = leads.filter((item) => item.id !== id);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(updated));
+      try { localStorage.removeItem(STORAGE_KEY_LEADS); } catch {}
     }
     this.addLog("LEAD_DELETED", `Lead ${id} removed`);
     notify();
@@ -794,7 +765,7 @@ export const AdminStore = {
     // Delete in MySQL Backend API
     try {
       const dbId = (target as any)?.dbId;
-      await fetch(getApiUrl("api/admin/leads/delete"), {
+      await adminFetch(getApiUrl("api/admin/leads/delete"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, dbId }),
@@ -827,7 +798,7 @@ export const AdminStore = {
 
   async fetchProductsFromDb(): Promise<InvestmentProduct[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=investment_products"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/settings?key=investment_products"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -846,7 +817,7 @@ export const AdminStore = {
 
   async persistProductsToDb(products: InvestmentProduct[]) {
     try {
-      await fetch(getApiUrl("api/admin/settings"), {
+      await adminFetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "investment_products", value: products }),
@@ -1042,7 +1013,7 @@ export const AdminStore = {
 
   async fetchQuestionsFromDb(): Promise<QuestionItem[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=quiz_questions"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/settings?key=quiz_questions"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -1061,7 +1032,7 @@ export const AdminStore = {
 
   async persistQuestionsToDb(questions: QuestionItem[]): Promise<boolean> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings"), {
+      const res = await adminFetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "quiz_questions", value: questions }),
@@ -1144,7 +1115,7 @@ export const AdminStore = {
 
   async fetchTestimonialsFromDb(): Promise<TestimonialItem[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=testimonials"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/settings?key=testimonials"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -1163,7 +1134,7 @@ export const AdminStore = {
 
   async persistTestimonialsToDb(testimonials: TestimonialItem[]): Promise<boolean> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings"), {
+      const res = await adminFetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "testimonials", value: testimonials }),
@@ -1248,7 +1219,7 @@ export const AdminStore = {
 
   async fetchQuizResultsFromDb(): Promise<Record<ProfileKey, ProfileInfo>> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=quiz_results"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/settings?key=quiz_results"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data && typeof json.data === "object") {
@@ -1268,7 +1239,7 @@ export const AdminStore = {
 
   async persistQuizResultsToDb(results: Record<ProfileKey, ProfileInfo>): Promise<boolean> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings"), {
+      const res = await adminFetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "quiz_results", value: results }),
@@ -1334,7 +1305,7 @@ export const AdminStore = {
 
   async fetchWhyReasonsFromDb(): Promise<WhyReasonItem[]> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings?key=why_first_capital"), { method: "GET" });
+      const res = await adminFetch(getApiUrl("api/admin/settings?key=why_first_capital"), { method: "GET" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -1358,7 +1329,7 @@ export const AdminStore = {
 
   async persistWhyReasonsToDb(reasons: WhyReasonItem[]): Promise<boolean> {
     try {
-      const res = await fetch(getApiUrl("api/admin/settings"), {
+      const res = await adminFetch(getApiUrl("api/admin/settings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "why_first_capital", value: reasons }),

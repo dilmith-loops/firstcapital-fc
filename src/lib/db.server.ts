@@ -31,9 +31,9 @@ export function getDbPool(): mysql.Pool {
     loadEnvFile();
     const dbHost = process.env["DB_HOST"] || "localhost";
     const dbPort = Number(process.env["DB_PORT"]) || 3306;
-    const dbUser = process.env["DB_USER"] || "u451149423_firstcapital";
-    const dbPassword = process.env["DB_PASSWORD"] || process.env["DB_PASS"] || "3Sr>26Wr";
-    const dbName = process.env["DB_NAME"] || "u451149423_firstcapital";
+    const dbUser = process.env["DB_USER"] || "root";
+    const dbPassword = process.env["DB_PASSWORD"] || process.env["DB_PASS"] || "";
+    const dbName = process.env["DB_NAME"] || "firstcapital_investor";
 
     pool = mysql.createPool({
       host: dbHost === "localhost" ? "127.0.0.1" : dbHost,
