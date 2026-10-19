@@ -84,6 +84,13 @@ class PublicQuizController extends Controller
         }
 
         $data = AppSetting::getValue($key);
+        if ($key === 'testimonials' && is_array($data)) {
+            $data = array_values(array_filter($data, function ($t) {
+                $status = $t['status'] ?? 'Active';
+                $visible = $t['visible'] ?? true;
+                return $status === 'Active' && $visible !== false;
+            }));
+        }
         return response()->json([
             'success' => true,
             'source' => 'db',

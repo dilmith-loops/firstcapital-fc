@@ -143,39 +143,39 @@ export const DEFAULT_ADMIN_USERS: AdminUser[] = [];
 export const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
   {
     id: "test-1",
+    quote: "I wanted to start investing before 25, so I did my research and found First Capital. They make investing accessible and approachable, and it's the only investment partner I actively follow. Being curious opened so many doors for me. You don't need a lot of funds or education to start. You just need to start",
+    name: "Amandi Yatawara",
+    role: "Public Speaker & Presenter",
+    rating: 5,
+    status: "Active",
+    createdAt: "2026-10-13T09:45:00+00:00",
+  },
+  {
+    id: "test-2",
+    quote: "I started stocks for the first time in Sri Lanka through First Capital because my friends are here and it's very trustworthy. The portal is so easy to use, and it's given me good results in the six or seven months I've been into stocks. I told so many of my friends. Now they also have money market funds at First Capital, and they're surprised.",
+    name: "Achira Paranavithana",
+    role: "Investor",
+    rating: 5,
+    status: "Active",
+    createdAt: "2026-10-13T09:45:00+00:00",
+  },
+  {
+    id: "test-3",
+    quote: "You cannot expect everyone to have the financial literacy, so they should come through an investment company like First Capital, because they are the experts in that.",
+    name: "Tilak Gunasekara",
+    role: "Managing Director/CEO at Sathosa Motors PLC",
+    rating: 5,
+    status: "Active",
+    createdAt: "2026-10-10T09:45:00+00:00",
+  },
+  {
+    id: "test-4",
     quote: "I started with just LKR 1,000, mostly to see what would happen. A year later, investing is simply part of my monthly routine.",
     name: "Dinuka P.",
     role: "First-time investor",
     rating: 5,
-    status: "Active",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "test-2",
-    quote: "Everything was explained in plain language. I never felt like I needed a finance degree to take the first step.",
-    name: "Shanika F.",
-    role: "Young professional",
-    rating: 5,
-    status: "Active",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "test-3",
-    quote: "Knowing I can get to my money when I need it made starting far less intimidating. That flexibility is why I began at all.",
-    name: "Aravinda P.",
-    role: "Saver turned investor",
-    rating: 5,
-    status: "Active",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "test-4",
-    quote: "It helps knowing the people managing your money have been doing this for over forty years. I just stay consistent and let it grow.",
-    name: "Malsha S.",
-    role: "Long-term investor",
-    rating: 5,
-    status: "Active",
-    createdAt: new Date().toISOString(),
+    status: "Draft",
+    createdAt: "2026-10-08T09:45:00+00:00",
   },
 ];
 
@@ -1107,6 +1107,10 @@ export const AdminStore = {
     }
     try {
       const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && (parsed.some((t: any) => t.name === "Shanika F." || t.name === "Malsha S.") || !parsed.some((t: any) => t.name === "Amandi Yatawara"))) {
+        localStorage.setItem(STORAGE_KEY_TESTIMONIALS, JSON.stringify(DEFAULT_TESTIMONIALS));
+        return DEFAULT_TESTIMONIALS;
+      }
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_TESTIMONIALS;
     } catch {
       return DEFAULT_TESTIMONIALS;

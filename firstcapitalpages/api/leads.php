@@ -133,40 +133,94 @@ function getDefaultTestimonials() {
     return [
         [
             'id' => 'test-1',
+            'quote' => "I wanted to start investing before 25, so I did my research and found First Capital. They make investing accessible and approachable, and it's the only investment partner I actively follow. Being curious opened so many doors for me. You don't need a lot of funds or education to start. You just need to start",
+            'name' => 'Amandi Yatawara',
+            'role' => 'Public Speaker & Presenter',
+            'rating' => 5,
+            'status' => 'Active',
+            'visible' => true,
+            'createdAt' => '2026-10-13T09:45:00+00:00'
+        ],
+        [
+            'id' => 'test-2',
+            'quote' => "I started stocks for the first time in Sri Lanka through First Capital because my friends are here and it's very trustworthy. The portal is so easy to use, and it's given me good results in the six or seven months I've been into stocks. I told so many of my friends. Now they also have money market funds at First Capital, and they're surprised.",
+            'name' => 'Achira Paranavithana',
+            'role' => 'Investor',
+            'rating' => 5,
+            'status' => 'Active',
+            'visible' => true,
+            'createdAt' => '2026-10-13T09:45:00+00:00'
+        ],
+        [
+            'id' => 'test-3',
+            'quote' => "You cannot expect everyone to have the financial literacy, so they should come through an investment company like First Capital, because they are the experts in that.",
+            'name' => 'Tilak Gunasekara',
+            'role' => 'Managing Director/CEO at Sathosa Motors PLC',
+            'rating' => 5,
+            'status' => 'Active',
+            'visible' => true,
+            'createdAt' => '2026-10-10T09:45:00+00:00'
+        ],
+        [
+            'id' => 'test-4',
             'quote' => 'I started with just LKR 1,000, mostly to see what would happen. A year later, investing is simply part of my monthly routine.',
             'name' => 'Dinuka P.',
             'role' => 'First-time investor',
             'rating' => 5,
-            'status' => 'Active',
-            'createdAt' => date('c')
-        ],
-        [
-            'id' => 'test-2',
-            'quote' => 'Everything was explained in plain language. I never felt like I needed a finance degree to take the first step.',
-            'name' => 'Shanika F.',
-            'role' => 'Young professional',
-            'rating' => 5,
-            'status' => 'Active',
-            'createdAt' => date('c')
-        ],
-        [
-            'id' => 'test-3',
-            'quote' => 'Knowing I can get to my money when I need it made starting far less intimidating. That flexibility is why I began at all.',
-            'name' => 'Aravinda P.',
-            'role' => 'Saver turned investor',
-            'rating' => 5,
-            'status' => 'Active',
-            'createdAt' => date('c')
-        ],
-        [
-            'id' => 'test-4',
-            'quote' => 'It helps knowing the people managing your money have been doing this for over forty years. I just stay consistent and let it grow.',
-            'name' => 'Malsha S.',
-            'role' => 'Long-term investor',
-            'rating' => 5,
-            'status' => 'Active',
-            'createdAt' => date('c')
+            'status' => 'Draft',
+            'visible' => false,
+            'createdAt' => '2026-10-08T09:45:00+00:00'
         ]
+    ];
+}
+
+function getDefaultInvestmentProducts() {
+    return [
+        [
+            'id' => 'unit-trust',
+            'number' => '01',
+            'title' => 'Unit Trust Funds',
+            'shortCopy' => 'A Unit Trust Fund pools money from multiple investors into a single fund. This money is professionally managed and invested in a range of investments based on the fund’s investment objective. When you invest, you receive units in the fund based on the amount you invest. You can choose from three Unit Trust Funds.',
+            'tags' => ['3 Fund Choices', 'From LKR 1,000', 'High Liquidity'],
+            'video' => [
+                'title' => 'Learn more about Unit Trust Funds',
+                'url' => 'https://www.tiktok.com/@first.capital/video/7593165117668265223',
+                'platform' => 'TikTok',
+            ],
+            'disclaimer' => '*Disclaimers: Past performance is not an indicator of future performance | Investors are advised to read and understand the contents of Key Investor Information Document (KIID) | The fund is approved by the Securities and Exchange Commission of Sri Lanka (SEC)',
+            'guideUrl' => 'https://firstcapital.lk/wp-content/uploads/2026/02/FCAM-UT-Procedure-Guide-to-Investors.pdf',
+            'guideLabel' => 'FCAM-UT-Procedure-Guide-to-Investors.pdf',
+        ],
+        [
+            'id' => 'gov-securities',
+            'number' => '02',
+            'title' => 'Government Securities',
+            'shortCopy' => 'Government securities are instrument issued by the Government of Sri Lanka to raise money. When you invest, you lend your money to the government for a defined period. In return, you receive interest periodically, with the original investment paid back at maturity.',
+            'tags' => ['Government-issued', 'Regular interest', 'Defined maturity', 'Risk-free instrument'],
+            'video' => [
+                'title' => 'Government Securities explained',
+                'url' => 'https://www.youtube.com/watch?v=LZoAwRqGr9M&t=20s',
+                'platform' => 'YouTube',
+            ],
+            'disclaimer' => '*Disclaimer: Terms & Conditions apply | Please refer to the Procedure Guide related Treasuries/Government Securities to understand our internal procedures related to products and transactions.',
+            'guideUrl' => 'https://firstcapital.lk/wp-content/uploads/2026/07/Information-Memorandum-FCT.pdf',
+            'guideLabel' => 'Information-Memorandum-FCT.pdf',
+        ],
+        [
+            'id' => 'equities',
+            'number' => '03',
+            'title' => 'Equities',
+            'shortCopy' => 'It simply means investing in shares of listed companies. When you buy shares, you own a % of the company. The value of your investment can rise or fall based on the company’s performance and market conditions.',
+            'tags' => ['Long-term growth potential', 'Own listed shares', 'Market participation'],
+            'video' => [
+                'title' => 'How do equities work?',
+                'url' => 'https://www.youtube.com/shorts/HGL82Tv1wJE',
+                'platform' => 'YouTube',
+            ],
+            'disclaimer' => '*Disclaimer: Equity investments are subject to market risk | Please refer to the Procedure Guide related to Equities to understand our internal procedures related to products and transactions.',
+            'guideUrl' => 'https://firstcapital.lk/wp-content/uploads/2026/09/FCE-procedure-guide_.pdf',
+            'guideLabel' => 'FCE-procedure-guide_.pdf',
+        ],
     ];
 }
 
@@ -362,12 +416,88 @@ function ensureTablesExist($pdo) {
     }
 }
 
+function syncDefaultSettingsIfOutdated($pdo) {
+    if (!$pdo) return;
+    try {
+        // 1. Testimonials: if missing, empty, or containing old dummy data, sync with real testimonials
+        $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'testimonials'");
+        $stmt->execute();
+        $val = $stmt->fetchColumn();
+        $needsSync = false;
+        if (!$val) {
+            $needsSync = true;
+        } else {
+            $decoded = json_decode($val, true);
+            if (!is_array($decoded) || empty($decoded)) {
+                $needsSync = true;
+            } else {
+                foreach ($decoded as $item) {
+                    if (isset($item['name']) && in_array($item['name'], ['Shanika F.', 'Aravinda P.', 'Malsha S.'], true)) {
+                        $needsSync = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if ($needsSync) {
+            $real = getDefaultTestimonials();
+            $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+            if ($driver === 'sqlite') {
+                $upd = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('testimonials', :v) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
+                $upd->execute([':v' => json_encode($real, JSON_UNESCAPED_UNICODE)]);
+            } else {
+                $upd = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('testimonials', :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                $upd->execute([':v' => json_encode($real, JSON_UNESCAPED_UNICODE)]);
+            }
+        }
+
+        // 2. why_first_capital
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM app_settings WHERE setting_key = 'why_first_capital'");
+        $stmt->execute();
+        if ((int)$stmt->fetchColumn() === 0) {
+            $reasons = getDefaultWhyReasons();
+            $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('why_first_capital', :v)");
+            $ins->execute([':v' => json_encode($reasons, JSON_UNESCAPED_UNICODE)]);
+        }
+
+        // 3. investment_products
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM app_settings WHERE setting_key = 'investment_products'");
+        $stmt->execute();
+        if ((int)$stmt->fetchColumn() === 0) {
+            $prods = getDefaultInvestmentProducts();
+            $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('investment_products', :v)");
+            $ins->execute([':v' => json_encode($prods, JSON_UNESCAPED_UNICODE)]);
+        }
+
+        // 4. quiz_questions
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM app_settings WHERE setting_key = 'quiz_questions'");
+        $stmt->execute();
+        if ((int)$stmt->fetchColumn() === 0) {
+            $q = getDefaultQuizQuestions();
+            $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_questions', :v)");
+            $ins->execute([':v' => json_encode($q, JSON_UNESCAPED_UNICODE)]);
+        }
+
+        // 5. quiz_results
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM app_settings WHERE setting_key = 'quiz_results'");
+        $stmt->execute();
+        if ((int)$stmt->fetchColumn() === 0) {
+            $res = getDefaultQuizResults();
+            $ins = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_results', :v)");
+            $ins->execute([':v' => json_encode($res, JSON_UNESCAPED_UNICODE)]);
+        }
+    } catch (Throwable $e) {
+        error_log("syncDefaultSettingsIfOutdated error: " . $e->getMessage());
+    }
+}
+
 $pdo = getDbConnection();
 if (!$pdo) {
     jsonResponse(503, ['success' => false, 'error' => 'Service temporarily unavailable. Please try again shortly.']);
 }
 ensureTablesExist($pdo);
 ensureSecurityTables($pdo);
+syncDefaultSettingsIfOutdated($pdo);
 
 if ($method !== 'GET') {
     requireSameOrigin();
@@ -398,7 +528,7 @@ if ($action === 'status') {
 // ----------------------------------------------------
 // 2. APP SETTINGS (Questions, Results, Testimonials, Reasons, Products)
 // ----------------------------------------------------
-if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', 'reasons', 'why_first_capital', 'settings'], true)) {
+if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', 'reasons', 'why_first_capital', 'products', 'investment_products', 'settings'], true)) {
     $aliases = [
         'questions' => 'quiz_questions',
         'testimonials' => 'testimonials',
@@ -406,12 +536,15 @@ if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', '
         'quiz_results' => 'quiz_results',
         'reasons' => 'why_first_capital',
         'why_first_capital' => 'why_first_capital',
+        'products' => 'investment_products',
+        'investment_products' => 'investment_products',
     ];
     $defaults = [
         'quiz_questions' => 'getDefaultQuizQuestions',
         'testimonials' => 'getDefaultTestimonials',
         'quiz_results' => 'getDefaultQuizResults',
         'why_first_capital' => 'getDefaultWhyReasons',
+        'investment_products' => 'getDefaultInvestmentProducts',
     ];
 
     if ($method === 'GET') {
@@ -427,6 +560,21 @@ if (in_array($action, ['questions', 'testimonials', 'results', 'quiz_results', '
             if ($row && !empty($row['setting_value'])) {
                 $decoded = json_decode($row['setting_value'], true);
                 if ($key === 'testimonials' && is_array($decoded)) {
+                    $hasDummy = false;
+                    foreach ($decoded as $t) {
+                        if (isset($t['name']) && in_array($t['name'], ['Shanika F.', 'Aravinda P.', 'Malsha S.'], true)) {
+                            $hasDummy = true;
+                            break;
+                        }
+                    }
+                    if ($hasDummy) {
+                        $realTestimonials = getDefaultTestimonials();
+                        try {
+                            $upd = $pdo->prepare("UPDATE app_settings SET setting_value = :v WHERE setting_key = 'testimonials'");
+                            $upd->execute([':v' => json_encode($realTestimonials, JSON_UNESCAPED_UNICODE)]);
+                        } catch (Throwable $e) {}
+                        $decoded = $realTestimonials;
+                    }
                     $decoded = array_values(array_filter($decoded, function($t) {
                         return ($t['status'] ?? 'Active') === 'Active' && (!isset($t['visible']) || $t['visible'] !== false);
                     }));

@@ -2233,6 +2233,10 @@ async function exportStatic() {
       var cached = localStorage.getItem('fc_admin_testimonials');
       if (cached) {
         var parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && (parsed.some(function(t) { return t.name === 'Shanika F.' || t.name === 'Malsha S.'; }) || !parsed.some(function(t) { return t.name === 'Amandi Yatawara'; }))) {
+          localStorage.removeItem('fc_admin_testimonials');
+          parsed = null;
+        }
         if (Array.isArray(parsed) && parsed.length > 0) {
           renderAllSliders(parsed);
         }

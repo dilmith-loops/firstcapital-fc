@@ -382,7 +382,13 @@ export async function handleGetAppSetting(key: string): Promise<any> {
       if (row0) {
         const val = row0["setting_value"];
         try {
-          return JSON.parse(val);
+          const parsed = JSON.parse(val);
+          if (key === "testimonials" && Array.isArray(parsed) && parsed.some((t: any) => t.name === "Shanika F.")) {
+            const { DEFAULT_TESTIMONIALS } = await import("../lib/admin-store");
+            await handleSaveAppSetting("testimonials", DEFAULT_TESTIMONIALS);
+            return DEFAULT_TESTIMONIALS;
+          }
+          return parsed;
         } catch {
           return val;
         }
