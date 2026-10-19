@@ -1592,7 +1592,7 @@ const quizModalHtmlAndScript = `
     var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.indexOf('192.168.') !== -1);
     var origin = (!isLocal && window.location.origin) ? window.location.origin : '${SITE_URL}';
     var pathname = window.location.pathname || '/';
-    var basePath = (pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/').replace(/\/(admin|design-option-2)\/$/, '/');
+    var basePath = (pathname.substring(0, pathname.lastIndexOf('/') + 1) || '/').replace(new RegExp("/(admin|design-option-2)/$"), '/');
     return origin + (basePath === '/' ? '/' : basePath) + slug + '-' + gender + '.html';
   }
 
@@ -3080,6 +3080,15 @@ DirectoryIndex index.html index.php
     }
     if (fs.existsSync(path.join(option2Dir, 'styles.css'))) {
       fs.copyFileSync(path.join(option2Dir, 'styles.css'), path.resolve('design-option-2/styles.css'));
+    }
+
+    // Sync hero background artwork to root and root assets/ (referenced from styles.css)
+    for (const img of ['hero-desktop.jpg', 'hero-mobile.jpg', 'hero-tablet-landscape.jpg', 'hero-tablet-portrait.jpg']) {
+      if (fs.existsSync(path.join(outDir, img))) {
+        fs.copyFileSync(path.join(outDir, img), path.resolve(img));
+        fs.mkdirSync(path.resolve('assets'), { recursive: true });
+        fs.copyFileSync(path.join(outDir, img), path.resolve('assets', img));
+      }
     }
 
     // Sync all 12 personality landing pages to root
