@@ -235,7 +235,7 @@ function Index() {
   return (
     <div className="min-h-screen overflow-hidden bg-background text-foreground">
       <header className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-7xl w-full items-center justify-between gap-5 px-5 py-2 sm:py-2.5 sm:px-8 lg:px-12">
+        <div className="mx-auto flex max-w-7xl w-full items-center justify-between gap-5 px-5 py-2 sm:py-2.5 sm:px-8 lg:px-12 2xl:max-w-[1760px] 2xl:px-16">
           <a href="#top" aria-label="First Capital home" className="block min-w-0">
             <img src={logoAsset.url} alt="First Capital — A Janashakthi Group Company" className="h-auto w-36 sm:w-44" width="1698" height="432" />
           </a>
@@ -252,29 +252,29 @@ function Index() {
         >
           {/* Desktop soft overlay for crisp typography legibility while showcasing the full background */}
           <div
-            className="absolute inset-0 hidden lg:block pointer-events-none"
+            className="hero-desktop-overlay absolute inset-0 hidden lg:block pointer-events-none"
             style={{
               background:
                 "linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 32%, rgba(255, 255, 255, 0.38) 48%, rgba(255, 255, 255, 0) 66%)",
             }}
           />
 
-          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full">
-            <div className="max-w-lg lg:max-w-[490px] xl:max-w-[530px]">
+          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 w-full 2xl:max-w-[1760px] 2xl:px-16">
+            <div className="hero-copy max-w-lg lg:max-w-[490px] xl:max-w-[530px] 2xl:max-w-[680px]">
               <div className="hero-mobile-bg">
-                <h1 className="text-[26px] sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold leading-[1.14] text-[#1a214c]">
+                <h1 className="text-[26px] sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[60px] font-extrabold leading-[1.14] text-[#1a214c]">
                   You Already<br />
                   Save, Plan and<br />
                   Prepare for<br />
                   the Future.
                 </h1>
-                <div className="w-full max-w-[200px] sm:max-w-[320px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
-                <h2 className="text-lg sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold leading-[1.18] text-[#1a214c]">
+                <div className="hero-divider w-full max-w-[200px] sm:max-w-[320px] 2xl:max-w-[420px] h-1.5 sm:h-2 bg-[#f1ca1f] my-4 sm:my-5" aria-hidden="true" />
+                <h2 className="text-lg sm:text-2xl lg:text-[28px] xl:text-[32px] 2xl:text-[40px] font-extrabold leading-[1.18] text-[#1a214c]">
                   But Do You Know<br />
                   Your Investor<br />
                   Personality?
                 </h2>
-                <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-700 font-normal leading-snug sm:leading-relaxed">
+                <p className="mt-4 sm:mt-5 text-base sm:text-lg 2xl:text-xl text-slate-700 font-normal leading-snug sm:leading-relaxed">
                   Answer 7 simple questions<br />
                   and discover your investor<br />
                   personality.
@@ -283,7 +283,7 @@ function Index() {
                   <Button
                     id="btn-find-investor-type"
                     onClick={() => setIsQuizOpen(true)}
-                    className="min-h-13 w-full sm:w-auto px-5 sm:px-10 max-sm:whitespace-normal max-sm:text-center max-sm:leading-tight py-3 sm:py-3.5 text-sm sm:text-base font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
+                    className="min-h-13 w-full sm:w-auto px-5 sm:px-10 max-sm:whitespace-normal max-sm:text-center max-sm:leading-tight py-3 sm:py-3.5 text-sm sm:text-base 2xl:text-lg 2xl:px-12 2xl:py-4 font-bold tracking-wide gap-3 cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all rounded-sm uppercase"
                   >
                     <span>DISCOVER MY INVESTOR PERSONALITY</span>
                     <ArrowRight className="size-5 stroke-[2.5]" />
@@ -291,7 +291,7 @@ function Index() {
                 </div>
               </div>
 
-              <p className="mt-8 lg:mt-5 max-w-xl text-xs sm:text-[13px] leading-relaxed text-slate-700 font-medium">
+              <p className="hero-disclaimer mt-8 lg:mt-5 max-w-xl 2xl:max-w-2xl text-xs sm:text-[13px] 2xl:text-sm leading-relaxed text-slate-700 font-medium">
                 <span className="font-bold text-[#1a214c]">Disclaimer: </span>{disclaimer}
               </p>
             </div>

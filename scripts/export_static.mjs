@@ -1967,6 +1967,10 @@ async function exportStatic() {
   copyDual('public/__l5e/assets-v1/4127bce6-999f-469c-8a68-01a4dc912fc9/first-capital-logo.png', 'first-capital-logo.png');
   copyDual('src/assets/FCmain.png', 'investors.png');
   copyDual('src/assets/FCmain.png', 'FCmain.png');
+  copyDual('src/assets/hero-desktop.jpg', 'hero-desktop.jpg');
+  copyDual('src/assets/hero-mobile.jpg', 'hero-mobile.jpg');
+  copyDual('src/assets/hero-tablet-landscape.jpg', 'hero-tablet-landscape.jpg');
+  copyDual('src/assets/hero-tablet-portrait.jpg', 'hero-tablet-portrait.jpg');
   copyDual('src/assets/investor-personalities.jpg', 'investor-personalities.jpg');
   copyDual('src/assets/image.png', 'image.png');
   copyDual('public/og-image.jpg', 'og-image.jpg');
@@ -2759,9 +2763,9 @@ ${compiledCssContent}
 
     // Clean preload links that pointed to old dev paths or unused hidden elements
     html = html.replace(/<link rel="preload" as="image"[^>]*investor-type-[^>]*\/?>/gi, '');
-    html = html.replace(/<link rel="preload" as="image"[^>]*FCmain[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=3" />`);
+    html = html.replace(/<link rel="preload" as="image"[^>]*FCmain[^>]*\/?>/gi, '');
     html = html.replace(/<link rel="preload" as="image"[^>]*first-capital-logo[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}first-capital-logo.png?v=1" />`);
-    html = html.replace(/<link rel="preload" as="image"[^>]*investors[^>]*\/?>/gi, `<link rel="preload" as="image" href="${prefix}FCmain.png?v=3" />`);
+    html = html.replace(/<link rel="preload" as="image"[^>]*investors[^>]*\/?>/gi, '');
     html = html.replace(/width="1408"\s*height="1056"/gi, 'width="1024" height="576"');
 
     // Fix Admin link in footer if present

@@ -436,64 +436,73 @@
   color: #ffffff !important;
 }
 
-/* Hero Full-bleed Background Styles (100vh) */
+/* Hero background: one artwork per device shape.
+   - Landscape screens (>=640px wide): artwork with a blank left side sits behind the copy,
+     scaled to the hero's height and anchored right. Wide screens (>3:2) use the 1920x1000 art,
+     squarer ones (tablets in landscape, 4:3 / 5:4 monitors, landscape phones) the 1370x1024 art.
+   - Portrait screens and phones: tall artwork across the top; the copy starts where the art
+     fades to white (the padding-top is that point as a share of the image height). */
 .hero-full-bg {
   min-height: 100vh !important;
+  background-color: #ffffff !important;
+  background-repeat: no-repeat !important;
 }
 
-@media (min-width: 1024px) {
+@media (orientation: landscape) and (min-width: 640px) {
   .hero-full-bg {
-    background-image: url('./FCmain.png?v=5') !important;
-    background-repeat: no-repeat !important;
+    background-image: url('./hero-tablet-landscape.jpg?v=2') !important;
     background-position: right center !important;
-    /* Scale to the hero's height (not width) so wide screens show the whole image
-       anchored right; the image's white left edge blends into the white background */
     background-size: auto 100% !important;
-    background-color: #ffffff !important;
-    min-height: 100vh !important;
   }
 }
 
-@media (max-width: 1023px) {
+@media (orientation: landscape) and (min-width: 1024px) and (min-aspect-ratio: 3/2) {
   .hero-full-bg {
-    background-image: none !important;
-    background-color: #ffffff !important;
+    background-image: url('./hero-desktop.jpg?v=2') !important;
+  }
+}
+
+@media (orientation: portrait), (max-width: 639px) {
+  .hero-full-bg {
+    /* 1024x1370 art; copy starts at 66.5% of its height, below the phone mockup */
+    background-image: url('./hero-tablet-portrait.jpg?v=1') !important;
+    background-position: center top !important;
+    background-size: 100% auto !important;
+    padding-top: calc(100vw * 1370 / 1024 * 0.665) !important;
     min-height: auto !important;
+    align-items: flex-start !important;
+  }
+  .hero-desktop-overlay {
+    display: none !important;
   }
 
-  /* Image sits at the top of the hero behind the headline, right-aligned,
-     with a soft white wash on the left for legibility and a fade at its bottom */
-  .hero-mobile-bg {
-    --hero-img-h: min(54vw, 400px);
-    --hero-img-top: 2.5rem;
-    position: relative;
+  /* Copy sits centred under the centred artwork */
+  .hero-copy {
+    margin-inline: auto;
+    max-width: 36rem !important;
+    text-align: center;
   }
-  .hero-mobile-bg::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: -2.5rem;
-    bottom: -1.25rem;
-    left: -1.25rem;
-    width: 100vw;
-    background-color: #ffffff;
-    background-image:
-      linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0) 70%, #ffffff 92%),
-      linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.92) 30%, rgba(255, 255, 255, 0) 60%),
-      url('./FCmain.png?v=5');
-    background-repeat: no-repeat;
-    background-position: left 0 top var(--hero-img-top), left 0 top var(--hero-img-top), right top var(--hero-img-top);
-    background-size: 100% calc(var(--hero-img-h) + 2px), 100% var(--hero-img-h), auto var(--hero-img-h);
-    pointer-events: none;
+  .hero-divider {
+    margin-inline: auto;
+  }
+  .hero-cta {
+    display: flex;
+    justify-content: center;
+  }
+  .hero-disclaimer {
+    margin-inline: auto;
+    text-align: center;
   }
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .hero-mobile-bg::before {
-    top: -3.5rem;
-    left: -2rem;
+@media (max-width: 639px) {
+  .hero-full-bg {
+    /* 800x1420 art; copy starts at 70% of its height, below the phone mockup */
+    background-image: url('./hero-mobile.jpg?v=1') !important;
+    padding-top: calc(100vw * 1420 / 800 * 0.70) !important;
   }
 }
+
 
 
 
